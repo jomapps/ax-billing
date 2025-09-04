@@ -30,12 +30,18 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   
   body {
-    @apply bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 text-foreground min-h-screen;
-    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .font-gaming {
@@ -49,15 +55,16 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-dark-800;
+    background-color: #1e293b;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary-600 rounded-full;
+    background-color: #0284c7;
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary-500;
+    background-color: #0ea5e9;
   }
 }
 
@@ -96,13 +103,32 @@
 
   /* Neon text effect */
   .neon-text {
-    color: #00d4ff;
-    text-shadow: 
+    color: #00d4ff !important;
+    font-family: 'Orbitron', monospace !important;
+    font-weight: 700 !important;
+    text-shadow:
       0 0 5px #00d4ff,
       0 0 10px #00d4ff,
       0 0 15px #00d4ff,
-      0 0 20px #00d4ff;
+      0 0 20px #00d4ff !important;
     animation: neon-flicker 2s infinite alternate;
+  }
+
+  /* Gaming title styling */
+  .gaming-title {
+    font-family: 'Orbitron', monospace !important;
+    font-weight: 900 !important;
+    font-size: 3.5rem !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  /* Gaming subtitle */
+  .gaming-subtitle {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    font-size: 1.125rem !important;
   }
 
   /* Gaming-style grid background */
@@ -127,7 +153,13 @@
 
   /* Gaming card hover effect */
   .gaming-card {
-    @apply relative overflow-hidden rounded-xl bg-gradient-to-br from-dark-800/90 to-dark-900/90 border border-primary-500/30 backdrop-blur-sm transition-all duration-300;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: linear-gradient(to bottom right, #1e293b, #0f172a);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
   }
 
   .gaming-card::before {
@@ -210,6 +242,31 @@
 
   .backdrop-blur-xs {
     backdrop-filter: blur(2px);
+  }
+
+  /* Explicit slate background utilities */
+  .bg-slate-800 {
+    background-color: #1e293b !important;
+  }
+
+  .bg-slate-900 {
+    background-color: #0f172a !important;
+  }
+
+  .from-slate-800 {
+    --tw-gradient-from: #1e293b !important;
+  }
+
+  .to-slate-900 {
+    --tw-gradient-to: #0f172a !important;
+  }
+
+  .border-primary-500 {
+    border-color: #0ea5e9 !important;
+  }
+
+  .border-primary-400 {
+    border-color: #38bdf8 !important;
   }
 }
 

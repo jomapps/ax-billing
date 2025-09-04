@@ -1,40 +1,37 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
 
 const cardVariants = cva(
-  "rounded-xl border backdrop-blur-sm transition-all duration-300 relative overflow-hidden group",
+  'rounded-xl border backdrop-blur-sm transition-all duration-300 relative overflow-hidden group',
   {
     variants: {
       variant: {
-        default:
-          "bg-dark-800/80 border-dark-600 hover:border-primary-500/50 hover:bg-dark-800/90",
+        default: 'bg-slate-800 border-slate-600 hover:border-primary-500 hover:bg-slate-700',
         gaming:
-          "bg-gradient-to-br from-dark-800/90 to-dark-900/90 border-primary-500/30 hover:border-primary-400/60 hover:shadow-gaming",
-        neon:
-          "bg-dark-900/90 border-neon-blue/30 hover:border-neon-blue/60 hover:shadow-neon",
+          'bg-gradient-to-br from-slate-800 to-slate-900 border-primary-500 hover:border-primary-400 hover:shadow-gaming',
+        neon: 'bg-slate-900 border-blue-400 hover:border-blue-300 hover:shadow-neon',
         glass:
-          "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 backdrop-blur-md",
-        solid:
-          "bg-dark-800 border-dark-600 hover:border-primary-500/50",
+          'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 backdrop-blur-md',
+        solid: 'bg-slate-800 border-slate-600 hover:border-primary-500',
       },
       size: {
-        sm: "p-4",
-        default: "p-6",
-        lg: "p-8",
+        sm: 'p-4',
+        default: 'p-6',
+        lg: 'p-8',
       },
       glow: {
-        none: "",
-        subtle: "hover:shadow-lg hover:shadow-primary-500/20",
-        strong: "shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40",
+        none: '',
+        subtle: 'hover:shadow-lg hover:shadow-primary-500/20',
+        strong: 'shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40',
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
-      glow: "none",
+      variant: 'default',
+      size: 'default',
+      glow: 'none',
     },
-  }
+  },
 )
 
 export interface CardProps
@@ -42,77 +39,89 @@ export interface CardProps
     VariantProps<typeof cardVariants> {}
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant, size, glow, children, ...props }, ref) => (
+  ({ className, variant, size, glow, children, style, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(cardVariants({ variant, size, glow, className }))}
+      style={{
+        backgroundColor: variant === 'gaming' ? '#1e293b' : '#1e293b',
+        borderColor: '#0ea5e9',
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderRadius: '12px',
+        backgroundImage:
+          variant === 'gaming'
+            ? 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)'
+            : 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+        boxShadow:
+          variant === 'gaming'
+            ? '0 4px 14px 0 rgba(14, 165, 233, 0.15), 0 0 0 1px rgba(14, 165, 233, 0.1)'
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        backdropFilter: 'blur(8px)',
+        transition: 'all 0.3s ease',
+        width: 'auto', // Allow grid to control width
+        minWidth: '250px', // Minimum width for readability
+        maxWidth: '100%', // Don't exceed container
+        ...style,
+      }}
       {...props}
     >
       {/* Gaming-style animated border effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
       {children}
     </div>
-  )
+  ),
 )
-Card.displayName = "Card"
+Card.displayName = 'Card'
 
-const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 pb-4", className)}
-    {...props}
-  />
-))
-CardHeader.displayName = "CardHeader"
+const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('flex flex-col space-y-1.5 pb-4', className)}
+      style={{ padding: '1.5rem 1.5rem 1rem 1.5rem' }}
+      {...props}
+    />
+  ),
+)
+CardHeader.displayName = 'CardHeader'
 
-const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      "text-xl font-semibold leading-none tracking-tight text-white",
-      className
-    )}
-    {...props}
-  />
-))
-CardTitle.displayName = "CardTitle"
+const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3
+      ref={ref}
+      className={cn('text-xl font-semibold leading-none tracking-tight text-white', className)}
+      {...props}
+    />
+  ),
+)
+CardTitle.displayName = 'CardTitle'
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-gray-400", className)}
-    {...props}
-  />
+  <p ref={ref} className={cn('text-sm text-gray-400', className)} {...props} />
 ))
-CardDescription.displayName = "CardDescription"
+CardDescription.displayName = 'CardDescription'
 
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("relative z-10", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
+const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('relative z-10', className)}
+      style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}
+      {...props}
+    />
+  ),
+)
+CardContent.displayName = 'CardContent'
 
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center pt-4", className)}
-    {...props}
-  />
-))
-CardFooter.displayName = "CardFooter"
+const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('flex items-center pt-4', className)} {...props} />
+  ),
+)
+CardFooter.displayName = 'CardFooter'
 
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

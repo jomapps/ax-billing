@@ -27,7 +27,13 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <html lang="en" className={`${inter.variable} ${orbitron.variable}`}>
-      <body className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 text-white antialiased">
+      <body
+        className="min-h-screen text-white antialiased"
+        style={{
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
+          fontFamily: 'Inter, Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif',
+        }}
+      >
         <div className="grid-bg min-h-screen">
           <main>{children}</main>
         </div>
