@@ -68,6 +68,12 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    vehicles: Vehicle;
+    services: Service;
+    'service-categories': ServiceCategory;
+    'service-options': ServiceOption;
+    orders: Order;
+    'customer-tiers': CustomerTier;
     media: Media;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,6 +82,12 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    vehicles: VehiclesSelect<false> | VehiclesSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
+    'service-categories': ServiceCategoriesSelect<false> | ServiceCategoriesSelect<true>;
+    'service-options': ServiceOptionsSelect<false> | ServiceOptionsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    'customer-tiers': CustomerTiersSelect<false> | CustomerTiersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -119,6 +131,12 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  role: 'admin' | 'staff' | 'customer';
+  whatsappNumber?: string | null;
+  firebaseUID?: string | null;
+  customerTier?: (string | null) | CustomerTier;
+  firstName?: string | null;
+  lastName?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -139,11 +157,268 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-tiers".
+ */
+export interface CustomerTier {
+  id: string;
+  /**
+   * Name of the customer tier (e.g., "Standard", "Fleet", "VIP Member")
+   */
+  tierName: string;
+  /**
+   * Description of the benefits and features of this tier
+   */
+  description?: string | null;
+  /**
+   * Default queue priority for customers in this tier
+   */
+  defaultQueue: 'regular' | 'vip' | 'remnant';
+  /**
+   * General discount percentage for this tier (0-100)
+   */
+  discountPercentage?: number | null;
+  /**
+   * Specific pricing overrides for individual services
+   */
+  pricingOverrides?:
+    | {
+        service: string | Service;
+        overriddenPrice: number;
+        /**
+         * Alternative to fixed price - percentage discount
+         */
+        discountPercentage?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * List of benefits for this tier
+   */
+  benefits?:
+    | {
+        benefit: string;
+        /**
+         * Lucide icon name for this benefit
+         */
+        icon?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Color theme for this tier in the UI
+   */
+  color?: ('blue' | 'purple' | 'green' | 'pink' | 'orange' | 'gold' | 'silver') | null;
+  /**
+   * Minimum total spend required to qualify for this tier
+   */
+  minimumSpend?: number | null;
+  /**
+   * Automatically upgrade customers who meet the minimum spend
+   */
+  autoUpgrade?: boolean | null;
+  /**
+   * Order in which tiers appear (lower numbers first)
+   */
+  sortOrder?: number | null;
+  /**
+   * Whether this tier is available for assignment
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: string;
+  /**
+   * Name of the service (e.g., "Basic Wash", "Premium Detail")
+   */
+  name: string;
+  /**
+   * Detailed description of what this service includes
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Which category this service belongs to
+   */
+  category: string | ServiceCategory;
+  /**
+   * Base price for this service (in your local currency)
+   */
+  basePrice: number;
+  /**
+   * Different pricing for different vehicle types (overrides base price)
+   */
+  vehicleTypePricing?:
+    | {
+        vehicleType: 'sedan' | 'mpv_van' | 'large_pickup' | 'regular_bike' | 'heavy_bike' | 'very_heavy_bike';
+        price: number;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Individual steps that make up this service
+   */
+  steps?:
+    | {
+        stepName: string;
+        estimatedMinutes: number;
+        description?: string | null;
+        sortOrder?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Service options that can be added to this service
+   */
+  compatibleOptions?: (string | ServiceOption)[] | null;
+  /**
+   * Total estimated time for this service
+   */
+  estimatedMinutes: number;
+  /**
+   * Image representing this service
+   */
+  image?: (string | null) | Media;
+  /**
+   * Lucide icon name for this service
+   */
+  icon?: string | null;
+  /**
+   * Mark as popular to highlight in the UI
+   */
+  isPopular?: boolean | null;
+  /**
+   * Order in which services appear (lower numbers first)
+   */
+  sortOrder?: number | null;
+  /**
+   * Whether this service is available for booking
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-categories".
+ */
+export interface ServiceCategory {
+  id: string;
+  /**
+   * Name of the service category (e.g., "Exterior Wash", "Interior Detailing")
+   */
+  name: string;
+  /**
+   * Brief description of what this category includes
+   */
+  description?: string | null;
+  /**
+   * Lucide icon name for the category (e.g., "car", "sparkles")
+   */
+  icon?: string | null;
+  /**
+   * Color theme for this category in the UI
+   */
+  color?: ('blue' | 'purple' | 'green' | 'pink' | 'orange') | null;
+  /**
+   * Order in which categories appear (lower numbers first)
+   */
+  sortOrder?: number | null;
+  /**
+   * Whether this category is available for selection
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-options".
+ */
+export interface ServiceOption {
+  id: string;
+  /**
+   * Name of the service option (e.g., "Tire Shine", "Wax Coating")
+   */
+  name: string;
+  /**
+   * Detailed description of what this option includes
+   */
+  description?: string | null;
+  /**
+   * Additional cost for this option (in your local currency)
+   */
+  additionalPrice: number;
+  /**
+   * Which service category this option belongs to
+   */
+  category?: (string | null) | ServiceCategory;
+  /**
+   * Vehicle types this option can be applied to (leave empty for all)
+   */
+  applicableVehicleTypes?:
+    | ('sedan' | 'mpv_van' | 'large_pickup' | 'regular_bike' | 'heavy_bike' | 'very_heavy_bike')[]
+    | null;
+  /**
+   * Additional time this option adds to the service
+   */
+  estimatedMinutes?: number | null;
+  /**
+   * Lucide icon name for this option
+   */
+  icon?: string | null;
+  /**
+   * Mark as popular to highlight in the UI
+   */
+  isPopular?: boolean | null;
+  /**
+   * Order in which options appear (lower numbers first)
+   */
+  sortOrder?: number | null;
+  /**
+   * Whether this option is available for selection
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: string;
+  /**
+   * Alternative text for accessibility and SEO
+   */
   alt: string;
+  /**
+   * Optional caption for the image
+   */
+  caption?: string | null;
+  /**
+   * Category to help organize media files
+   */
+  category?: ('vehicle' | 'service' | 'before_after' | 'general') | null;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -155,6 +430,172 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    tablet?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vehicles".
+ */
+export interface Vehicle {
+  id: string;
+  /**
+   * Vehicle license plate number
+   */
+  licensePlate: string;
+  /**
+   * Photo of the vehicle for AI classification
+   */
+  image?: (string | null) | Media;
+  /**
+   * Vehicle type determined by AI or manually selected
+   */
+  vehicleType: 'sedan' | 'mpv_van' | 'large_pickup' | 'regular_bike' | 'heavy_bike' | 'very_heavy_bike';
+  /**
+   * Customer who owns this vehicle
+   */
+  owner: string | User;
+  /**
+   * Vehicle manufacturer (e.g., Toyota, Honda)
+   */
+  make?: string | null;
+  /**
+   * Vehicle model (e.g., Camry, Civic)
+   */
+  model?: string | null;
+  /**
+   * Manufacturing year
+   */
+  year?: number | null;
+  /**
+   * Primary vehicle color
+   */
+  color?: string | null;
+  /**
+   * Additional notes about the vehicle
+   */
+  notes?: string | null;
+  /**
+   * Confidence score from AI classification (0-1)
+   */
+  aiClassificationConfidence?: number | null;
+  /**
+   * Whether this vehicle is actively used by the customer
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string;
+  /**
+   * Auto-generated unique order identifier
+   */
+  orderID: string;
+  /**
+   * Customer who placed this order
+   */
+  customer: string | User;
+  /**
+   * Vehicle being serviced
+   */
+  vehicle: string | Vehicle;
+  /**
+   * Services and options included in this order
+   */
+  servicesRendered?:
+    | {
+        service: string | Service;
+        selectedOptions?: (string | ServiceOption)[] | null;
+        /**
+         * Final price for this service (after tier discounts)
+         */
+        servicePrice: number;
+        /**
+         * Total price for selected options
+         */
+        optionsPrice?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Total order amount including all services and options
+   */
+  totalAmount: number;
+  /**
+   * Total discount applied to this order
+   */
+  discountAmount?: number | null;
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded' | 'cash';
+  /**
+   * Transaction ID from Fiuu payment gateway
+   */
+  fiuuTransactionId?: string | null;
+  queue: 'regular' | 'vip' | 'remnant';
+  /**
+   * Progress tracking for each step of the service
+   */
+  jobStatus?:
+    | {
+        stepName: string;
+        status: 'pending' | 'in_progress' | 'completed' | 'skipped';
+        completedBy?: (string | null) | User;
+        timestamp?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  overallStatus: 'pending' | 'in_progress' | 'completed' | 'ready' | 'picked_up' | 'cancelled';
+  /**
+   * When the service is expected to be completed
+   */
+  estimatedCompletionTime?: string | null;
+  /**
+   * When the service was actually completed
+   */
+  actualCompletionTime?: string | null;
+  /**
+   * Special requests or notes from the customer
+   */
+  customerNotes?: string | null;
+  /**
+   * Internal notes for staff
+   */
+  staffNotes?: string | null;
+  /**
+   * Staff member who created this order
+   */
+  createdBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -166,6 +607,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'vehicles';
+        value: string | Vehicle;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: string | Service;
+      } | null)
+    | ({
+        relationTo: 'service-categories';
+        value: string | ServiceCategory;
+      } | null)
+    | ({
+        relationTo: 'service-options';
+        value: string | ServiceOption;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: string | Order;
+      } | null)
+    | ({
+        relationTo: 'customer-tiers';
+        value: string | CustomerTier;
       } | null)
     | ({
         relationTo: 'media';
@@ -218,6 +683,12 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  whatsappNumber?: T;
+  firebaseUID?: T;
+  customerTier?: T;
+  firstName?: T;
+  lastName?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -237,10 +708,172 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vehicles_select".
+ */
+export interface VehiclesSelect<T extends boolean = true> {
+  licensePlate?: T;
+  image?: T;
+  vehicleType?: T;
+  owner?: T;
+  make?: T;
+  model?: T;
+  year?: T;
+  color?: T;
+  notes?: T;
+  aiClassificationConfidence?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  category?: T;
+  basePrice?: T;
+  vehicleTypePricing?:
+    | T
+    | {
+        vehicleType?: T;
+        price?: T;
+        id?: T;
+      };
+  steps?:
+    | T
+    | {
+        stepName?: T;
+        estimatedMinutes?: T;
+        description?: T;
+        sortOrder?: T;
+        id?: T;
+      };
+  compatibleOptions?: T;
+  estimatedMinutes?: T;
+  image?: T;
+  icon?: T;
+  isPopular?: T;
+  sortOrder?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-categories_select".
+ */
+export interface ServiceCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  icon?: T;
+  color?: T;
+  sortOrder?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-options_select".
+ */
+export interface ServiceOptionsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  additionalPrice?: T;
+  category?: T;
+  applicableVehicleTypes?: T;
+  estimatedMinutes?: T;
+  icon?: T;
+  isPopular?: T;
+  sortOrder?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderID?: T;
+  customer?: T;
+  vehicle?: T;
+  servicesRendered?:
+    | T
+    | {
+        service?: T;
+        selectedOptions?: T;
+        servicePrice?: T;
+        optionsPrice?: T;
+        id?: T;
+      };
+  totalAmount?: T;
+  discountAmount?: T;
+  paymentStatus?: T;
+  fiuuTransactionId?: T;
+  queue?: T;
+  jobStatus?:
+    | T
+    | {
+        stepName?: T;
+        status?: T;
+        completedBy?: T;
+        timestamp?: T;
+        notes?: T;
+        id?: T;
+      };
+  overallStatus?: T;
+  estimatedCompletionTime?: T;
+  actualCompletionTime?: T;
+  customerNotes?: T;
+  staffNotes?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-tiers_select".
+ */
+export interface CustomerTiersSelect<T extends boolean = true> {
+  tierName?: T;
+  description?: T;
+  defaultQueue?: T;
+  discountPercentage?: T;
+  pricingOverrides?:
+    | T
+    | {
+        service?: T;
+        overriddenPrice?: T;
+        discountPercentage?: T;
+        id?: T;
+      };
+  benefits?:
+    | T
+    | {
+        benefit?: T;
+        icon?: T;
+        id?: T;
+      };
+  color?: T;
+  minimumSpend?: T;
+  autoUpgrade?: T;
+  sortOrder?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
+  category?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -252,6 +885,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        tablet?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

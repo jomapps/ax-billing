@@ -1,67 +1,189 @@
-# Payload Blank Template
+# AX Billing - Carwash Management System
 
-This template comes configured with the bare minimum to get started on anything you need.
+A modern, gaming-style carwash management system built with PayloadCMS, Next.js, and MongoDB. Features AI-powered vehicle classification, real-time job tracking, and seamless payment integration.
 
-## Quick start
+## 🚀 Features
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+### Phase 1 (MVP) - ✅ Implemented
+- **Modern Gaming UI**: Dark theme with neon accents and smooth animations
+- **Staff Dashboard**: Real-time order tracking and job management
+- **Order Management**: Create and track carwash orders
+- **Vehicle Management**: License plate tracking and vehicle classification
+- **Service Management**: Configurable services and pricing
+- **Customer Tiers**: VIP, Regular, and Remnant queue management
+- **Cloudflare R2 Storage**: Secure media storage for vehicle photos
 
-## Quick Start - local setup
+### Phase 2 (Planned)
+- **AI Vehicle Classification**: OpenRouter integration for automatic vehicle type detection
+- **WhatsApp Integration**: Customer onboarding and notifications
+- **Payment Gateway**: Fiuu payment processing
+- **Firebase Authentication**: Secure customer and staff login
 
-To spin up this template locally, follow these steps:
+### Phase 3 (Planned)
+- **Subscription Packages**: Recurring service packages
+- **Customer Portal**: Real-time service status tracking
+- **Advanced Analytics**: Revenue and performance insights
 
-### Clone
+## 🛠️ Tech Stack
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+- **Backend**: PayloadCMS 3.54.0 (Headless CMS)
+- **Frontend**: Next.js 15.4.4 with React 19
+- **Database**: MongoDB with Mongoose
+- **Storage**: Cloudflare R2 (S3-compatible)
+- **Styling**: Tailwind CSS with custom gaming theme
+- **Animations**: Framer Motion
+- **Forms**: React Hook Form with Zod validation
+- **Icons**: Lucide React
 
-### Development
+## 🚀 Quick Start
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URI` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+### Prerequisites
+- Node.js 18.20.2+ or 20.9.0+
+- pnpm 9+ or 10+
+- MongoDB instance (local or cloud)
+- Cloudflare R2 bucket (optional, for media storage)
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+### Installation
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd ax-billing
+   ```
 
-#### Docker (Optional)
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+3. **Environment Setup**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Update the `.env` file with your configuration:
+   ```env
+   # Database
+   DATABASE_URI=mongodb://127.0.0.1:27017/ax-billing
+   PAYLOAD_SECRET=your-super-secret-key
+   
+   # Cloudflare R2 (Optional)
+   S3_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+   S3_REGION=auto
+   S3_BUCKET=ax-billing-media
+   S3_ACCESS_KEY_ID=your-access-key
+   S3_SECRET_ACCESS_KEY=your-secret-key
+   ```
 
-To do so, follow these steps:
+4. **Generate TypeScript types**
+   ```bash
+   pnpm generate:types
+   ```
 
-- Modify the `MONGODB_URI` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URI` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+5. **Start development server**
+   ```bash
+   pnpm dev
+   ```
 
-## How it works
+6. **Access the application**
+   - Frontend (Staff Dashboard): http://localhost:3000
+   - Admin Panel: http://localhost:3000/admin
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+### Docker Setup (Alternative)
 
-### Collections
+1. **Start with Docker Compose**
+   ```bash
+   docker-compose up -d
+   ```
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+2. **Access the application**
+   - Application: http://localhost:3000
+   - MongoDB: localhost:27017
 
-- #### Users (Authentication)
+## 📁 Project Structure
 
-  Users are auth-enabled collections that have access to the admin panel.
+```
+src/
+├── app/
+│   ├── (frontend)/          # Staff dashboard and customer interfaces
+│   └── (payload)/           # PayloadCMS admin panel
+├── collections/             # PayloadCMS collections (data models)
+│   ├── Users.ts
+│   ├── Vehicles.ts
+│   ├── Services.ts
+│   ├── Orders.ts
+│   └── ...
+├── components/
+│   ├── ui/                  # Reusable gaming-style UI components
+│   ├── dashboard/           # Dashboard components
+│   └── orders/              # Order management components
+├── lib/
+│   └── utils.ts             # Utility functions
+├── styles/
+│   └── gaming-theme.css     # Custom gaming theme styles
+└── payload.config.ts        # PayloadCMS configuration
+```
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+## 🎨 Gaming UI Theme
 
-- #### Media
+The application features a modern gaming aesthetic with:
+- **Dark theme** with gradient backgrounds
+- **Neon accents** in blue, purple, and green
+- **Smooth animations** and hover effects
+- **Glitch effects** and holographic elements
+- **Touch-friendly** interface for tablet use
+- **Responsive design** for all screen sizes
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+## 🔧 Configuration
 
-### Docker
+### Adding Services
+1. Go to Admin Panel → Services
+2. Create service categories first
+3. Add services with pricing and steps
+4. Configure service options (add-ons)
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+### Setting Up Customer Tiers
+1. Go to Admin Panel → Customer Tiers
+2. Create tiers (Standard, VIP, Fleet)
+3. Set pricing overrides and benefits
+4. Configure default queue priorities
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+### Managing Orders
+- **Staff Dashboard**: Real-time view of all active orders
+- **Queue Management**: VIP, Regular, and Remnant priorities
+- **Job Tracking**: Step-by-step progress monitoring
+- **Payment Status**: Cash and online payment tracking
 
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+## 🚀 Deployment
 
-## Questions
+### Production Build
+```bash
+pnpm build
+pnpm start
+```
 
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+### Environment Variables for Production
+Ensure all environment variables are properly set:
+- Database connection string
+- Cloudflare R2 credentials
+- PayloadCMS secret key
+- API keys for integrations
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For issues and questions:
+- Create an issue in the repository
+- Check the documentation
+- Contact the development team

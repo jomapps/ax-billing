@@ -1,14 +1,21 @@
-// storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+// Collections
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Vehicles } from './collections/Vehicles'
+import { Services } from './collections/Services'
+import { ServiceCategories } from './collections/ServiceCategories'
+import { ServiceOptions } from './collections/ServiceOptions'
+import { Orders } from './collections/Orders'
+import { CustomerTiers } from './collections/CustomerTiers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -19,8 +26,22 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      titleSuffix: '- AX Billing',
+      favicon: '/favicon.ico',
+      ogImage: '/og-image.jpg',
+    },
   },
-  collections: [Users, Media],
+  collections: [
+    Users,
+    Vehicles,
+    Services,
+    ServiceCategories,
+    ServiceOptions,
+    Orders,
+    CustomerTiers,
+    Media,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -32,6 +53,22 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
+    // Cloudflare R2 Storage
+    s3Storage({
+      collections: {
+        media: {
+          prefix: 'media',
+        },
+      },
+      bucket: process.env.S3_BUCKET || '',
+      config: {
+        endpoint: process.env.S3_ENDPOINT || '',
+        region: process.env.S3_REGION || 'auto',
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+        },
+      },
+    }),
   ],
 })

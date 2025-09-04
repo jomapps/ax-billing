@@ -18,18 +18,31 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.1",
     "@payloadcms/db-mongodb": "3.54.0",
     "@payloadcms/next": "3.54.0",
     "@payloadcms/payload-cloud": "3.54.0",
     "@payloadcms/richtext-lexical": "3.54.0",
+    "@payloadcms/storage-s3": "^3.54.0",
     "@payloadcms/ui": "3.54.0",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/forms": "^0.5.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
+    "firebase": "^12.2.1",
+    "framer-motion": "^12.23.12",
     "graphql": "^16.8.1",
+    "lucide-react": "^0.542.0",
     "next": "15.4.4",
     "payload": "3.54.0",
     "react": "19.1.0",
-    "sharp": "0.34.2"
+    "react-hook-form": "^7.62.0",
+    "sharp": "0.34.2",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.12",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@playwright/test": "1.54.1",
