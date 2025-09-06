@@ -1,5 +1,6 @@
-GUPSHUP_API_KEY=your_actual_api_key
-GUPSHUP_APP_NAME=your_app_name
-GUPSHUP_SOURCE_NUMBER=your_whatsapp_business_number
+# Gupshup
+GUPSHUP_API_KEY=nubhqmyorgcpwbyy3lb2tbf4ikcrvdq9
+GUPSHUP_APP_NAME=AutoExpress
+GUPSHUP_SOURCE_NUMBER=60172207030
 GUPSHUP_WEBHOOK_SECRET=your_webhook_secret (optional)
-NEXT_PUBLIC_APP_URL=your_app_domain (e.g., https://yourdomain.com)
+NEXT_PUBLIC_APP_URL=https://ax.ft.tc
