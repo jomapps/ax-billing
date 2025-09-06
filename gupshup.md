@@ -1,0 +1,5 @@
+GUPSHUP_API_KEY=your_actual_api_key
+GUPSHUP_APP_NAME=your_app_name
+GUPSHUP_SOURCE_NUMBER=your_whatsapp_business_number
+GUPSHUP_WEBHOOK_SECRET=your_webhook_secret (optional)
+NEXT_PUBLIC_APP_URL=your_app_domain (e.g., https://yourdomain.com)

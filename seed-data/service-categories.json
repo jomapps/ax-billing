@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Exterior Wash",
+    "description": "External vehicle cleaning services including basic wash, premium wash, and detailing",
+    "icon": "car",
+    "isActive": true
+  },
+  {
+    "name": "Interior Detailing",
+    "description": "Internal vehicle cleaning and detailing services",
+    "icon": "sparkles",
+    "isActive": true
+  },
+  {
+    "name": "Full Service",
+    "description": "Complete interior and exterior cleaning packages",
+    "icon": "star",
+    "isActive": true
+  },
+  {
+    "name": "Express Service",
+    "description": "Quick wash and dry services for busy customers",
+    "icon": "zap",
+    "isActive": true
+  },
+  {
+    "name": "Premium Detailing",
+    "description": "High-end detailing services with premium products",
+    "icon": "crown",
+    "isActive": true
+  }
+]

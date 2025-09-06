@@ -1,0 +1,123 @@
+[
+  {
+    "orderID": "AX-20241204-0001",
+    "customerRef": "john.doe@example.com",
+    "vehicleRef": "ABC123",
+    "servicesRendered": [
+      {
+        "serviceRef": "basic-wash",
+        "selectedOptionsRefs": ["tire-shine"],
+        "servicePrice": 25,
+        "optionsPrice": 8
+      }
+    ],
+    "totalAmount": 33,
+    "paymentStatus": "paid",
+    "queue": "regular",
+    "overallStatus": "in_progress",
+    "estimatedCompletionTime": "2024-12-04T15:30:00Z",
+    "jobStatus": [
+      {
+        "stepName": "Pre-wash",
+        "status": "completed",
+        "timestamp": "2024-12-04T14:30:00Z"
+      },
+      {
+        "stepName": "Soap & Scrub",
+        "status": "in_progress"
+      },
+      {
+        "stepName": "Rinse",
+        "status": "pending"
+      },
+      {
+        "stepName": "Dry",
+        "status": "pending"
+      }
+    ]
+  },
+  {
+    "orderID": "AX-20241204-0002",
+    "customerRef": "jane.smith@example.com",
+    "vehicleRef": "XYZ789",
+    "servicesRendered": [
+      {
+        "serviceRef": "premium-wash",
+        "selectedOptionsRefs": ["wax-coating", "tire-shine"],
+        "servicePrice": 40,
+        "optionsPrice": 23
+      }
+    ],
+    "totalAmount": 63,
+    "paymentStatus": "paid",
+    "queue": "vip",
+    "overallStatus": "pending",
+    "estimatedCompletionTime": "2024-12-04T16:00:00Z",
+    "jobStatus": [
+      {
+        "stepName": "Pre-wash",
+        "status": "pending"
+      },
+      {
+        "stepName": "Exterior Wash",
+        "status": "pending"
+      },
+      {
+        "stepName": "Interior Vacuum",
+        "status": "pending"
+      },
+      {
+        "stepName": "Interior Wipe",
+        "status": "pending"
+      },
+      {
+        "stepName": "Final Dry",
+        "status": "pending"
+      }
+    ]
+  },
+  {
+    "orderID": "AX-20241204-0003",
+    "customerRef": "mike.johnson@company.com",
+    "vehicleRef": "DEF456",
+    "servicesRendered": [
+      {
+        "serviceRef": "deluxe-detailing",
+        "selectedOptionsRefs": ["ceramic-coating", "leather-conditioning"],
+        "servicePrice": 85,
+        "optionsPrice": 70
+      }
+    ],
+    "totalAmount": 155,
+    "paymentStatus": "pending",
+    "queue": "regular",
+    "overallStatus": "pending",
+    "estimatedCompletionTime": "2024-12-04T17:00:00Z",
+    "jobStatus": [
+      {
+        "stepName": "Pre-wash & Inspection",
+        "status": "pending"
+      },
+      {
+        "stepName": "Exterior Deep Clean",
+        "status": "pending"
+      },
+      {
+        "stepName": "Interior Deep Clean",
+        "status": "pending"
+      },
+      {
+        "stepName": "Wax Application",
+        "status": "pending"
+      },
+      {
+        "stepName": "Final Inspection",
+        "status": "pending"
+      },
+      {
+        "stepName": "Quality Check",
+        "status": "pending"
+      }
+    ]
+  }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "tierName": "Standard",
+    "description": "Regular customers with standard pricing",
+    "defaultQueue": "regular",
+    "isActive": true,
+    "pricingOverrides": []
+  },
+  {
+    "tierName": "VIP Member",
+    "description": "Premium customers with priority service and discounted pricing",
+    "defaultQueue": "vip",
+    "isActive": true,
+    "pricingOverrides": [
+      {
+        "serviceRef": "basic-wash",
+        "overriddenPrice": 20
+      },
+      {
+        "serviceRef": "premium-wash",
+        "overriddenPrice": 40
+      },
+      {
+        "serviceRef": "express-wash",
+        "overriddenPrice": 12
+      }
+    ]
+  },
+  {
+    "tierName": "Corporate",
+    "description": "Business customers with bulk pricing",
+    "defaultQueue": "regular",
+    "isActive": true,
+    "pricingOverrides": [
+      {
+        "serviceRef": "basic-wash",
+        "overriddenPrice": 22
+      },
+      {
+        "serviceRef": "premium-wash",
+        "overriddenPrice": 42
+      }
+    ]
+  },
+  {
+    "tierName": "Loyalty Plus",
+    "description": "Long-term customers with special benefits",
+    "defaultQueue": "vip",
+    "isActive": true,
+    "pricingOverrides": [
+      {
+        "serviceRef": "basic-wash",
+        "overriddenPrice": 18
+      },
+      {
+        "serviceRef": "premium-wash",
+        "overriddenPrice": 38
+      }
+    ]
+  }
+]

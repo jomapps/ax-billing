@@ -1,0 +1,82 @@
+[
+  {
+    "licensePlate": "ABC123",
+    "vehicleType": "sedan",
+    "ownerRef": "john.doe@example.com",
+    "isActive": true,
+    "make": "Toyota",
+    "model": "Camry",
+    "year": 2020,
+    "color": "Silver"
+  },
+  {
+    "licensePlate": "XYZ789",
+    "vehicleType": "mpv_van",
+    "ownerRef": "jane.smith@example.com",
+    "isActive": true,
+    "make": "Honda",
+    "model": "Odyssey",
+    "year": 2019,
+    "color": "White"
+  },
+  {
+    "licensePlate": "DEF456",
+    "vehicleType": "suv",
+    "ownerRef": "mike.johnson@company.com",
+    "isActive": true,
+    "make": "BMW",
+    "model": "X5",
+    "year": 2021,
+    "color": "Black"
+  },
+  {
+    "licensePlate": "GHI789",
+    "vehicleType": "hatchback",
+    "ownerRef": "sarah.wilson@example.com",
+    "isActive": true,
+    "make": "Volkswagen",
+    "model": "Golf",
+    "year": 2018,
+    "color": "Blue"
+  },
+  {
+    "licensePlate": "JKL012",
+    "vehicleType": "sedan",
+    "ownerRef": "david.brown@example.com",
+    "isActive": true,
+    "make": "Mercedes",
+    "model": "C-Class",
+    "year": 2022,
+    "color": "Gray"
+  },
+  {
+    "licensePlate": "MNO345",
+    "vehicleType": "suv",
+    "ownerRef": "lisa.garcia@example.com",
+    "isActive": true,
+    "make": "Audi",
+    "model": "Q7",
+    "year": 2020,
+    "color": "Red"
+  },
+  {
+    "licensePlate": "PQR678",
+    "vehicleType": "pickup",
+    "ownerRef": "john.doe@example.com",
+    "isActive": true,
+    "make": "Ford",
+    "model": "F-150",
+    "year": 2019,
+    "color": "Blue"
+  },
+  {
+    "licensePlate": "STU901",
+    "vehicleType": "sedan",
+    "ownerRef": "mike.johnson@company.com",
+    "isActive": true,
+    "make": "Lexus",
+    "model": "ES",
+    "year": 2021,
+    "color": "White"
+  }
+]

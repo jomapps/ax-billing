@@ -1,0 +1,72 @@
+[
+  {
+    "email": "admin@axbilling.com",
+    "password": "admin123456",
+    "role": "admin",
+    "firstName": "Admin",
+    "lastName": "User",
+    "whatsappNumber": "+60123456789"
+  },
+  {
+    "email": "staff@axbilling.com",
+    "password": "staff123",
+    "role": "staff",
+    "firstName": "Staff",
+    "lastName": "Member",
+    "whatsappNumber": "+60123456790"
+  },
+  {
+    "email": "john.doe@example.com",
+    "password": "password123",
+    "role": "customer",
+    "firstName": "John",
+    "lastName": "Doe",
+    "whatsappNumber": "+60123456791",
+    "customerClassificationRef": "standard"
+  },
+  {
+    "email": "jane.smith@example.com",
+    "password": "password123",
+    "role": "customer",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "whatsappNumber": "+60123456792",
+    "customerClassificationRef": "vip-member"
+  },
+  {
+    "email": "mike.johnson@company.com",
+    "password": "password123",
+    "role": "customer",
+    "firstName": "Mike",
+    "lastName": "Johnson",
+    "whatsappNumber": "+60123456793",
+    "customerClassificationRef": "corporate"
+  },
+  {
+    "email": "sarah.wilson@example.com",
+    "password": "password123",
+    "role": "customer",
+    "firstName": "Sarah",
+    "lastName": "Wilson",
+    "whatsappNumber": "+60123456794",
+    "customerClassificationRef": "loyalty-plus"
+  },
+  {
+    "email": "david.brown@example.com",
+    "password": "password123",
+    "role": "customer",
+    "firstName": "David",
+    "lastName": "Brown",
+    "whatsappNumber": "+60123456795",
+    "customerClassificationRef": "standard"
+  },
+  {
+    "email": "lisa.garcia@example.com",
+    "password": "password123",
+    "role": "customer",
+    "firstName": "Lisa",
+    "lastName": "Garcia",
+    "whatsappNumber": "+60123456796",
+    "customerClassificationRef": "vip-member"
+  }
+]

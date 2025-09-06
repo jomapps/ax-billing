@@ -16,6 +16,8 @@ import { ServiceCategories } from './collections/ServiceCategories'
 import { ServiceOptions } from './collections/ServiceOptions'
 import { Orders } from './collections/Orders'
 import { CustomerTiers } from './collections/CustomerTiers'
+import { WhatsAppMessages } from './collections/WhatsAppMessages'
+import { WhatsAppTemplates } from './collections/WhatsAppTemplates'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -41,6 +43,8 @@ export default buildConfig({
     Orders,
     CustomerTiers,
     Media,
+    WhatsAppMessages,
+    WhatsAppTemplates,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

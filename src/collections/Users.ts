@@ -40,6 +40,40 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'whatsappVerified',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'WhatsApp Verified',
+      admin: {
+        description: 'Whether the WhatsApp number has been verified through conversation',
+      },
+    },
+    {
+      name: 'whatsappOptIn',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'WhatsApp Opt-in',
+      admin: {
+        description: 'User consent for receiving WhatsApp notifications',
+      },
+    },
+    {
+      name: 'lastWhatsappContact',
+      type: 'date',
+      label: 'Last WhatsApp Contact',
+      admin: {
+        description: 'Last time customer initiated WhatsApp contact (for 24h messaging window)',
+      },
+    },
+    {
+      name: 'whatsappConversationId',
+      type: 'text',
+      label: 'WhatsApp Conversation ID',
+      admin: {
+        description: 'Gupshup conversation identifier for this user',
+      },
+    },
+    {
       name: 'firebaseUID',
       type: 'text',
       label: 'Firebase UID',

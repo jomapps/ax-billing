@@ -4,7 +4,15 @@ export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'orderID',
-    defaultColumns: ['orderID', 'customer', 'vehicle', 'totalAmount', 'paymentStatus', 'jobStatus', 'updatedAt'],
+    defaultColumns: [
+      'orderID',
+      'customer',
+      'vehicle',
+      'totalAmount',
+      'paymentStatus',
+      'jobStatus',
+      'updatedAt',
+    ],
   },
   fields: [
     {
@@ -24,7 +32,9 @@ export const Orders: CollectionConfig = {
               // Generate order ID: AX-YYYYMMDD-XXXX
               const date = new Date()
               const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '')
-              const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0')
+              const random = Math.floor(Math.random() * 9999)
+                .toString()
+                .padStart(4, '0')
               return `AX-${dateStr}-${random}`
             }
             return value
@@ -33,10 +43,102 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'orderStage',
+      type: 'select',
+      required: true,
+      defaultValue: 'empty',
+      label: 'Order Stage',
+      options: [
+        {
+          label: 'Empty',
+          value: 'empty',
+        },
+        {
+          label: 'Initiated',
+          value: 'initiated',
+        },
+        {
+          label: 'Open',
+          value: 'open',
+        },
+        {
+          label: 'Billed',
+          value: 'billed',
+        },
+        {
+          label: 'Paid',
+          value: 'paid',
+        },
+      ],
+      admin: {
+        description: 'Current stage of the order in the WhatsApp workflow',
+      },
+    },
+    {
+      name: 'whatsappLinked',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'WhatsApp Linked',
+      admin: {
+        description: 'Whether this order has been linked to a WhatsApp conversation',
+      },
+    },
+    {
+      name: 'whatsappNumber',
+      type: 'text',
+      label: 'WhatsApp Number',
+      admin: {
+        description: 'WhatsApp number of the customer who initiated this order',
+        condition: (data) => data.whatsappLinked,
+      },
+    },
+    {
+      name: 'qrCodeGenerated',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'QR Code Generated',
+      admin: {
+        description: 'Whether a QR code has been generated for this order',
+      },
+    },
+    {
+      name: 'qrCodeScannedAt',
+      type: 'date',
+      label: 'QR Code Scanned At',
+      admin: {
+        description: 'When the customer scanned the QR code',
+        condition: (data) => data.whatsappLinked,
+      },
+    },
+    {
+      name: 'vehicleCapturedAt',
+      type: 'date',
+      label: 'Vehicle Captured At',
+      admin: {
+        description: 'When the vehicle information was captured',
+      },
+    },
+    {
+      name: 'aiProcessedAt',
+      type: 'date',
+      label: 'AI Processed At',
+      admin: {
+        description: 'When AI processing of vehicle information was completed',
+      },
+    },
+    {
+      name: 'paymentLinkSentAt',
+      type: 'date',
+      label: 'Payment Link Sent At',
+      admin: {
+        description: 'When the payment link was sent via WhatsApp',
+      },
+    },
+    {
       name: 'customer',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
+      required: false, // Changed to false since empty orders won't have customers initially
       label: 'Customer',
       admin: {
         description: 'Customer who placed this order',
@@ -46,7 +148,7 @@ export const Orders: CollectionConfig = {
       name: 'vehicle',
       type: 'relationship',
       relationTo: 'vehicles',
-      required: true,
+      required: false, // Changed to false since empty orders won't have vehicles initially
       label: 'Vehicle',
       admin: {
         description: 'Vehicle being serviced',
@@ -304,7 +406,7 @@ export const Orders: CollectionConfig = {
           })
           data.totalAmount = total - (data.discountAmount || 0)
         }
-        
+
         // Set estimated completion time based on services
         if (operation === 'create' && !data.estimatedCompletionTime) {
           // TODO: Calculate based on service steps and current queue

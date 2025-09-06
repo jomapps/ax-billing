@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Basic Wash",
+    "description": "Standard exterior wash and dry service",
+    "categoryRef": "exterior-wash",
+    "basePrice": 25,
+    "estimatedMinutes": 30,
+    "isActive": true,
+    "steps": [
+      { "stepName": "Pre-wash", "estimatedMinutes": 5 },
+      { "stepName": "Soap & Scrub", "estimatedMinutes": 15 },
+      { "stepName": "Rinse", "estimatedMinutes": 5 },
+      { "stepName": "Dry", "estimatedMinutes": 5 }
+    ],
+    "availableOptionsRefs": ["wax-coating", "tire-shine", "interior-fragrance"]
+  },
+  {
+    "name": "Premium Wash",
+    "description": "Complete exterior and interior cleaning service",
+    "categoryRef": "full-service",
+    "basePrice": 45,
+    "estimatedMinutes": 60,
+    "isActive": true,
+    "steps": [
+      { "stepName": "Pre-wash", "estimatedMinutes": 5 },
+      { "stepName": "Exterior Wash", "estimatedMinutes": 20 },
+      { "stepName": "Interior Vacuum", "estimatedMinutes": 15 },
+      { "stepName": "Interior Wipe", "estimatedMinutes": 10 },
+      { "stepName": "Final Dry", "estimatedMinutes": 10 }
+    ],
+    "availableOptionsRefs": ["wax-coating", "tire-shine", "interior-fragrance", "leather-conditioning"]
+  },
+  {
+    "name": "Express Wash",
+    "description": "Quick exterior wash for busy customers",
+    "categoryRef": "express-service",
+    "basePrice": 15,
+    "estimatedMinutes": 15,
+    "isActive": true,
+    "steps": [
+      { "stepName": "Quick Rinse", "estimatedMinutes": 3 },
+      { "stepName": "Soap Wash", "estimatedMinutes": 8 },
+      { "stepName": "Final Rinse & Dry", "estimatedMinutes": 4 }
+    ],
+    "availableOptionsRefs": ["tire-shine"]
+  },
+  {
+    "name": "Deluxe Detailing",
+    "description": "Comprehensive interior and exterior detailing",
+    "categoryRef": "premium-detailing",
+    "basePrice": 85,
+    "estimatedMinutes": 120,
+    "isActive": true,
+    "steps": [
+      { "stepName": "Pre-wash & Inspection", "estimatedMinutes": 10 },
+      { "stepName": "Exterior Deep Clean", "estimatedMinutes": 30 },
+      { "stepName": "Interior Deep Clean", "estimatedMinutes": 40 },
+      { "stepName": "Wax Application", "estimatedMinutes": 20 },
+      { "stepName": "Final Inspection", "estimatedMinutes": 10 },
+      { "stepName": "Quality Check", "estimatedMinutes": 10 }
+    ],
+    "availableOptionsRefs": ["ceramic-coating", "leather-conditioning", "engine-bay-cleaning", "headlight-restoration"]
+  },
+  {
+    "name": "Interior Only",
+    "description": "Comprehensive interior cleaning and detailing",
+    "categoryRef": "interior-detailing",
+    "basePrice": 35,
+    "estimatedMinutes": 45,
+    "isActive": true,
+    "steps": [
+      { "stepName": "Vacuum", "estimatedMinutes": 15 },
+      { "stepName": "Dashboard Clean", "estimatedMinutes": 10 },
+      { "stepName": "Seat Cleaning", "estimatedMinutes": 15 },
+      { "stepName": "Final Touch", "estimatedMinutes": 5 }
+    ],
+    "availableOptionsRefs": ["interior-fragrance", "leather-conditioning"]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Wax Coating",
+    "description": "Premium wax protection for long-lasting shine",
+    "additionalPrice": 15,
+    "isActive": true
+  },
+  {
+    "name": "Tire Shine",
+    "description": "Professional tire shine treatment",
+    "additionalPrice": 8,
+    "isActive": true
+  },
+  {
+    "name": "Interior Fragrance",
+    "description": "Pleasant fragrance for vehicle interior",
+    "additionalPrice": 5,
+    "isActive": true
+  },
+  {
+    "name": "Leather Conditioning",
+    "description": "Professional leather seat conditioning",
+    "additionalPrice": 20,
+    "isActive": true
+  },
+  {
+    "name": "Engine Bay Cleaning",
+    "description": "Thorough engine bay cleaning and degreasing",
+    "additionalPrice": 25,
+    "isActive": true
+  },
+  {
+    "name": "Ceramic Coating",
+    "description": "Advanced ceramic coating protection",
+    "additionalPrice": 50,
+    "isActive": true
+  },
+  {
+    "name": "Headlight Restoration",
+    "description": "Restore cloudy or yellowed headlights",
+    "additionalPrice": 30,
+    "isActive": true
+  },
+  {
+    "name": "Undercarriage Wash",
+    "description": "Thorough undercarriage cleaning",
+    "additionalPrice": 12,
+    "isActive": true
+  }
+]
