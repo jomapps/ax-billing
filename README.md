@@ -17,7 +17,7 @@ A modern, gaming-style carwash management system built with PayloadCMS, Next.js,
 - **AI Vehicle Classification**: OpenRouter integration for automatic vehicle type detection
 - **WhatsApp Integration**: Customer onboarding and notifications
 - **Payment Gateway**: Fiuu payment processing
-- **Firebase Authentication**: Secure customer and staff login
+- **Enhanced Authentication**: WhatsApp-based customer identification and PayloadCMS admin authentication
 
 ### Phase 3 (Planned)
 - **Subscription Packages**: Recurring service packages

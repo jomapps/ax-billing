@@ -8,7 +8,7 @@ This system will be a modern web application with three main components:
 2. **Frontend (Touchscreen UI):** A responsive web application built with a modern framework like **Next.js** or **Nuxt.js**. This will be the interface for both staff (on tablets/touchscreens) and customers (on their phones).  
 3. **External Services:**  
    * **Database:** MongoDB (natively supported by PayloadCMS).  
-   * **Authentication:** Firebase Auth for secure customer and staff logins.  
+   * **Authentication:** PayloadCMS built-in authentication for staff/admin, WhatsApp-based identification for customers.
    * **AI Processing:** OpenRouter to access various vision models for vehicle classification.  
    * **Payments:** Fiuu Payment Gateway.  
    * **Messaging:** A WhatsApp Business API provider (like Twilio or Vonage) for notifications and onboarding.
@@ -23,7 +23,7 @@ First, let's define the structure of your data in PayloadCMS.
   * email, password (handled by Payload)  
   * role: admin, staff, customer (Select field)  
   * whatsappNumber: (Text field, validated)  
-  * firebaseUID: (Text field, for linking to Firebase Auth)  
+
   * customerClassification: (Relationship to CustomerTiers collection)  
 * **vehicles:**  
   * licensePlate: (Text, indexed for fast lookups)  
@@ -180,9 +180,9 @@ Samples of integration available at https://github.com/FiuuPayment/Integration-F
 
 Security is paramount, especially when handling customer data and payments.
 
-* **Authentication:**  
-  * Use **Firebase Authentication** for both staff and customers. It's robust, secure, and handles password resets, MFA, and social logins easily.  
-  * The frontend will receive a JWT (JSON Web Token) from Firebase, which it will send with every API request to your Payload backend.  
+* **Authentication:**
+  * Use **PayloadCMS built-in authentication** for staff and admin users with email/password.
+  * Use **WhatsApp-based identification** for customers through phone number verification and QR code linking.
 * **Authorization (Access Control):**  
   * Use **Payload's built-in access control functions** extensively.  
   * **Admin:** Can access and modify everything.  

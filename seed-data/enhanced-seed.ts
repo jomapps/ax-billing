@@ -15,7 +15,7 @@ function readSeedData(filename: string) {
 
 async function enhancedSeedData() {
   console.log('🌱 Starting enhanced database seeding...')
-  
+
   // Initialize payload
   const payload = await getPayload({ config })
 
@@ -66,7 +66,7 @@ async function enhancedSeedData() {
         collection: 'customer-tiers',
         data: {
           ...tier,
-          pricingOverrides: [] // Will be updated after services are created
+          pricingOverrides: [], // Will be updated after services are created
         },
       })
       tierMap.set(tier.tierName.toLowerCase().replace(/\s+/g, '-'), created.id)
@@ -79,7 +79,9 @@ async function enhancedSeedData() {
       const serviceData = {
         ...service,
         category: categoryMap.get(service.categoryRef),
-        availableOptions: service.availableOptionsRefs?.map(ref => optionMap.get(ref)).filter(Boolean) || []
+        compatibleOptions:
+          service.availableOptionsRefs?.map((ref: string) => optionMap.get(ref)).filter(Boolean) ||
+          [],
       }
       delete serviceData.categoryRef
       delete serviceData.availableOptionsRefs
@@ -96,15 +98,17 @@ async function enhancedSeedData() {
     console.log('Updating customer tier pricing overrides...')
     for (const tier of customerTiers) {
       if (tier.pricingOverrides && tier.pricingOverrides.length > 0) {
-        const overrides = tier.pricingOverrides.map(override => ({
-          service: serviceMap.get(override.serviceRef),
-          overriddenPrice: override.overriddenPrice
-        })).filter(override => override.service)
+        const overrides = tier.pricingOverrides
+          .map((override: any) => ({
+            service: serviceMap.get(override.serviceRef),
+            overriddenPrice: override.overriddenPrice,
+          }))
+          .filter((override: any) => override.service)
 
         await payload.update({
           collection: 'customer-tiers',
           id: tierMap.get(tier.tierName.toLowerCase().replace(/\s+/g, '-')),
-          data: { pricingOverrides: overrides }
+          data: { pricingOverrides: overrides },
         })
         console.log(`✅ Updated pricing for tier: ${tier.tierName}`)
       }
@@ -115,8 +119,9 @@ async function enhancedSeedData() {
     for (const user of users) {
       const userData = {
         ...user,
-        customerClassification: user.customerClassificationRef ? 
-          tierMap.get(user.customerClassificationRef) : undefined
+        customerClassification: user.customerClassificationRef
+          ? tierMap.get(user.customerClassificationRef)
+          : undefined,
       }
       delete userData.customerClassificationRef
 
@@ -133,7 +138,7 @@ async function enhancedSeedData() {
     for (const vehicle of vehicles) {
       const vehicleData = {
         ...vehicle,
-        owner: userMap.get(vehicle.ownerRef)
+        owner: userMap.get(vehicle.ownerRef),
       }
       delete vehicleData.ownerRef
 
@@ -152,12 +157,14 @@ async function enhancedSeedData() {
         ...order,
         customer: userMap.get(order.customerRef),
         vehicle: vehicleMap.get(order.vehicleRef),
-        servicesRendered: order.servicesRendered.map(service => ({
+        servicesRendered: order.servicesRendered.map((service: any) => ({
           service: serviceMap.get(service.serviceRef),
-          selectedOptions: service.selectedOptionsRefs?.map(ref => optionMap.get(ref)).filter(Boolean) || [],
+          selectedOptions:
+            service.selectedOptionsRefs?.map((ref: string) => optionMap.get(ref)).filter(Boolean) ||
+            [],
           servicePrice: service.servicePrice,
-          optionsPrice: service.optionsPrice
-        }))
+          optionsPrice: service.optionsPrice,
+        })),
       }
       delete orderData.customerRef
       delete orderData.vehicleRef
@@ -180,7 +187,6 @@ async function enhancedSeedData() {
 - ${vehicles.length} Vehicles
 - ${orders.length} Orders
     `)
-
   } catch (error) {
     console.error('❌ Error seeding database:', error)
   }

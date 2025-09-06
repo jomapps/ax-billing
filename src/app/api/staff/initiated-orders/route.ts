@@ -25,22 +25,21 @@ export async function GET(request: NextRequest) {
     // Transform the data for the frontend
     const initiatedOrders = result.docs.map((order: Order) => {
       const customer = order.customer as User
-      
+
       return {
         id: order.id,
         orderID: order.orderID,
         whatsappNumber: order.whatsappNumber,
-        customerName: customer 
+        customerName: customer
           ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || 'Unknown Customer'
           : 'New Customer',
         customerId: customer?.id,
         customerEmail: customer?.email,
         createdAt: order.createdAt,
         qrCodeScannedAt: order.qrCodeScannedAt,
-        waitingTime: order.qrCodeScannedAt 
+        waitingTime: order.qrCodeScannedAt
           ? Math.floor((Date.now() - new Date(order.qrCodeScannedAt).getTime()) / 60000)
           : 0, // waiting time in minutes
-        metadata: order.metadata,
       }
     })
 
@@ -59,7 +58,7 @@ export async function GET(request: NextRequest) {
         error: 'Failed to fetch initiated orders',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -70,6 +69,6 @@ export async function POST() {
       error: 'Method not allowed',
       message: 'Use GET to fetch initiated orders',
     },
-    { status: 405 }
+    { status: 405 },
   )
 }

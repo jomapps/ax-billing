@@ -85,12 +85,12 @@ export class VehicleProcessingService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.openRouterApiKey}`,
+            Authorization: `Bearer ${this.openRouterApiKey}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
             'X-Title': 'AX Billing Vehicle Processing',
           },
-        }
+        },
       )
 
       const aiResponse = response.data.choices[0]?.message?.content
@@ -125,7 +125,7 @@ export class VehicleProcessingService {
   async createOrUpdateVehicle(
     vehicleInfo: VehicleInfo,
     customerId: string,
-    imageUrl?: string
+    imageUrl?: string,
   ): Promise<Vehicle> {
     try {
       const payload = await getPayload({ config })
@@ -157,7 +157,7 @@ export class VehicleProcessingService {
           collection: 'vehicles',
           id: vehicle.id,
           data: {
-            vehicleType: vehicleInfo.vehicleType,
+            vehicleType: this.mapVehicleType(vehicleInfo.vehicleType),
             image: imageUrl,
             isActive: true,
             // Update any other relevant fields
@@ -170,7 +170,7 @@ export class VehicleProcessingService {
           collection: 'vehicles',
           data: {
             licensePlate: vehicleInfo.licensePlate,
-            vehicleType: vehicleInfo.vehicleType,
+            vehicleType: this.mapVehicleType(vehicleInfo.vehicleType),
             owner: customerId,
             image: imageUrl,
             isActive: true,
@@ -214,8 +214,8 @@ export class VehicleProcessingService {
         id: order.id,
         data: {
           vehicle: vehicleId,
-          vehicleCapturedAt: new Date(),
-          aiProcessedAt: new Date(),
+          vehicleCapturedAt: new Date().toISOString(),
+          aiProcessedAt: new Date().toISOString(),
           orderStage: 'open',
         },
       })
@@ -233,7 +233,7 @@ export class VehicleProcessingService {
   async processVehicleForOrder(
     imageUrl: string,
     orderId: string,
-    customerId: string
+    customerId: string,
   ): Promise<{ vehicle: Vehicle; order: Order; aiResult: AIProcessingResult }> {
     try {
       // Process image with AI
@@ -244,11 +244,7 @@ export class VehicleProcessingService {
       }
 
       // Create or update vehicle record
-      const vehicle = await this.createOrUpdateVehicle(
-        aiResult.vehicleInfo,
-        customerId,
-        imageUrl
-      )
+      const vehicle = await this.createOrUpdateVehicle(aiResult.vehicleInfo, customerId, imageUrl)
 
       // Link vehicle to order
       const order = await this.linkVehicleToOrder(vehicle.id, orderId)
@@ -303,7 +299,7 @@ export class VehicleProcessingService {
     licensePlate: string,
     vehicleType: string,
     customerId: string,
-    imageUrl?: string
+    imageUrl?: string,
   ): Promise<Vehicle> {
     try {
       const vehicleInfo: VehicleInfo = {
@@ -317,5 +313,26 @@ export class VehicleProcessingService {
       console.error('Error in manual vehicle validation:', error)
       throw error
     }
+  }
+
+  /**
+   * Map vehicle type to valid enum values
+   */
+  private mapVehicleType(
+    vehicleType: string,
+  ): 'sedan' | 'mpv_van' | 'large_pickup' | 'regular_bike' | 'heavy_bike' | 'very_heavy_bike' {
+    const lowerType = vehicleType.toLowerCase()
+
+    if (lowerType.includes('sedan')) return 'sedan'
+    if (lowerType.includes('mpv') || lowerType.includes('van')) return 'mpv_van'
+    if (lowerType.includes('pickup') || lowerType.includes('truck')) return 'large_pickup'
+    if (lowerType.includes('heavy bike') || lowerType.includes('heavy motorcycle'))
+      return 'heavy_bike'
+    if (lowerType.includes('very heavy') || lowerType.includes('super heavy'))
+      return 'very_heavy_bike'
+    if (lowerType.includes('bike') || lowerType.includes('motorcycle')) return 'regular_bike'
+
+    // Default fallback
+    return 'sedan'
   }
 }

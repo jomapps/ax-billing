@@ -11,7 +11,9 @@ export async function POST(request: NextRequest) {
     // Generate unique order ID
     const date = new Date()
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '')
-    const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0')
+    const random = Math.floor(Math.random() * 9999)
+      .toString()
+      .padStart(4, '0')
     const orderID = `AX-${dateStr}-${random}`
 
     // Create empty order
@@ -26,14 +28,6 @@ export async function POST(request: NextRequest) {
         paymentStatus: 'pending',
         overallStatus: 'pending',
         queue: 'regular',
-        // Store metadata about creation
-        metadata: {
-          createdVia: 'qr_code',
-          staffId,
-          location,
-          notes,
-          createdAt: new Date().toISOString(),
-        },
       },
     })
 
@@ -51,7 +45,7 @@ export async function POST(request: NextRequest) {
         error: 'Failed to create order',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -62,6 +56,6 @@ export async function GET() {
       error: 'Method not allowed',
       message: 'Use POST to create empty orders',
     },
-    { status: 405 }
+    { status: 405 },
   )
 }

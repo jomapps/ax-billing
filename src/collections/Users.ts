@@ -32,7 +32,7 @@ export const Users: CollectionConfig = {
       name: 'whatsappNumber',
       type: 'text',
       label: 'WhatsApp Number',
-      validate: (val: string) => {
+      validate: (val: string | null | undefined) => {
         if (val && !/^\+?[1-9]\d{1,14}$/.test(val)) {
           return 'Please enter a valid WhatsApp number'
         }
@@ -73,14 +73,7 @@ export const Users: CollectionConfig = {
         description: 'Gupshup conversation identifier for this user',
       },
     },
-    {
-      name: 'firebaseUID',
-      type: 'text',
-      label: 'Firebase UID',
-      admin: {
-        readOnly: true,
-      },
-    },
+
     {
       name: 'customerTier',
       type: 'relationship',

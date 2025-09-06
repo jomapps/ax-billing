@@ -8,20 +8,20 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') })
 
 async function clearDatabase() {
   console.log('🗑️  Starting database cleanup...')
-  
+
   // Initialize payload
   const payload = await getPayload({ config })
 
   try {
     const collections = [
       'orders',
-      'vehicles', 
+      'vehicles',
       'users',
       'services',
       'service-options',
       'service-categories',
-      'customer-tiers'
-    ]
+      'customer-tiers',
+    ] as const
 
     for (const collection of collections) {
       try {
@@ -41,12 +41,13 @@ async function clearDatabase() {
 
         console.log(`✅ Cleared ${docs.totalDocs} documents from ${collection}`)
       } catch (error) {
-        console.log(`⚠️  Could not clear ${collection}: ${error.message}`)
+        console.log(
+          `⚠️  Could not clear ${collection}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        )
       }
     }
 
     console.log('✅ Database cleanup completed!')
-
   } catch (error) {
     console.error('❌ Error clearing database:', error)
   }

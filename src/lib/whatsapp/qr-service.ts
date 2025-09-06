@@ -57,15 +57,6 @@ export class QRCodeService {
           id: order.id,
           data: {
             qrCodeGenerated: true,
-            // Store metadata about QR generation
-            metadata: {
-              ...order.metadata,
-              qrGeneration: {
-                staffId,
-                location,
-                generatedAt: new Date(),
-              },
-            },
           },
         })
       }
@@ -98,15 +89,7 @@ export class QRCodeService {
           collection: 'orders',
           id: order.id,
           data: {
-            qrCodeScannedAt: new Date(),
-            // Update metadata
-            metadata: {
-              ...order.metadata,
-              qrScan: {
-                scannedAt: new Date(),
-                whatsappNumber,
-              },
-            },
+            qrCodeScannedAt: new Date().toISOString(),
           },
         })
       }
@@ -137,14 +120,13 @@ export class QRCodeService {
       }
 
       const order = orderResult.docs[0]
-      const metadata = order.metadata || {}
 
       return {
         orderId,
-        staffId: metadata.qrGeneration?.staffId,
-        location: metadata.qrGeneration?.location,
-        generatedAt: metadata.qrGeneration?.generatedAt || order.createdAt,
-        scannedAt: order.qrCodeScannedAt,
+        staffId: undefined,
+        location: undefined,
+        generatedAt: new Date(order.createdAt),
+        scannedAt: order.qrCodeScannedAt ? new Date(order.qrCodeScannedAt) : undefined,
         isScanned: !!order.qrCodeScannedAt,
       }
     } catch (error) {
@@ -158,7 +140,7 @@ export class QRCodeService {
    */
   async getQRPerformanceMetrics(
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): Promise<{
     totalGenerated: number
     totalScanned: number
@@ -201,7 +183,8 @@ export class QRCodeService {
 
       scannedOrders.forEach((order) => {
         if (order.qrCodeScannedAt && order.createdAt) {
-          const scanTime = new Date(order.qrCodeScannedAt).getTime() - new Date(order.createdAt).getTime()
+          const scanTime =
+            new Date(order.qrCodeScannedAt).getTime() - new Date(order.createdAt).getTime()
           totalScanTime += scanTime
           validScanTimes++
         }
@@ -233,7 +216,7 @@ export class QRCodeService {
     orderId: string,
     staffId?: string,
     location?: string,
-    customMessage?: string
+    customMessage?: string,
   ): Promise<string> {
     try {
       // Track the generation
@@ -303,8 +286,8 @@ export class QRCodeService {
       return {
         generated: order.qrCodeGenerated || false,
         scanned: !!order.qrCodeScannedAt,
-        generatedAt: order.createdAt,
-        scannedAt: order.qrCodeScannedAt,
+        generatedAt: new Date(order.createdAt),
+        scannedAt: order.qrCodeScannedAt ? new Date(order.qrCodeScannedAt) : undefined,
         link: order.qrCodeGenerated ? this.generateWhatsAppLinkWithOrder(orderId) : undefined,
       }
     } catch (error) {

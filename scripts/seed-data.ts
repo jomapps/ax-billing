@@ -95,7 +95,28 @@ async function seedData() {
       collection: 'services',
       data: {
         name: 'Basic Wash',
-        description: 'Standard exterior wash and dry',
+        description: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                version: 1,
+                children: [
+                  {
+                    type: 'text',
+                    version: 1,
+                    text: 'Standard exterior wash and dry',
+                  },
+                ],
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
         category: exteriorCategory.id,
         basePrice: 25,
         estimatedMinutes: 30,
@@ -106,7 +127,7 @@ async function seedData() {
           { stepName: 'Rinse', estimatedMinutes: 5 },
           { stepName: 'Dry', estimatedMinutes: 5 },
         ],
-        availableOptions: [waxOption.id, tireShineOption.id],
+        compatibleOptions: [waxOption.id, tireShineOption.id],
       },
     })
 
@@ -114,7 +135,28 @@ async function seedData() {
       collection: 'services',
       data: {
         name: 'Premium Wash',
-        description: 'Complete exterior and interior cleaning',
+        description: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                version: 1,
+                children: [
+                  {
+                    type: 'text',
+                    version: 1,
+                    text: 'Complete exterior and interior cleaning',
+                  },
+                ],
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
         category: exteriorCategory.id,
         basePrice: 45,
         estimatedMinutes: 60,
@@ -126,7 +168,7 @@ async function seedData() {
           { stepName: 'Interior Wipe', estimatedMinutes: 10 },
           { stepName: 'Final Dry', estimatedMinutes: 10 },
         ],
-        availableOptions: [waxOption.id, tireShineOption.id],
+        compatibleOptions: [waxOption.id, tireShineOption.id],
       },
     })
 
@@ -173,7 +215,7 @@ async function seedData() {
         firstName: 'John',
         lastName: 'Doe',
         whatsappNumber: '+60123456789',
-        customerClassification: standardTier.id,
+        customerTier: standardTier.id,
       },
     })
 
@@ -186,7 +228,7 @@ async function seedData() {
         firstName: 'Jane',
         lastName: 'Smith',
         whatsappNumber: '+60123456790',
-        customerClassification: vipTier.id,
+        customerTier: vipTier.id,
       },
     })
 
@@ -229,6 +271,7 @@ async function seedData() {
       collection: 'orders',
       data: {
         orderID: 'AX-20241204-0001',
+        orderStage: 'paid',
         customer: customer1.id,
         vehicle: vehicle1.id,
         servicesRendered: [
@@ -270,6 +313,7 @@ async function seedData() {
       collection: 'orders',
       data: {
         orderID: 'AX-20241204-0002',
+        orderStage: 'open',
         customer: customer2.id,
         vehicle: vehicle2.id,
         servicesRendered: [

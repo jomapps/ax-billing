@@ -6,28 +6,20 @@ import type { Order, User } from '@/payload-types'
 
 const whatsappService = new WhatsAppService()
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const payload = await getPayload({ config })
     const { stage, notes } = await request.json()
-    const orderId = params.id
+    const resolvedParams = await params
+    const orderId = resolvedParams.id
 
     if (!stage) {
-      return NextResponse.json(
-        { error: 'Stage is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Stage is required' }, { status: 400 })
     }
 
     const validStages = ['empty', 'initiated', 'open', 'billed', 'paid']
     if (!validStages.includes(stage)) {
-      return NextResponse.json(
-        { error: 'Invalid stage' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid stage' }, { status: 400 })
     }
 
     // Find the order (by orderID, not database ID)
@@ -43,10 +35,7 @@ export async function POST(
     })
 
     if (orderResult.docs.length === 0) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     const order = orderResult.docs[0] as Order
@@ -58,19 +47,6 @@ export async function POST(
       id: order.id,
       data: {
         orderStage: stage,
-        ...(notes && {
-          metadata: {
-            ...order.metadata,
-            stageUpdates: [
-              ...(order.metadata?.stageUpdates || []),
-              {
-                stage,
-                notes,
-                timestamp: new Date().toISOString(),
-              },
-            ],
-          },
-        }),
       },
     })
 
@@ -129,7 +105,7 @@ Thank you for choosing AX Billing! 🚗✨`
           messageType: 'text',
           content: message,
           status: 'sent',
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
         },
       })
     }
@@ -153,7 +129,7 @@ Thank you for choosing AX Billing! 🚗✨`
         error: 'Failed to update order stage',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -164,6 +140,6 @@ export async function GET() {
       error: 'Method not allowed',
       message: 'Use POST to update order stage',
     },
-    { status: 405 }
+    { status: 405 },
   )
 }

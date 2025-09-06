@@ -469,7 +469,7 @@ export function StaffDashboard() {
 
                   {/* Progress Steps */}
                   <div className="flex items-center gap-2 overflow-x-auto">
-                    {order.jobStatus.map((step, stepIndex) => (
+                    {order.jobStatus?.map((step, stepIndex) => (
                       <div key={stepIndex} className="flex items-center gap-2 min-w-fit">
                         <div
                           className={cn(
@@ -490,7 +490,7 @@ export function StaffDashboard() {
                         <span className="text-sm text-gray-300 whitespace-nowrap">
                           {step.stepName}
                         </span>
-                        {stepIndex < order.jobStatus.length - 1 && (
+                        {stepIndex < (order.jobStatus?.length || 0) - 1 && (
                           <div className="w-8 h-0.5 bg-gray-600 mx-2" />
                         )}
                       </div>

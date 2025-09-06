@@ -75,6 +75,8 @@ export interface Config {
     orders: Order;
     'customer-tiers': CustomerTier;
     media: Media;
+    'whatsapp-messages': WhatsappMessage;
+    'whatsapp-templates': WhatsappTemplate;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -89,6 +91,8 @@ export interface Config {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     'customer-tiers': CustomerTiersSelect<false> | CustomerTiersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'whatsapp-messages': WhatsappMessagesSelect<false> | WhatsappMessagesSelect<true>;
+    'whatsapp-templates': WhatsappTemplatesSelect<false> | WhatsappTemplatesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -133,7 +137,22 @@ export interface User {
   id: string;
   role: 'admin' | 'staff' | 'customer';
   whatsappNumber?: string | null;
-  firebaseUID?: string | null;
+  /**
+   * Whether the WhatsApp number has been verified through conversation
+   */
+  whatsappVerified?: boolean | null;
+  /**
+   * User consent for receiving WhatsApp notifications
+   */
+  whatsappOptIn?: boolean | null;
+  /**
+   * Last time customer initiated WhatsApp contact (for 24h messaging window)
+   */
+  lastWhatsappContact?: string | null;
+  /**
+   * Gupshup conversation identifier for this user
+   */
+  whatsappConversationId?: string | null;
   customerTier?: (string | null) | CustomerTier;
   firstName?: string | null;
   lastName?: string | null;
@@ -521,13 +540,45 @@ export interface Order {
    */
   orderID: string;
   /**
+   * Current stage of the order in the WhatsApp workflow
+   */
+  orderStage: 'empty' | 'initiated' | 'open' | 'billed' | 'paid';
+  /**
+   * Whether this order has been linked to a WhatsApp conversation
+   */
+  whatsappLinked?: boolean | null;
+  /**
+   * WhatsApp number of the customer who initiated this order
+   */
+  whatsappNumber?: string | null;
+  /**
+   * Whether a QR code has been generated for this order
+   */
+  qrCodeGenerated?: boolean | null;
+  /**
+   * When the customer scanned the QR code
+   */
+  qrCodeScannedAt?: string | null;
+  /**
+   * When the vehicle information was captured
+   */
+  vehicleCapturedAt?: string | null;
+  /**
+   * When AI processing of vehicle information was completed
+   */
+  aiProcessedAt?: string | null;
+  /**
+   * When the payment link was sent via WhatsApp
+   */
+  paymentLinkSentAt?: string | null;
+  /**
    * Customer who placed this order
    */
-  customer: string | User;
+  customer?: (string | null) | User;
   /**
    * Vehicle being serviced
    */
-  vehicle: string | Vehicle;
+  vehicle?: (string | null) | Vehicle;
   /**
    * Services and options included in this order
    */
@@ -598,6 +649,157 @@ export interface Order {
   createdAt: string;
 }
 /**
+ * WhatsApp message history and conversation tracking
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-messages".
+ */
+export interface WhatsappMessage {
+  id: string;
+  /**
+   * User associated with this message
+   */
+  user?: (string | null) | User;
+  /**
+   * Order associated with this message conversation
+   */
+  order?: (string | null) | Order;
+  /**
+   * Unique message identifier from Gupshup
+   */
+  messageId: string;
+  /**
+   * Gupshup conversation identifier
+   */
+  conversationId?: string | null;
+  /**
+   * WhatsApp number that sent/received this message
+   */
+  whatsappNumber: string;
+  /**
+   * Message direction relative to our system
+   */
+  direction: 'inbound' | 'outbound';
+  /**
+   * Type of WhatsApp message
+   */
+  messageType: 'text' | 'template' | 'media' | 'interactive';
+  /**
+   * The actual message content
+   */
+  content: string;
+  /**
+   * Name of the template used (for template messages)
+   */
+  templateName?: string | null;
+  /**
+   * Delivery status of the message
+   */
+  status: 'sent' | 'delivered' | 'read' | 'failed' | 'received';
+  /**
+   * When the message was sent/received
+   */
+  timestamp: string;
+  /**
+   * Additional message metadata from Gupshup
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Error details if message failed
+   */
+  errorMessage?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * WhatsApp message templates for automated communications
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-templates".
+ */
+export interface WhatsappTemplate {
+  id: string;
+  /**
+   * Internal name for this template
+   */
+  name: string;
+  /**
+   * Template ID from Gupshup dashboard
+   */
+  templateId: string;
+  /**
+   * Category of this template for organization
+   */
+  category:
+    | 'order_initiated'
+    | 'vehicle_captured'
+    | 'services_added'
+    | 'payment_request'
+    | 'completion'
+    | 'welcome'
+    | 'status_update'
+    | 'error'
+    | 'promotional';
+  /**
+   * Template content with variable placeholders (e.g., {{orderID}})
+   */
+  content: string;
+  /**
+   * Variables that can be substituted in this template
+   */
+  variables?:
+    | {
+        /**
+         * Variable name without curly braces (e.g., orderID)
+         */
+        variable: string;
+        /**
+         * Description of what this variable represents
+         */
+        description?: string | null;
+        /**
+         * Whether this variable is required for the template
+         */
+        required?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * WhatsApp approval status for this template
+   */
+  approvalStatus: 'pending' | 'approved' | 'rejected' | 'in_review';
+  /**
+   * Whether this template is active and can be used
+   */
+  isActive?: boolean | null;
+  /**
+   * Language of this template
+   */
+  language: 'en' | 'ms' | 'zh' | 'ta';
+  /**
+   * Number of times this template has been used
+   */
+  usageCount?: number | null;
+  /**
+   * When this template was last used
+   */
+  lastUsed?: string | null;
+  /**
+   * Internal notes about this template
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -635,6 +837,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'whatsapp-messages';
+        value: string | WhatsappMessage;
+      } | null)
+    | ({
+        relationTo: 'whatsapp-templates';
+        value: string | WhatsappTemplate;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -685,7 +895,10 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   role?: T;
   whatsappNumber?: T;
-  firebaseUID?: T;
+  whatsappVerified?: T;
+  whatsappOptIn?: T;
+  lastWhatsappContact?: T;
+  whatsappConversationId?: T;
   customerTier?: T;
   firstName?: T;
   lastName?: T;
@@ -798,6 +1011,14 @@ export interface ServiceOptionsSelect<T extends boolean = true> {
  */
 export interface OrdersSelect<T extends boolean = true> {
   orderID?: T;
+  orderStage?: T;
+  whatsappLinked?: T;
+  whatsappNumber?: T;
+  qrCodeGenerated?: T;
+  qrCodeScannedAt?: T;
+  vehicleCapturedAt?: T;
+  aiProcessedAt?: T;
+  paymentLinkSentAt?: T;
   customer?: T;
   vehicle?: T;
   servicesRendered?:
@@ -919,6 +1140,53 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-messages_select".
+ */
+export interface WhatsappMessagesSelect<T extends boolean = true> {
+  user?: T;
+  order?: T;
+  messageId?: T;
+  conversationId?: T;
+  whatsappNumber?: T;
+  direction?: T;
+  messageType?: T;
+  content?: T;
+  templateName?: T;
+  status?: T;
+  timestamp?: T;
+  metadata?: T;
+  errorMessage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "whatsapp-templates_select".
+ */
+export interface WhatsappTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  templateId?: T;
+  category?: T;
+  content?: T;
+  variables?:
+    | T
+    | {
+        variable?: T;
+        description?: T;
+        required?: T;
+        id?: T;
+      };
+  approvalStatus?: T;
+  isActive?: T;
+  language?: T;
+  usageCount?: T;
+  lastUsed?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

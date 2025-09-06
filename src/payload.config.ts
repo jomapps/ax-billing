@@ -30,8 +30,6 @@ export default buildConfig({
     },
     meta: {
       titleSuffix: '- AX Billing',
-      favicon: '/favicon.ico',
-      ogImage: '/og-image.jpg',
     },
   },
   collections: [

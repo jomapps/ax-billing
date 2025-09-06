@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config })
     const formData = await request.formData()
-    
+
     const orderId = formData.get('orderId') as string
     const image = formData.get('image') as File
     const manualLicensePlate = formData.get('licensePlate') as string
@@ -38,17 +38,11 @@ export async function POST(request: NextRequest) {
     const useManualData = formData.get('useManualData') === 'true'
 
     if (!orderId) {
-      return NextResponse.json(
-        { error: 'Order ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Order ID is required' }, { status: 400 })
     }
 
     if (!image && !useManualData) {
-      return NextResponse.json(
-        { error: 'Image file is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Image file is required' }, { status: 400 })
     }
 
     // Get the order
@@ -64,20 +58,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (orderResult.docs.length === 0) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
     const order = orderResult.docs[0]
     const customer = order.customer
 
-    if (!customer) {
-      return NextResponse.json(
-        { error: 'Order has no associated customer' },
-        { status: 400 }
-      )
+    if (!customer || typeof customer === 'string') {
+      return NextResponse.json({ error: 'Order has no associated customer' }, { status: 400 })
     }
 
     let vehicleInfo
@@ -93,7 +81,7 @@ export async function POST(request: NextRequest) {
     } else if (image) {
       // Upload image to storage first
       const imageBuffer = Buffer.from(await image.arrayBuffer())
-      
+
       // Create a media record in Payload
       const mediaResult = await payload.create({
         collection: 'media',
@@ -122,7 +110,7 @@ export async function POST(request: NextRequest) {
             imageUrl,
             requiresManualInput: true,
           },
-          { status: 422 }
+          { status: 422 },
         )
       }
 
@@ -130,16 +118,12 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json(
         { error: 'Either image or manual data is required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     // Create or update vehicle record
-    const vehicle = await vehicleService.createOrUpdateVehicle(
-      vehicleInfo,
-      customer.id,
-      imageUrl
-    )
+    const vehicle = await vehicleService.createOrUpdateVehicle(vehicleInfo, customer.id, imageUrl)
 
     // Link vehicle to order and update stage
     const updatedOrder = await vehicleService.linkVehicleToOrder(vehicle.id, orderId)
@@ -155,7 +139,7 @@ Our team is now selecting the appropriate services for your vehicle. You'll rece
 
     if (order.whatsappNumber) {
       await whatsappService.sendMessage(order.whatsappNumber, vehicleMessage)
-      
+
       // Log the message
       await payload.create({
         collection: 'whatsapp-messages',
@@ -168,7 +152,7 @@ Our team is now selecting the appropriate services for your vehicle. You'll rece
           messageType: 'text',
           content: vehicleMessage,
           status: 'sent',
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
         },
       })
     }
@@ -197,7 +181,7 @@ Our team is now selecting the appropriate services for your vehicle. You'll rece
         error: 'Failed to capture vehicle information',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -208,6 +192,6 @@ export async function GET() {
       error: 'Method not allowed',
       message: 'Use POST to capture vehicle information',
     },
-    { status: 405 }
+    { status: 405 },
   )
 }

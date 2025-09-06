@@ -25,7 +25,7 @@ export class OrderLinkingService {
   async validateOrderForLinking(orderId: string): Promise<boolean> {
     try {
       const payload = await getPayload({ config })
-      
+
       const result = await payload.find({
         collection: 'orders',
         where: {
@@ -41,7 +41,7 @@ export class OrderLinkingService {
       }
 
       const order = result.docs[0] as Order
-      
+
       // Order should be in 'empty' stage and not already linked
       return order.orderStage === 'empty' && !order.whatsappLinked
     } catch (error) {
@@ -57,7 +57,7 @@ export class OrderLinkingService {
     try {
       const payload = await getPayload({ config })
       const formattedNumber = this.whatsappService.formatPhoneNumber(whatsappNumber)
-      
+
       const result = await payload.find({
         collection: 'users',
         where: {
@@ -82,10 +82,10 @@ export class OrderLinkingService {
     try {
       const payload = await getPayload({ config })
       const formattedNumber = this.whatsappService.formatPhoneNumber(whatsappNumber)
-      
+
       // Generate email from phone number
       const email = `${formattedNumber}@whatsapp.axbilling.com`
-      
+
       // Parse name if provided
       const nameParts = name ? name.split(' ') : []
       const firstName = nameParts[0] || 'Customer'
@@ -99,7 +99,7 @@ export class OrderLinkingService {
           whatsappNumber: formattedNumber,
           whatsappVerified: true,
           whatsappOptIn: true,
-          lastWhatsappContact: new Date(),
+          lastWhatsappContact: new Date().toISOString(),
           firstName,
           lastName,
         },
@@ -119,7 +119,7 @@ export class OrderLinkingService {
     try {
       const payload = await getPayload({ config })
       const formattedNumber = this.whatsappService.formatPhoneNumber(whatsappNumber)
-      
+
       // Find the order
       const orderResult = await payload.find({
         collection: 'orders',
@@ -144,7 +144,7 @@ export class OrderLinkingService {
         data: {
           whatsappLinked: true,
           whatsappNumber: formattedNumber,
-          qrCodeScannedAt: new Date(),
+          qrCodeScannedAt: new Date().toISOString(),
           orderStage: 'initiated',
           customer: user?.id, // Link customer if provided
         },
@@ -163,15 +163,15 @@ export class OrderLinkingService {
   async createUserAndLinkOrder(
     whatsappNumber: string,
     orderId: string,
-    name?: string
+    name?: string,
   ): Promise<{ user: User; order: Order }> {
     try {
       // Create the user first
       const user = await this.createUserFromWhatsApp(whatsappNumber, name)
-      
+
       // Link the order to the user
       const order = await this.linkWhatsAppToOrder(whatsappNumber, orderId, user)
-      
+
       return { user, order }
     } catch (error) {
       console.error('Error creating user and linking order:', error)
@@ -185,7 +185,7 @@ export class OrderLinkingService {
   async updateOrderStage(orderId: string, stage: OrderStage): Promise<Order> {
     try {
       const payload = await getPayload({ config })
-      
+
       // Find the order
       const orderResult = await payload.find({
         collection: 'orders',
@@ -225,7 +225,7 @@ export class OrderLinkingService {
   async getOrdersByStage(stage: OrderStage, limit: number = 50): Promise<Order[]> {
     try {
       const payload = await getPayload({ config })
-      
+
       const result = await payload.find({
         collection: 'orders',
         where: {
@@ -250,7 +250,7 @@ export class OrderLinkingService {
   async getOrderById(orderId: string): Promise<Order | null> {
     try {
       const payload = await getPayload({ config })
-      
+
       const result = await payload.find({
         collection: 'orders',
         where: {
