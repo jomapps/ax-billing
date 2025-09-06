@@ -15,11 +15,26 @@ export async function POST(request: NextRequest) {
     const body = await request.text()
     const signature = request.headers.get('x-gupshup-signature')
 
+    // Debug: Log signature verification details
+    console.log('=== WEBHOOK SIGNATURE DEBUG ===')
+    console.log('Received signature header:', signature)
+    console.log('Webhook secret from env:', process.env.GUPSHUP_WEBHOOK_SECRET)
+    console.log('Request body length:', body.length)
+    console.log('Request body preview:', body.substring(0, 200))
+
     // Verify webhook signature
     if (!whatsappService.verifyWebhookSignature(body, signature)) {
-      console.error('Invalid webhook signature')
+      console.error('❌ Invalid webhook signature')
+      console.log(
+        'Expected signature would be:',
+        require('crypto-js')
+          .HmacSHA256(body, process.env.GUPSHUP_WEBHOOK_SECRET || '')
+          .toString(),
+      )
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }
+
+    console.log('✅ Webhook signature verified successfully')
 
     const webhookData = JSON.parse(body)
     console.log('WhatsApp webhook received:', webhookData)
@@ -39,10 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('WhatsApp webhook error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -62,7 +74,7 @@ async function handleIncomingMessage(data: any, payload: any) {
       // No order ID found - send error message
       await whatsappService.sendMessage(
         formattedNumber,
-        "❌ Invalid QR code. Please scan the QR code provided by our staff to start your service."
+        '❌ Invalid QR code. Please scan the QR code provided by our staff to start your service.',
       )
 
       // Log the message anyway
@@ -78,14 +90,12 @@ async function handleIncomingMessage(data: any, payload: any) {
       return
     }
 
-    console.log(`Order ID extracted: ${orderId}`)
-
-    // Validate order exists and is linkable
+    // Validate that the order exists and can be linked
     const isValidOrder = await orderLinkingService.validateOrderForLinking(orderId)
     if (!isValidOrder) {
       await whatsappService.sendMessage(
         formattedNumber,
-        `❌ Order ${orderId} is not available for linking. Please contact our staff for assistance.`
+        `❌ Order ${orderId} is not available for linking. Please contact our staff for assistance.`,
       )
       return
     }
@@ -100,7 +110,7 @@ async function handleIncomingMessage(data: any, payload: any) {
       const result = await orderLinkingService.createUserAndLinkOrder(
         formattedNumber,
         orderId,
-        name
+        name,
       )
       user = result.user
       order = result.order
@@ -108,7 +118,7 @@ async function handleIncomingMessage(data: any, payload: any) {
       // Existing customer - link to order
       console.log(`Linking existing user ${user.id} to order ${orderId}`)
       order = await orderLinkingService.linkWhatsAppToOrder(formattedNumber, orderId, user)
-      
+
       // Update user's last contact time
       await payload.update({
         collection: 'users',
@@ -164,14 +174,14 @@ Thank you for choosing AX Billing! 🚗✨`
     console.log(`Successfully processed message for order ${orderId}`)
   } catch (error) {
     console.error('Error handling incoming message:', error)
-    
+
     // Send error message to user if possible
     try {
       const { mobile } = data.payload
       const formattedNumber = whatsappService.formatPhoneNumber(mobile)
       await whatsappService.sendMessage(
         formattedNumber,
-        "❌ Sorry, there was an error processing your request. Please try again or contact our staff for assistance."
+        '❌ Sorry, there was an error processing your request. Please try again or contact our staff for assistance.',
       )
     } catch (sendError) {
       console.error('Failed to send error message:', sendError)
@@ -219,6 +229,6 @@ export async function GET() {
       error: 'Method not allowed',
       message: 'This endpoint only accepts POST requests for WhatsApp webhooks',
     },
-    { status: 405 }
+    { status: 405 },
   )
 }

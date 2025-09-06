@@ -62,7 +62,7 @@ export class WhatsAppService {
             'Content-Type': 'application/json',
             apikey: this.apiKey,
           },
-        }
+        },
       )
 
       return response.data.status === 'submitted'
@@ -78,7 +78,7 @@ export class WhatsAppService {
   async sendTemplate(
     to: string,
     templateId: string,
-    variables: Record<string, string> = {}
+    variables: Record<string, string> = {},
   ): Promise<boolean> {
     try {
       const response = await axios.post(
@@ -98,7 +98,7 @@ export class WhatsAppService {
             'Content-Type': 'application/json',
             apikey: this.apiKey,
           },
-        }
+        },
       )
 
       return response.data.status === 'submitted'
@@ -132,7 +132,7 @@ export class WhatsAppService {
             'Content-Type': 'application/json',
             apikey: this.apiKey,
           },
-        }
+        },
       )
 
       return response.data.status === 'submitted'
@@ -146,13 +146,53 @@ export class WhatsAppService {
    * Verify webhook signature from Gupshup
    */
   verifyWebhookSignature(payload: string, signature: string | null): boolean {
-    if (!signature) return false
+    console.log('🔍 Signature verification details:')
+    console.log('  - Received signature:', signature)
+    console.log('  - Signature type:', typeof signature)
+    console.log('  - Signature length:', signature?.length)
+
+    if (!signature) {
+      console.log('  - ❌ No signature provided')
+      return false
+    }
 
     const webhookSecret = process.env.GUPSHUP_WEBHOOK_SECRET
-    if (!webhookSecret) return true // Skip verification if no secret configured
+    if (!webhookSecret) {
+      console.log('  - ⚠️ No webhook secret configured, skipping verification')
+      return true // Skip verification if no secret configured
+    }
 
+    console.log('  - Webhook secret:', webhookSecret)
+    console.log('  - Payload length:', payload.length)
+
+    // Try different signature formats
     const expectedSignature = crypto.HmacSHA256(payload, webhookSecret).toString()
-    return signature === expectedSignature
+    const expectedSignatureHex = crypto.HmacSHA256(payload, webhookSecret).toString(crypto.enc.Hex)
+    const expectedSignatureBase64 = crypto
+      .HmacSHA256(payload, webhookSecret)
+      .toString(crypto.enc.Base64)
+
+    console.log('  - Expected signature (default):', expectedSignature)
+    console.log('  - Expected signature (hex):', expectedSignatureHex)
+    console.log('  - Expected signature (base64):', expectedSignatureBase64)
+
+    // Check if signature matches webhook secret directly (as you suspected)
+    const directMatch = signature === webhookSecret
+    console.log('  - Direct secret match:', directMatch)
+
+    // Check HMAC matches
+    const hmacMatch = signature === expectedSignature
+    const hmacHexMatch = signature === expectedSignatureHex
+    const hmacBase64Match = signature === expectedSignatureBase64
+
+    console.log('  - HMAC match (default):', hmacMatch)
+    console.log('  - HMAC match (hex):', hmacHexMatch)
+    console.log('  - HMAC match (base64):', hmacBase64Match)
+
+    const isValid = directMatch || hmacMatch || hmacHexMatch || hmacBase64Match
+    console.log('  - Final result:', isValid ? '✅ Valid' : '❌ Invalid')
+
+    return isValid
   }
 
   /**
@@ -199,12 +239,12 @@ export class WhatsAppService {
   formatPhoneNumber(phoneNumber: string): string {
     // Remove all non-digit characters
     let cleaned = phoneNumber.replace(/\D/g, '')
-    
+
     // Add country code if not present (assuming Malaysia +60)
     if (!cleaned.startsWith('60') && cleaned.length === 10) {
       cleaned = '60' + cleaned.substring(1) // Remove leading 0 and add 60
     }
-    
+
     return cleaned
   }
 

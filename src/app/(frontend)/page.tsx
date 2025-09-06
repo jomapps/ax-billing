@@ -1,6 +1,6 @@
 import React from 'react'
-import { StaffDashboard } from '@/components/dashboard/StaffDashboard'
+import { EnhancedStaffDashboard } from '@/components/dashboard/EnhancedStaffDashboard'
 
 export default function HomePage() {
-  return <StaffDashboard />
+  return <EnhancedStaffDashboard staffId="staff-001" location="Main Branch" />
 }

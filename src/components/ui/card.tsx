@@ -43,27 +43,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(cardVariants({ variant, size, glow, className }))}
-      style={{
-        backgroundColor: variant === 'gaming' ? '#1e293b' : '#1e293b',
-        borderColor: '#0ea5e9',
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        borderRadius: '12px',
-        backgroundImage:
-          variant === 'gaming'
-            ? 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #0f172a 100%)'
-            : 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-        boxShadow:
-          variant === 'gaming'
-            ? '0 4px 14px 0 rgba(14, 165, 233, 0.15), 0 0 0 1px rgba(14, 165, 233, 0.1)'
-            : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        backdropFilter: 'blur(8px)',
-        transition: 'all 0.3s ease',
-        width: 'auto', // Allow grid to control width
-        minWidth: '250px', // Minimum width for readability
-        maxWidth: '100%', // Don't exceed container
-        ...style,
-      }}
+      style={style}
       {...props}
     >
       {/* Gaming-style animated border effect */}
