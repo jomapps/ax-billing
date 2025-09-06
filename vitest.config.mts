@@ -8,5 +8,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
+    exclude: ['tests/int/network-connectivity.int.spec.ts'], // Exclude network tests from main config
+    testTimeout: 30000,
   },
 })

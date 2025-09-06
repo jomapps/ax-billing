@@ -19,7 +19,10 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test",
-    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
+    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
+    "test:network": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.network.config.mts",
+    "test:services": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/test-external-services.ts",
+    "test:services:full": "pnpm run test:services && pnpm run test:int && pnpm run test:network"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
