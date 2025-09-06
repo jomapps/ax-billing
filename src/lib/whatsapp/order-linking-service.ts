@@ -57,13 +57,23 @@ export class OrderLinkingService {
     try {
       const payload = await getPayload({ config })
       const formattedNumber = this.whatsappService.formatPhoneNumber(whatsappNumber)
+      const email = `${formattedNumber}@ft.tc`
 
       const result = await payload.find({
         collection: 'users',
         where: {
-          whatsappNumber: {
-            equals: formattedNumber,
-          },
+          or: [
+            {
+              whatsappNumber: {
+                equals: formattedNumber,
+              },
+            },
+            {
+              email: {
+                equals: email,
+              },
+            },
+          ],
         },
         limit: 1,
       })
@@ -83,8 +93,9 @@ export class OrderLinkingService {
       const payload = await getPayload({ config })
       const formattedNumber = this.whatsappService.formatPhoneNumber(whatsappNumber)
 
-      // Generate email from phone number
-      const email = `${formattedNumber}@whatsapp.axbilling.com`
+      // Generate email from phone number: [phone_number]@ft.tc
+      const email = `${formattedNumber}@ft.tc`
+      const password = 'Ax#123456' // Default password as specified
 
       // Parse name if provided
       const nameParts = name ? name.split(' ') : []
@@ -95,6 +106,7 @@ export class OrderLinkingService {
         collection: 'users',
         data: {
           email,
+          password,
           role: 'customer',
           whatsappNumber: formattedNumber,
           whatsappVerified: true,

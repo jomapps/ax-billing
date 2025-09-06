@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
 import {
   Plus,
   Clock,
@@ -18,6 +19,8 @@ import {
   ArrowRight,
   QrCode,
   MessageSquare,
+  Copy,
+  Trash2,
 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -43,6 +46,7 @@ interface EnhancedStaffDashboardProps {
 type WorkflowStep =
   | 'overview'
   | 'new-order'
+  | 'order-created'
   | 'initiated-orders'
   | 'vehicle-capture'
   | 'service-selection'
@@ -106,8 +110,9 @@ export function EnhancedStaffDashboard({
 
   const handleOrderCreated = (orderId: string) => {
     setRecentOrderId(orderId)
+    setSelectedOrderId(orderId)
     setNotifications((prev) => [...prev, `New order created: ${orderId}`])
-    setCurrentStep('initiated-orders')
+    setCurrentStep('order-created')
     fetchData() // Refresh data
   }
 
@@ -177,6 +182,7 @@ export function EnhancedStaffDashboard({
   const workflowSteps = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'new-order', label: 'New Order', icon: Plus },
+    { id: 'order-created', label: 'Order Created', icon: QrCode },
     { id: 'initiated-orders', label: 'Initiated', icon: Clock },
     { id: 'vehicle-capture', label: 'Vehicle', icon: Camera },
     { id: 'service-selection', label: 'Services', icon: Car },
@@ -312,6 +318,16 @@ export function EnhancedStaffDashboard({
               />
             )}
 
+            {currentStep === 'order-created' && selectedOrderId && (
+              <OrderCreatedContent
+                orderId={selectedOrderId}
+                staffId={staffId}
+                location={location}
+                onOrderInitiated={() => setCurrentStep('initiated-orders')}
+                onBackToOverview={handleBackToOverview}
+              />
+            )}
+
             {currentStep === 'initiated-orders' && (
               <InitiatedOrdersContent
                 onCaptureVehicle={handleCaptureVehicle}
@@ -443,26 +459,28 @@ function OverviewContent({
 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
+                onClick={() => setCurrentStep('initiated-orders')}
                 variant="outline"
                 className="w-full h-20 border-gray-600 text-gray-300 hover:bg-gray-800"
                 size="lg"
               >
                 <div className="flex flex-col items-center gap-2">
-                  <QrCode className="w-6 h-6" />
-                  <span>Scan QR</span>
+                  <Clock className="w-6 h-6" />
+                  <span>View Initiated</span>
                 </div>
               </Button>
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
+                onClick={() => window.open('/whatsapp-demo', '_blank')}
                 variant="outline"
                 className="w-full h-20 border-gray-600 text-gray-300 hover:bg-gray-800"
                 size="lg"
               >
                 <div className="flex flex-col items-center gap-2">
                   <MessageSquare className="w-6 h-6" />
-                  <span>Messages</span>
+                  <span>WhatsApp Hub</span>
                 </div>
               </Button>
             </motion.div>
@@ -614,6 +632,34 @@ interface NewOrderContentProps {
 }
 
 function NewOrderContent({ staffId, location, onOrderCreated }: NewOrderContentProps) {
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleCreateOrder = async () => {
+    setIsCreating(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/orders/create-empty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staffId, location }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create order')
+      }
+
+      const data = await response.json()
+      onOrderCreated(data.orderID)
+    } catch (err) {
+      console.error('Failed to create order:', err)
+      setError('Failed to create order. Please try again.')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
   return (
     <Card className="bg-gray-800/50 border-gray-700">
       <CardHeader>
@@ -623,16 +669,311 @@ function NewOrderContent({ staffId, location, onOrderCreated }: NewOrderContentP
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="max-w-2xl mx-auto">
-          <WhatsAppQRCode
-            staffId={staffId}
-            location={location}
-            onOrderCreated={onOrderCreated}
-            className="w-full"
-          />
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div>
+            <p className="text-gray-300 mb-4">
+              Click the button below to create a new empty order. A QR code will be generated for
+              the customer to scan.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400">{error}</p>
+            </div>
+          )}
+
+          <Button
+            onClick={handleCreateOrder}
+            disabled={isCreating}
+            className="w-full h-16 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold text-lg"
+            size="lg"
+          >
+            {isCreating ? (
+              <div className="flex items-center gap-3">
+                <RefreshCw className="w-6 h-6 animate-spin" />
+                <span>Creating Order...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Plus className="w-6 h-6" />
+                <span>CREATE NEW ORDER</span>
+              </div>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+// Order Created Content Component - Shows QR code until order is initiated
+interface OrderCreatedContentProps {
+  orderId: string
+  staffId: string
+  location: string
+  onOrderInitiated: () => void
+  onBackToOverview: () => void
+}
+
+function OrderCreatedContent({
+  orderId,
+  staffId,
+  location,
+  onOrderInitiated,
+  onBackToOverview,
+}: OrderCreatedContentProps) {
+  const [orderStatus, setOrderStatus] = useState<'empty' | 'initiated'>('empty')
+  const [isChecking, setIsChecking] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [qrValue, setQrValue] = useState('')
+  const [qrLoading, setQrLoading] = useState(true)
+  const [qrError, setQrError] = useState<string | null>(null)
+
+  // Generate QR code when component mounts
+  useEffect(() => {
+    const generateQR = async () => {
+      try {
+        setQrLoading(true)
+        setQrError(null)
+
+        const response = await fetch('/api/whatsapp/qr-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            staffId,
+            location,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to generate QR code')
+        }
+
+        const data = await response.json()
+        setQrValue(data.qrValue)
+      } catch (error) {
+        console.error('Failed to generate QR code:', error)
+        setQrError('Failed to generate QR code. Please try again.')
+      } finally {
+        setQrLoading(false)
+      }
+    }
+
+    generateQR()
+  }, [orderId, staffId, location])
+
+  // Check order status periodically
+  useEffect(() => {
+    const checkOrderStatus = async () => {
+      try {
+        setIsChecking(true)
+        const response = await fetch(`/api/orders/${orderId}/status`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.orderStage === 'initiated') {
+            setOrderStatus('initiated')
+            // Auto-navigate to initiated orders after a brief delay
+            setTimeout(() => {
+              onOrderInitiated()
+            }, 2000)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check order status:', error)
+      } finally {
+        setIsChecking(false)
+      }
+    }
+
+    // Check immediately
+    checkOrderStatus()
+
+    // Then check every 10 seconds
+    const interval = setInterval(checkOrderStatus, 10000)
+    return () => clearInterval(interval)
+  }, [orderId, onOrderInitiated])
+
+  // Delete order function
+  const handleDeleteOrder = async () => {
+    if (
+      !confirm(`Are you sure you want to delete order ${orderId}? This action cannot be undone.`)
+    ) {
+      return
+    }
+
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete order')
+      }
+
+      // Navigate back to overview after successful deletion
+      onBackToOverview()
+    } catch (error) {
+      console.error('Failed to delete order:', error)
+      alert('Failed to delete order. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  if (orderStatus === 'initiated') {
+    return (
+      <Card className="bg-green-500/10 border-green-500/30">
+        <CardContent className="p-8 text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+          >
+            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-green-400 mb-2">Order Initiated!</h2>
+            <p className="text-gray-300 mb-4">
+              Customer has scanned the QR code and sent a WhatsApp message.
+            </p>
+            <p className="text-sm text-gray-400">Redirecting to initiated orders...</p>
+          </motion.div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-blue-500/10 border-blue-500/30">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              Order Created Successfully!
+            </div>
+            <Button
+              onClick={handleDeleteOrder}
+              disabled={isDeleting}
+              variant="outline"
+              size="sm"
+              className="text-red-400 border-red-400 hover:bg-red-500/10"
+            >
+              {isDeleting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-300">
+                  Order ID: <span className="font-mono font-bold text-blue-400">{orderId}</span>
+                </p>
+                <p className="text-sm text-gray-400">
+                  Show this QR code to the customer to start the service
+                </p>
+              </div>
+              <Badge variant="outline" className="text-yellow-400 border-yellow-400">
+                Waiting for Customer
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-gray-800/50 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <QrCode className="w-5 h-5 text-blue-400" />
+            Customer QR Code
+            {isChecking && <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="max-w-2xl mx-auto">
+            {qrLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-pulse bg-gray-200 w-64 h-64 rounded-lg flex items-center justify-center">
+                  <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
+                </div>
+              </div>
+            ) : qrError ? (
+              <div className="text-center p-8">
+                <p className="text-red-400 mb-4">{qrError}</p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retry
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center space-y-4">
+                <div className="relative inline-block">
+                  <QRCodeSVG
+                    value={qrValue}
+                    size={256}
+                    level="M"
+                    includeMargin={true}
+                    className="border-2 border-gray-200 rounded-lg"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    Scan this QR code with your phone to start your car wash service via WhatsApp
+                  </p>
+                  <p className="text-xs text-gray-500">This QR code is linked to order {orderId}</p>
+                </div>
+
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={() => navigator.clipboard.writeText(qrValue)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </Button>
+
+                  <Button
+                    onClick={() => window.open(qrValue, '_blank')}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Open WhatsApp
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <h3 className="font-semibold text-blue-400 mb-2">Next Steps:</h3>
+              <ol className="text-sm text-gray-300 space-y-1">
+                <li>1. Show the QR code to the customer</li>
+                <li>2. Customer scans with their phone camera</li>
+                <li>3. Customer sends the WhatsApp message</li>
+                <li>4. Order will automatically move to "Initiated" status</li>
+              </ol>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-4">
+        <Button onClick={onBackToOverview} variant="outline" className="flex-1">
+          Back to Overview
+        </Button>
+        <Button onClick={onOrderInitiated} variant="outline" className="flex-1">
+          Skip to Initiated Orders
+        </Button>
+      </div>
+    </div>
   )
 }
 

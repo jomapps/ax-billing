@@ -237,6 +237,11 @@ export class WhatsAppService {
    * Format phone number for WhatsApp
    */
   formatPhoneNumber(phoneNumber: string): string {
+    // Handle undefined or null phone numbers
+    if (!phoneNumber || typeof phoneNumber !== 'string') {
+      throw new Error('Invalid phone number provided')
+    }
+
     // Remove all non-digit characters
     let cleaned = phoneNumber.replace(/\D/g, '')
 

@@ -60,9 +60,26 @@ export async function POST(request: NextRequest) {
 
 async function handleIncomingMessage(data: any, payload: any) {
   try {
-    const { mobile, text, name, id: messageId, timestamp } = data.payload
+    console.log('Raw webhook data.payload:', JSON.stringify(data.payload, null, 2))
 
+    const { source, payload: messagePayload, sender, id: messageId, timestamp } = data.payload
+    const text = messagePayload?.text
+    const mobile = source || sender?.phone
+    const name = sender?.name
+
+    console.log('Extracted values:', { source, mobile, text, name })
     console.log(`Processing message from ${mobile}: ${text}`)
+
+    // Validate required fields
+    if (!mobile) {
+      console.error('No phone number found in webhook data:', data.payload)
+      return
+    }
+
+    if (!text) {
+      console.error('No text message found in webhook data:', data.payload)
+      return
+    }
 
     // Format phone number
     const formattedNumber = whatsappService.formatPhoneNumber(mobile)
@@ -177,12 +194,18 @@ Thank you for choosing AX Billing! 🚗✨`
 
     // Send error message to user if possible
     try {
-      const { mobile } = data.payload
-      const formattedNumber = whatsappService.formatPhoneNumber(mobile)
-      await whatsappService.sendMessage(
-        formattedNumber,
-        '❌ Sorry, there was an error processing your request. Please try again or contact our staff for assistance.',
-      )
+      const { source, sender } = data.payload
+      const mobile = source || sender?.phone
+
+      if (mobile) {
+        const formattedNumber = whatsappService.formatPhoneNumber(mobile)
+        await whatsappService.sendMessage(
+          formattedNumber,
+          '❌ Sorry, there was an error processing your request. Please try again or contact our staff for assistance.',
+        )
+      } else {
+        console.error('Cannot send error message: no phone number available')
+      }
     } catch (sendError) {
       console.error('Failed to send error message:', sendError)
     }
