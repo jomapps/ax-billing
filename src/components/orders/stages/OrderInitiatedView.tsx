@@ -53,7 +53,11 @@ interface OrderInitiatedViewProps {
   className?: string
 }
 
-export function OrderInitiatedView({ orderId, initialOrderData, className }: OrderInitiatedViewProps) {
+export function OrderInitiatedView({
+  orderId,
+  initialOrderData,
+  className,
+}: OrderInitiatedViewProps) {
   const router = useRouter()
   const [orderData, setOrderData] = useState<OrderData | null>(initialOrderData || null)
   const [loading, setLoading] = useState(!initialOrderData)
@@ -69,7 +73,7 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
   const fetchFullOrderData = async () => {
     try {
       setError(null)
-      
+
       const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=3`)
 
       if (!response.ok) {
@@ -138,7 +142,7 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-6xl', className)}>
       <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
-      
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -161,11 +165,12 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
           </div>
         </div>
         <div className="text-right">
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-            Initiated
-          </Badge>
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Initiated</Badge>
           <p className="text-sm text-gray-400 mt-1">
-            Connected {orderData.qrCodeScannedAt ? new Date(orderData.qrCodeScannedAt).toLocaleString() : 'Recently'}
+            Connected{' '}
+            {orderData.qrCodeScannedAt
+              ? new Date(orderData.qrCodeScannedAt).toLocaleString()
+              : 'Recently'}
           </p>
         </div>
       </motion.div>
@@ -194,21 +199,21 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
                       Connected
                     </Badge>
                   </div>
-                  
+
                   {orderData.customer?.name && (
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">Name:</span>
                       <span className="text-white">{orderData.customer.name}</span>
                     </div>
                   )}
-                  
+
                   {orderData.whatsappNumber && (
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">WhatsApp:</span>
                       <span className="text-white font-mono">{orderData.whatsappNumber}</span>
                     </div>
                   )}
-                  
+
                   {orderData.customer?.email && (
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">Email:</span>
@@ -245,16 +250,19 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
               <CardContent className="space-y-4">
                 {showVehicleCapture ? (
                   <VehicleCaptureInterface
-                    orderId={orderData.orderID}
+                    orderId={orderId}
                     onVehicleCaptured={handleVehicleCaptured}
                     onCancel={() => setShowVehicleCapture(false)}
                   />
                 ) : (
                   <div className="text-center py-8">
                     <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-white mb-2">Capture Vehicle Information</h3>
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      Capture Vehicle Information
+                    </h3>
                     <p className="text-gray-400 mb-6">
-                      Take a photo of the vehicle to automatically extract license plate and vehicle type.
+                      Take a photo of the vehicle to automatically extract license plate and vehicle
+                      type.
                     </p>
                     <Button
                       onClick={() => setShowVehicleCapture(true)}
@@ -290,10 +298,11 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
                 <CheckCircle className="w-5 h-5 text-green-400" />
                 <span className="text-white">QR Code Scanned</span>
                 <span className="text-gray-400 text-sm">
-                  {orderData.qrCodeScannedAt && new Date(orderData.qrCodeScannedAt).toLocaleString()}
+                  {orderData.qrCodeScannedAt &&
+                    new Date(orderData.qrCodeScannedAt).toLocaleString()}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 {hasCustomer ? (
                   <CheckCircle className="w-5 h-5 text-green-400" />
@@ -307,7 +316,7 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-3">
                 {hasVehicle ? (
                   <CheckCircle className="w-5 h-5 text-green-400" />
@@ -321,7 +330,7 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-gray-400" />
                 <span className="text-gray-400">Service Selection</span>
@@ -330,7 +339,7 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
                 </Badge>
               </div>
             </div>
-            
+
             {hasCustomer && hasVehicle && (
               <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
@@ -338,7 +347,8 @@ export function OrderInitiatedView({ orderId, initialOrderData, className }: Ord
                   <span className="text-green-400 font-medium">Ready for Next Stage</span>
                 </div>
                 <p className="text-gray-300 text-sm">
-                  Customer and vehicle information captured. Order will automatically progress to service selection.
+                  Customer and vehicle information captured. Order will automatically progress to
+                  service selection.
                 </p>
               </div>
             )}

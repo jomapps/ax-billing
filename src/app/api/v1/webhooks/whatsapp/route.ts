@@ -149,7 +149,7 @@ async function handleIncomingMessage(data: any, payload: any) {
     // Track QR code scan
     await qrService.trackQRScan(orderId, formattedNumber)
 
-    // Send order initiated confirmation
+    // Send order initiated confirmation (non-blocking)
     const welcomeMessage = `🎉 *Welcome to AX Billing!*
 
 Your order has been created:
@@ -159,33 +159,48 @@ Our staff will now capture your vehicle information and add the services you nee
 
 Thank you for choosing AX Billing! 🚗✨`
 
-    await whatsappService.sendMessage(formattedNumber, welcomeMessage)
+    try {
+      await whatsappService.sendMessage(formattedNumber, welcomeMessage)
+    } catch (messageError) {
+      console.error('Failed to send welcome message (non-critical):', messageError)
+      // Continue processing even if message sending fails
+    }
 
-    // Log the incoming message
-    await logMessage(payload, {
-      user: user.id,
-      order: order.id,
-      whatsappNumber: formattedNumber,
-      messageId,
-      direction: 'inbound',
-      messageType: 'text',
-      content: text,
-      status: 'received',
-      timestamp: new Date(parseInt(timestamp)).toISOString(),
-    })
+    // Log the incoming message (non-blocking)
+    try {
+      await logMessage(payload, {
+        user: user.id,
+        order: order.id,
+        whatsappNumber: formattedNumber,
+        messageId,
+        direction: 'inbound',
+        messageType: 'text',
+        content: text,
+        status: 'received',
+        timestamp: timestamp
+          ? new Date(parseInt(timestamp)).toISOString()
+          : new Date().toISOString(),
+      })
+    } catch (logError) {
+      console.error('Failed to log incoming message (non-critical):', logError)
+    }
 
-    // Log the outgoing message
-    await logMessage(payload, {
-      user: user.id,
-      order: order.id,
-      whatsappNumber: formattedNumber,
-      messageId: `out_${Date.now()}`,
-      direction: 'outbound',
-      messageType: 'text',
-      content: welcomeMessage,
-      status: 'sent',
-      timestamp: new Date().toISOString(),
-    })
+    // Log the outgoing message (non-blocking)
+    try {
+      await logMessage(payload, {
+        user: user.id,
+        order: order.id,
+        whatsappNumber: formattedNumber,
+        messageId: `out_${Date.now()}`,
+        direction: 'outbound',
+        messageType: 'text',
+        content: welcomeMessage,
+        status: 'sent',
+        timestamp: new Date().toISOString(),
+      })
+    } catch (logError) {
+      console.error('Failed to log outgoing message (non-critical):', logError)
+    }
 
     console.log(`Successfully processed message for order ${orderId}`)
   } catch (error) {

@@ -253,7 +253,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-4xl', className)}>
       {/* Order Stage Poller - invisible component that polls for stage changes */}
-      <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
+      {orderData && <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />}
 
       {/* Header */}
       <motion.div

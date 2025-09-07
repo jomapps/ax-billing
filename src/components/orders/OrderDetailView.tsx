@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, formatDisplayDate } from '@/lib/utils'
 
 interface OrderDetailViewProps {
   orderId: string
@@ -391,14 +391,14 @@ export function OrderDetailView({ orderId, className }: OrderDetailViewProps) {
                   <Calendar className="w-4 h-4 text-blue-400" />
                   <span className="text-gray-400 text-sm">Created:</span>
                   <span className="text-gray-300 text-sm">
-                    {new Date(orderData.createdAt).toLocaleString()}
+                    {formatDisplayDate(orderData.createdAt)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-green-400" />
                   <span className="text-gray-400 text-sm">Updated:</span>
                   <span className="text-gray-300 text-sm">
-                    {new Date(orderData.updatedAt).toLocaleString()}
+                    {formatDisplayDate(orderData.updatedAt)}
                   </span>
                 </div>
                 {orderData.estimatedCompletionTime && (
@@ -406,7 +406,7 @@ export function OrderDetailView({ orderId, className }: OrderDetailViewProps) {
                     <Clock className="w-4 h-4 text-yellow-400" />
                     <span className="text-gray-400 text-sm">Est. Completion:</span>
                     <span className="text-gray-300 text-sm">
-                      {new Date(orderData.estimatedCompletionTime).toLocaleString()}
+                      {formatDisplayDate(orderData.estimatedCompletionTime)}
                     </span>
                   </div>
                 )}
@@ -505,7 +505,7 @@ export function OrderDetailView({ orderId, className }: OrderDetailViewProps) {
                   </div>
                   {orderData.intake.intakeCompletedAt && (
                     <p className="text-gray-400 text-sm">
-                      Completed: {new Date(orderData.intake.intakeCompletedAt).toLocaleString()}
+                      Completed: {formatDisplayDate(orderData.intake.intakeCompletedAt)}
                     </p>
                   )}
                   <Button
@@ -567,7 +567,7 @@ export function OrderDetailView({ orderId, className }: OrderDetailViewProps) {
                   )}
                   {orderData.delivery.deliveryCompletedAt && (
                     <p className="text-gray-400 text-sm">
-                      Completed: {new Date(orderData.delivery.deliveryCompletedAt).toLocaleString()}
+                      Completed: {formatDisplayDate(orderData.delivery.deliveryCompletedAt)}
                     </p>
                   )}
                   <Button

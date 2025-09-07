@@ -176,7 +176,7 @@ export function InitiatedOrdersDashboard({
               <Card
                 key={order.id}
                 className="bg-gray-800 border-gray-700 hover:border-blue-500 transition-all duration-300 cursor-pointer group"
-                onClick={() => router.push(`/orders/${order.orderID}`)}
+                onClick={() => router.push(`/order/${order.orderID}/initiated`)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">

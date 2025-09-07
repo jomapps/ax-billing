@@ -91,6 +91,30 @@ export function getVehicleTypeLabel(type: string): string {
   return labels[type] || type
 }
 
+/**
+ * Format date consistently for SSR/client hydration
+ * Uses ISO format to avoid locale/timezone mismatches
+ */
+export function formatDate(date: string | Date): string {
+  const d = new Date(date)
+  return d.toISOString().replace('T', ' ').slice(0, 19)
+}
+
+/**
+ * Format date for display with consistent formatting
+ * Avoids hydration mismatches by using a fixed format
+ */
+export function formatDisplayDate(date: string | Date): string {
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+
+  return `${day}/${month}/${year}, ${hours}:${minutes}`
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,

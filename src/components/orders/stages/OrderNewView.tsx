@@ -22,7 +22,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { OrderStagePoller } from '../OrderStagePoller'
-import { cn } from '@/lib/utils'
+
+import { cn, formatDisplayDate } from '@/lib/utils'
 
 interface OrderData {
   id: string
@@ -239,7 +240,8 @@ export function OrderNewView({ orderId, initialOrderData, className }: OrderNewV
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-4xl', className)}>
-      <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
+      {/* Order Stage Poller - invisible component that polls for stage changes */}
+      {orderData && <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />}
 
       {/* Header */}
       <motion.div
@@ -267,7 +269,7 @@ export function OrderNewView({ orderId, initialOrderData, className }: OrderNewV
             Awaiting QR Scan
           </Badge>
           <p className="text-sm text-gray-400 mt-1">
-            Created {new Date(orderData.createdAt).toLocaleString()}
+            Created {formatDisplayDate(orderData.createdAt)}
           </p>
         </div>
       </motion.div>
