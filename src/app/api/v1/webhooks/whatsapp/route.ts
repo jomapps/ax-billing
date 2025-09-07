@@ -102,7 +102,7 @@ async function handleIncomingMessage(data: any, payload: any) {
         messageType: 'text',
         content: text,
         status: 'received',
-        timestamp: new Date(parseInt(timestamp)),
+        timestamp: new Date(parseInt(timestamp)).toISOString(),
       })
       return
     }
@@ -172,7 +172,7 @@ Thank you for choosing AX Billing! 🚗✨`
       messageType: 'text',
       content: text,
       status: 'received',
-      timestamp: new Date(parseInt(timestamp)),
+      timestamp: new Date(parseInt(timestamp)).toISOString(),
     })
 
     // Log the outgoing message
@@ -185,7 +185,7 @@ Thank you for choosing AX Billing! 🚗✨`
       messageType: 'text',
       content: welcomeMessage,
       status: 'sent',
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     })
 
     console.log(`Successfully processed message for order ${orderId}`)

@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import {
@@ -13,6 +14,7 @@ import {
   RefreshCw,
   Zap,
   Users,
+  User,
   DollarSign,
   Activity,
   Bell,
@@ -38,6 +40,10 @@ import { ServiceSelectionGrid } from '@/components/services/ServiceSelectionGrid
 import { PaymentLinkGenerator } from '@/components/payments/PaymentLinkGenerator'
 import { OrderCompletion } from '@/components/orders/OrderCompletion'
 
+// Import new data management components
+import { DashboardDataProvider, useDashboardData } from './DashboardDataProvider'
+import { OrderStatusChecker } from './OrderStatusChecker'
+
 interface EnhancedStaffDashboardProps {
   staffId?: string
   location?: string
@@ -53,55 +59,22 @@ type WorkflowStep =
   | 'payment'
   | 'completion'
 
-export function EnhancedStaffDashboard({
+// Internal component that uses the data provider
+function EnhancedStaffDashboardContent({
   staffId = 'staff-001',
   location = 'Main Branch',
 }: EnhancedStaffDashboardProps) {
+  const router = useRouter()
+  const { orders, stats, loading, error, refreshData } = useDashboardData()
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('overview')
-  const [orders, setOrders] = useState<OrderWithRelations[]>([])
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [recentOrderId, setRecentOrderId] = useState<string | null>(null)
   const [notifications, setNotifications] = useState<string[]>([])
 
-  // Fetch dashboard data
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const [ordersResult, dashboardStats] = await Promise.all([
-        payloadClient.getOrders({
-          where: {
-            overallStatus: {
-              not_in: ['completed', 'picked_up', 'cancelled'],
-            },
-          },
-          sort: '-createdAt',
-          limit: 50,
-        }),
-        payloadClient.getDashboardStats(),
-      ])
-
-      setOrders(ordersResult.docs)
-      setStats(dashboardStats)
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
-      setError('Failed to load dashboard data. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchData()
-
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
-  }, [fetchData])
+  // Manual refresh function
+  const handleRefresh = useCallback(async () => {
+    await refreshData()
+  }, [refreshData])
 
   // Handle workflow navigation
   const handleNewOrder = () => {
@@ -113,7 +86,7 @@ export function EnhancedStaffDashboard({
     setSelectedOrderId(orderId)
     setNotifications((prev) => [...prev, `New order created: ${orderId}`])
     setCurrentStep('order-created')
-    fetchData() // Refresh data
+    refreshData() // Refresh data
   }
 
   const handleCaptureVehicle = (orderId: string) => {
@@ -123,7 +96,7 @@ export function EnhancedStaffDashboard({
 
   const handleVehicleCaptured = () => {
     setCurrentStep('service-selection')
-    fetchData() // Refresh data
+    refreshData() // Refresh data
   }
 
   const handleServiceSelection = (orderId: string) => {
@@ -226,7 +199,7 @@ export function EnhancedStaffDashboard({
 
             {/* Refresh Button */}
             <Button
-              onClick={fetchData}
+              onClick={handleRefresh}
               variant="outline"
               size="sm"
               disabled={loading}
@@ -303,6 +276,7 @@ export function EnhancedStaffDashboard({
                 stats={quickStats}
                 orders={orders}
                 onNewOrder={handleNewOrder}
+                onViewInitiated={() => setCurrentStep('initiated-orders')}
                 onCaptureVehicle={handleCaptureVehicle}
                 onServiceSelection={handleServiceSelection}
                 onPaymentGeneration={handlePaymentGeneration}
@@ -384,6 +358,7 @@ interface OverviewContentProps {
   }>
   orders: OrderWithRelations[]
   onNewOrder: () => void
+  onViewInitiated: () => void
   onCaptureVehicle: (orderId: string) => void
   onServiceSelection: (orderId: string) => void
   onPaymentGeneration: (orderId: string) => void
@@ -394,6 +369,7 @@ function OverviewContent({
   stats,
   orders,
   onNewOrder,
+  onViewInitiated,
   onCaptureVehicle,
   onServiceSelection,
   onPaymentGeneration,
@@ -459,7 +435,7 @@ function OverviewContent({
 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
-                onClick={() => setCurrentStep('initiated-orders')}
+                onClick={onViewInitiated}
                 variant="outline"
                 className="w-full h-20 border-gray-600 text-gray-300 hover:bg-gray-800"
                 size="lg"
@@ -489,7 +465,7 @@ function OverviewContent({
       </Card>
 
       {/* Active Orders by Stage */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="space-y-8">
         {/* Initiated Orders */}
         <Card className="bg-gray-800/50 border-gray-700">
           <CardHeader>
@@ -505,31 +481,79 @@ function OverviewContent({
           </CardHeader>
           <CardContent className="space-y-3">
             {initiatedOrders.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">No initiated orders</p>
+              <p className="text-gray-400 text-center py-8">No initiated orders</p>
             ) : (
-              initiatedOrders.slice(0, 3).map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-                >
-                  <div>
-                    <p className="text-white font-medium">{order.orderID}</p>
-                    <p className="text-gray-400 text-sm">
-                      {order.customer && typeof order.customer === 'object'
-                        ? (order.customer as any).name || 'Unknown Customer'
-                        : 'Unknown Customer'}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => onCaptureVehicle(order.orderID)}
-                    size="sm"
-                    className="bg-blue-500 hover:bg-blue-600"
-                  >
-                    <Camera className="w-4 h-4 mr-1" />
-                    Capture
-                  </Button>
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-gray-300 text-sm">
+                    Showing {initiatedOrders.length} order{initiatedOrders.length !== 1 ? 's' : ''}
+                  </p>
                 </div>
-              ))
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {initiatedOrders.map((order) => (
+                    <Card
+                      key={order.id}
+                      className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/orders/${order.orderID}`)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-white font-semibold text-lg">{order.orderID}</h3>
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-500/20 text-blue-400 border-blue-500/30"
+                            >
+                              Initiated
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {order.customer && typeof order.customer === 'object'
+                                  ? (order.customer as any).name || 'Unknown Customer'
+                                  : 'Unknown Customer'}
+                              </span>
+                            </div>
+
+                            {order.vehicle && typeof order.vehicle === 'object' && (
+                              <div className="flex items-center gap-2">
+                                <Car className="w-4 h-4 text-gray-400" />
+                                <span className="text-gray-300 text-sm">
+                                  {(order.vehicle as any).licensePlate || 'No License'}
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {formatTime(order.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-gray-700">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/orders/${order.orderID}`)
+                              }}
+                              size="sm"
+                              className="w-full bg-blue-500 hover:bg-blue-600"
+                            >
+                              <Camera className="w-4 h-4 mr-2" />
+                              Start Process
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -549,31 +573,79 @@ function OverviewContent({
           </CardHeader>
           <CardContent className="space-y-3">
             {openOrders.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">No open orders</p>
+              <p className="text-gray-400 text-center py-8">No open orders</p>
             ) : (
-              openOrders.slice(0, 3).map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-                >
-                  <div>
-                    <p className="text-white font-medium">{order.orderID}</p>
-                    <p className="text-gray-400 text-sm">
-                      {order.vehicle && typeof order.vehicle === 'object'
-                        ? (order.vehicle as any).licensePlate || 'No License'
-                        : 'No License'}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => onServiceSelection(order.orderID)}
-                    size="sm"
-                    className="bg-green-500 hover:bg-green-600"
-                  >
-                    <Car className="w-4 h-4 mr-1" />
-                    Services
-                  </Button>
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-gray-300 text-sm">
+                    Showing {openOrders.length} order{openOrders.length !== 1 ? 's' : ''}
+                  </p>
                 </div>
-              ))
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {openOrders.map((order) => (
+                    <Card
+                      key={order.id}
+                      className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/orders/${order.orderID}`)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-white font-semibold text-lg">{order.orderID}</h3>
+                            <Badge
+                              variant="secondary"
+                              className="bg-green-500/20 text-green-400 border-green-500/30"
+                            >
+                              In Progress
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Car className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {order.vehicle && typeof order.vehicle === 'object'
+                                  ? (order.vehicle as any).licensePlate || 'No License'
+                                  : 'No License'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {order.customer && typeof order.customer === 'object'
+                                  ? (order.customer as any).name || 'Unknown Customer'
+                                  : 'Unknown Customer'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {formatTime(order.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-gray-700">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/orders/${order.orderID}`)
+                              }}
+                              size="sm"
+                              className="w-full bg-green-500 hover:bg-green-600"
+                            >
+                              <Car className="w-4 h-4 mr-2" />
+                              Manage Order
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -593,29 +665,77 @@ function OverviewContent({
           </CardHeader>
           <CardContent className="space-y-3">
             {billedOrders.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">No pending payments</p>
+              <p className="text-gray-400 text-center py-8">No pending payments</p>
             ) : (
-              billedOrders.slice(0, 3).map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-                >
-                  <div>
-                    <p className="text-white font-medium">{order.orderID}</p>
-                    <p className="text-gray-400 text-sm">
-                      {formatCurrency(order.totalAmount || 0)}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => onOrderCompletion(order.orderID)}
-                    size="sm"
-                    className="bg-yellow-500 hover:bg-yellow-600 text-black"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Complete
-                  </Button>
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-gray-300 text-sm">
+                    Showing {billedOrders.length} order{billedOrders.length !== 1 ? 's' : ''}
+                  </p>
                 </div>
-              ))
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {billedOrders.map((order) => (
+                    <Card
+                      key={order.id}
+                      className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/orders/${order.orderID}`)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-white font-semibold text-lg">{order.orderID}</h3>
+                            <Badge
+                              variant="secondary"
+                              className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                            >
+                              Pending Payment
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm font-medium">
+                                {formatCurrency(order.totalAmount || 0)}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {order.customer && typeof order.customer === 'object'
+                                  ? (order.customer as any).name || 'Unknown Customer'
+                                  : 'Unknown Customer'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {formatTime(order.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-gray-700">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/orders/${order.orderID}`)
+                              }}
+                              size="sm"
+                              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                            >
+                              <CreditCard className="w-4 h-4 mr-2" />
+                              Process Payment
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -764,36 +884,14 @@ function OrderCreatedContent({
     generateQR()
   }, [orderId, staffId, location])
 
-  // Check order status periodically
-  useEffect(() => {
-    const checkOrderStatus = async () => {
-      try {
-        setIsChecking(true)
-        const response = await fetch(`/api/orders/${orderId}/status`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.orderStage === 'initiated') {
-            setOrderStatus('initiated')
-            // Auto-navigate to initiated orders after a brief delay
-            setTimeout(() => {
-              onOrderInitiated()
-            }, 2000)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to check order status:', error)
-      } finally {
-        setIsChecking(false)
-      }
-    }
-
-    // Check immediately
-    checkOrderStatus()
-
-    // Then check every 10 seconds
-    const interval = setInterval(checkOrderStatus, 10000)
-    return () => clearInterval(interval)
-  }, [orderId, onOrderInitiated])
+  // Handle order status changes
+  const handleOrderInitiated = () => {
+    setOrderStatus('initiated')
+    // Auto-navigate to initiated orders after a brief delay
+    setTimeout(() => {
+      onOrderInitiated()
+    }, 2000)
+  }
 
   // Delete order function
   const handleDeleteOrder = async () => {
@@ -887,83 +985,94 @@ function OrderCreatedContent({
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-800/50 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-blue-400" />
-            Customer QR Code
-            {isChecking && <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-2xl mx-auto">
-            {qrLoading ? (
-              <div className="flex items-center justify-center p-8">
-                <div className="animate-pulse bg-gray-200 w-64 h-64 rounded-lg flex items-center justify-center">
-                  <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
+      <OrderStatusChecker
+        orderId={orderId}
+        onOrderInitiated={handleOrderInitiated}
+        checkInterval={10000}
+      >
+        {({ isChecking, orderStatus }) => (
+          <Card className="bg-gray-800/50 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-blue-400" />
+                Customer QR Code
+                {isChecking && <RefreshCw className="w-4 h-4 animate-spin text-blue-400" />}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="max-w-2xl mx-auto">
+                {qrLoading ? (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-pulse bg-gray-200 w-64 h-64 rounded-lg flex items-center justify-center">
+                      <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
+                    </div>
+                  </div>
+                ) : qrError ? (
+                  <div className="text-center p-8">
+                    <p className="text-red-400 mb-4">{qrError}</p>
+                    <Button onClick={() => window.location.reload()} variant="outline">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className="relative inline-block">
+                      <QRCodeSVG
+                        value={qrValue}
+                        size={256}
+                        level="M"
+                        includeMargin={true}
+                        className="border-2 border-gray-200 rounded-lg"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        Scan this QR code with your phone to start your car wash service via
+                        WhatsApp
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        This QR code is linked to order {orderId}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        onClick={() => navigator.clipboard.writeText(qrValue)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Link
+                      </Button>
+
+                      <Button
+                        onClick={() => window.open(qrValue, '_blank')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Open WhatsApp
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <h3 className="font-semibold text-blue-400 mb-2">Next Steps:</h3>
+                  <ol className="text-sm text-gray-300 space-y-1">
+                    <li>1. Show the QR code to the customer</li>
+                    <li>2. Customer scans with their phone camera</li>
+                    <li>3. Customer sends the WhatsApp message</li>
+                    <li>4. Order will automatically move to "Initiated" status</li>
+                  </ol>
                 </div>
               </div>
-            ) : qrError ? (
-              <div className="text-center p-8">
-                <p className="text-red-400 mb-4">{qrError}</p>
-                <Button onClick={() => window.location.reload()} variant="outline">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center space-y-4">
-                <div className="relative inline-block">
-                  <QRCodeSVG
-                    value={qrValue}
-                    size={256}
-                    level="M"
-                    includeMargin={true}
-                    className="border-2 border-gray-200 rounded-lg"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    Scan this QR code with your phone to start your car wash service via WhatsApp
-                  </p>
-                  <p className="text-xs text-gray-500">This QR code is linked to order {orderId}</p>
-                </div>
-
-                <div className="flex gap-2 justify-center">
-                  <Button
-                    onClick={() => navigator.clipboard.writeText(qrValue)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy Link
-                  </Button>
-
-                  <Button
-                    onClick={() => window.open(qrValue, '_blank')}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Open WhatsApp
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <h3 className="font-semibold text-blue-400 mb-2">Next Steps:</h3>
-              <ol className="text-sm text-gray-300 space-y-1">
-                <li>1. Show the QR code to the customer</li>
-                <li>2. Customer scans with their phone camera</li>
-                <li>3. Customer sends the WhatsApp message</li>
-                <li>4. Order will automatically move to "Initiated" status</li>
-              </ol>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+      </OrderStatusChecker>
 
       <div className="flex gap-4">
         <Button onClick={onBackToOverview} variant="outline" className="flex-1">
@@ -1090,4 +1199,13 @@ interface CompletionContentProps {
 
 function CompletionContent({ orderId, onOrderCompleted, onBack }: CompletionContentProps) {
   return <OrderCompletion orderId={orderId} onOrderCompleted={onOrderCompleted} onBack={onBack} />
+}
+
+// Main export component with data provider wrapper
+export function EnhancedStaffDashboard(props: EnhancedStaffDashboardProps) {
+  return (
+    <DashboardDataProvider refreshInterval={30000}>
+      <EnhancedStaffDashboardContent {...props} />
+    </DashboardDataProvider>
+  )
 }

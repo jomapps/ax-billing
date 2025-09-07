@@ -18,6 +18,8 @@ import { Orders } from './collections/Orders'
 import { CustomerTiers } from './collections/CustomerTiers'
 import { WhatsAppMessages } from './collections/WhatsAppMessages'
 import { WhatsAppTemplates } from './collections/WhatsAppTemplates'
+import { Intake } from './collections/Intake'
+import { Delivery } from './collections/Delivery'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -43,6 +45,8 @@ export default buildConfig({
     Media,
     WhatsAppMessages,
     WhatsAppTemplates,
+    Intake,
+    Delivery,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

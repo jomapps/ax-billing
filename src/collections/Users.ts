@@ -95,6 +95,17 @@ export const Users: CollectionConfig = {
     },
   ],
   access: {
+    create: ({ req: { user } }) => {
+      // Allow admin and staff to create users
+      if (user?.role === 'admin') return true
+      if (user?.role === 'staff') return true
+
+      // Allow unauthenticated creation for webhook/API integrations
+      // This is needed for WhatsApp webhook to create customer accounts
+      if (!user) return true
+
+      return false
+    },
     read: ({ req: { user } }) => {
       if (user?.role === 'admin') return true
       if (user?.role === 'staff') return true

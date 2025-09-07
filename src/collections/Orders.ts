@@ -397,7 +397,27 @@ export const Orders: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
-      async ({ data, operation }) => {
+      async ({ data, operation, originalDoc, req }) => {
+        // Implement order editing rules
+        if (operation === 'update' && originalDoc) {
+          // Prevent editing if order is paid (except for specific fields)
+          if (originalDoc.paymentStatus === 'paid') {
+            const allowedFields = [
+              'overallStatus',
+              'jobStatus',
+              'estimatedCompletionTime',
+              'updatedAt',
+            ]
+            const changedFields = Object.keys(data).filter(
+              (key) => data[key] !== originalDoc[key] && !allowedFields.includes(key),
+            )
+
+            if (changedFields.length > 0) {
+              throw new Error('Cannot edit paid orders. Only status updates are allowed.')
+            }
+          }
+        }
+
         // Auto-calculate total amount
         if (data.servicesRendered && Array.isArray(data.servicesRendered)) {
           let total = 0

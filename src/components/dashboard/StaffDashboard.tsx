@@ -72,11 +72,6 @@ export function StaffDashboard() {
 
   useEffect(() => {
     fetchData()
-
-    // Set up polling for real-time updates every 30 seconds
-    const interval = setInterval(fetchData, 30000)
-
-    return () => clearInterval(interval)
   }, [])
 
   const filteredOrders = orders.filter(

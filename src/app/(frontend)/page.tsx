@@ -1,6 +1,11 @@
 import React from 'react'
-import { EnhancedStaffDashboard } from '@/components/dashboard/EnhancedStaffDashboard'
+import { ClientDashboardWrapper } from '@/components/dashboard/ClientDashboardWrapper'
 
+// Server-side page component
 export default function HomePage() {
-  return <EnhancedStaffDashboard staffId="staff-001" location="Main Branch" />
+  // This could fetch initial data from the server if needed
+  const staffId = 'staff-001'
+  const location = 'Main Branch'
+
+  return <ClientDashboardWrapper staffId={staffId} location={location} />
 }

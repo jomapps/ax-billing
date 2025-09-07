@@ -68,6 +68,12 @@ export class WhatsAppService {
       return response.data.status === 'submitted'
     } catch (error) {
       console.error('Failed to send WhatsApp message:', error)
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as any
+        console.error('Response status:', axiosError.response?.status)
+        console.error('Response data:', axiosError.response?.data)
+        console.error('Response headers:', axiosError.response?.headers)
+      }
       return false
     }
   }

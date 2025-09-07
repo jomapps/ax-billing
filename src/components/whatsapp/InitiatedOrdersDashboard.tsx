@@ -24,9 +24,9 @@ interface InitiatedOrdersDashboardProps {
   className?: string
 }
 
-export function InitiatedOrdersDashboard({ 
+export function InitiatedOrdersDashboard({
   onCaptureVehicle,
-  className = '' 
+  className = '',
 }: InitiatedOrdersDashboardProps) {
   const [orders, setOrders] = useState<InitiatedOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -35,21 +35,17 @@ export function InitiatedOrdersDashboard({
 
   useEffect(() => {
     fetchInitiatedOrders()
-    
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(fetchInitiatedOrders, 30000)
-    return () => clearInterval(interval)
   }, [])
 
   const fetchInitiatedOrders = async () => {
     try {
       setRefreshing(true)
       const response = await fetch('/api/staff/initiated-orders')
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch initiated orders')
       }
-      
+
       const data = await response.json()
       setOrders(data.orders || [])
       setError(null)
@@ -130,12 +126,7 @@ export function InitiatedOrdersDashboard({
             <Clock className="w-5 h-5" />
             Initiated Orders ({orders.length})
           </CardTitle>
-          <Button 
-            onClick={handleRefresh} 
-            variant="outline" 
-            size="sm"
-            disabled={refreshing}
-          >
+          <Button onClick={handleRefresh} variant="outline" size="sm" disabled={refreshing}>
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -151,7 +142,7 @@ export function InitiatedOrdersDashboard({
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <div 
+              <div
                 key={order.id}
                 className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
               >
@@ -183,7 +174,7 @@ export function InitiatedOrdersDashboard({
                 </div>
 
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     onClick={() => onCaptureVehicle?.(order.orderID)}
                     className="flex-1"
                     size="sm"
@@ -191,9 +182,9 @@ export function InitiatedOrdersDashboard({
                     <Camera className="w-4 h-4 mr-2" />
                     Capture Vehicle
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => window.open(`https://wa.me/${order.whatsappNumber}`, '_blank')}
                   >
