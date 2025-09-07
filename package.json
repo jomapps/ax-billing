@@ -25,7 +25,9 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "test:network": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.network.config.mts",
     "test:services": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/test-external-services.ts",
-    "test:services:full": "pnpm run test:services && pnpm run test:int && pnpm run test:network"
+    "test:services:full": "pnpm run test:services && pnpm run test:int && pnpm run test:network",
+    "db:backup": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/db-backup.ts",
+    "db:restore": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/db-restore.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
