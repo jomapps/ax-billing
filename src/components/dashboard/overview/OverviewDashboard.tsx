@@ -18,6 +18,13 @@ interface OrderData {
   createdAt: string
   overallStatus: string
   paymentStatus: string
+  orderStage: 'empty' | 'initiated' | 'open' | 'billed' | 'paid'
+  servicesRendered?: Array<{
+    service: any
+    selectedOptions?: any[]
+    servicePrice: number
+    optionsPrice?: number
+  }>
 }
 
 interface OverviewDashboardProps {
@@ -120,24 +127,36 @@ export function OverviewDashboard({
     ]
   }, [stats])
 
-  // Filter orders by status
-  const { initiatedOrders, openOrders, billedOrders } = useMemo(() => {
-    const initiated = orders.filter(order => 
-      order.overallStatus === 'pending' || 
-      order.overallStatus === 'initiated'
+  // Filter orders by status - FIXED LOGIC + NEW ORDERS
+  const { newOrders, initiatedOrders, openOrders, billedOrders } = useMemo(() => {
+    // New Orders: orderStage 'empty' - created but waiting for QR scan
+    const newOnes = orders.filter((order) => order.orderStage === 'empty')
+
+    // Initiated Orders: orderStage 'initiated' with no services added yet
+    const initiated = orders.filter(
+      (order) =>
+        order.orderStage === 'initiated' &&
+        (!order.servicesRendered || order.servicesRendered.length === 0),
     )
-    
-    const open = orders.filter(order => 
-      order.overallStatus === 'in_progress' ||
-      order.overallStatus === 'ready'
+
+    // Open Orders: orderStage 'open' - services being selected/added
+    const open = orders.filter(
+      (order) =>
+        order.orderStage === 'open' ||
+        (order.overallStatus === 'in_progress' && order.orderStage !== 'billed'),
     )
-    
-    const billed = orders.filter(order => 
-      order.paymentStatus === 'pending' ||
-      order.overallStatus === 'billed'
+
+    // Billed Orders: orderStage 'billed' AND has actual services to bill
+    const billed = orders.filter(
+      (order) =>
+        order.orderStage === 'billed' &&
+        order.servicesRendered &&
+        order.servicesRendered.length > 0 &&
+        order.paymentStatus === 'pending',
     )
 
     return {
+      newOrders: newOnes,
       initiatedOrders: initiated,
       openOrders: open,
       billedOrders: billed,
@@ -145,11 +164,7 @@ export function OverviewDashboard({
   }, [orders])
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-8"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       {/* Stats Overview */}
       <div>
         <h2 className="text-2xl font-bold text-white mb-6">Dashboard Overview</h2>
@@ -167,6 +182,7 @@ export function OverviewDashboard({
       <div>
         <h2 className="text-2xl font-bold text-white mb-6">Order Queues</h2>
         <OrderQueueCards
+          newOrders={newOrders}
           initiatedOrders={initiatedOrders}
           openOrders={openOrders}
           billedOrders={billedOrders}

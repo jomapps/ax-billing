@@ -46,10 +46,10 @@ export function InitiatedOrdersDashboard({
   const fetchInitiatedOrders = async () => {
     try {
       setRefreshing(true)
-      // Fetch orders that have QR codes generated (truly initiated orders)
-      // These are orders where customers have scanned the QR code to initiate the process
+      // FIXED: Fetch orders that are truly initiated (orderStage 'initiated' with no services yet)
+      // These are orders where customers have scanned the QR code but haven't added services
       const response = await fetch(
-        '/api/orders?where={"qrCodeGenerated":{"equals":true}}&depth=2&limit=10',
+        '/api/orders?where[orderStage][equals]=initiated&depth=2&limit=10',
       )
 
       if (!response.ok) {

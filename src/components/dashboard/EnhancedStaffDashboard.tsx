@@ -87,8 +87,10 @@ function EnhancedStaffDashboardContent({
     setRecentOrderId(orderId)
     setSelectedOrderId(orderId)
     setNotifications((prev) => [...prev, `New order created: ${orderId}`])
-    setCurrentStep('order-created')
     refreshData() // Refresh data
+
+    // Redirect to the order page instead of showing QR code on dashboard
+    router.push(`/order/${orderId}`)
   }
 
   const handleCaptureVehicle = (orderId: string) => {
@@ -377,9 +379,26 @@ function OverviewContent({
   onPaymentGeneration,
   onOrderCompletion,
 }: OverviewContentProps) {
-  const initiatedOrders = orders.filter((order) => order.orderStage === 'initiated')
-  const openOrders = orders.filter((order) => order.orderStage === 'open')
-  const billedOrders = orders.filter((order) => order.orderStage === 'billed')
+  const router = useRouter()
+  // FIXED: Proper order filtering logic + NEW ORDERS
+  const newOrders = orders.filter((order) => order.orderStage === 'empty')
+  const initiatedOrders = orders.filter(
+    (order) =>
+      order.orderStage === 'initiated' &&
+      (!order.servicesRendered || order.servicesRendered.length === 0),
+  )
+  const openOrders = orders.filter(
+    (order) =>
+      order.orderStage === 'open' ||
+      (order.overallStatus === 'in_progress' && order.orderStage !== 'billed'),
+  )
+  const billedOrders = orders.filter(
+    (order) =>
+      order.orderStage === 'billed' &&
+      order.servicesRendered &&
+      order.servicesRendered.length > 0 &&
+      order.paymentStatus === 'pending',
+  )
 
   return (
     <div className="space-y-6">
@@ -468,6 +487,87 @@ function OverviewContent({
 
       {/* Active Orders by Stage */}
       <div className="space-y-8">
+        {/* New Orders */}
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-purple-400" />
+                New Orders
+              </div>
+              <Badge variant="secondary" className="bg-purple-500/20 text-purple-400">
+                {newOrders.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {newOrders.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">No new orders</p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-gray-300 text-sm">
+                    Showing {newOrders.length} order{newOrders.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {newOrders.map((order) => (
+                    <Card
+                      key={order.id}
+                      className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer"
+                      onClick={() => {
+                        router.push(`/order/${order.orderID}`)
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <h3 className="text-white font-semibold text-sm">{order.orderID}</h3>
+                            <Badge
+                              variant="secondary"
+                              className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs"
+                            >
+                              Awaiting QR Scan
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">New Customer</span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span className="text-gray-300 text-sm">
+                                {formatTimeAgo(order.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-gray-700">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/order/${order.orderID}`)
+                              }}
+                              size="sm"
+                              className="w-full bg-purple-500 hover:bg-purple-600"
+                            >
+                              <QrCode className="w-4 h-4 mr-2" />
+                              Show QR Code
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Initiated Orders */}
         <Card className="bg-gray-800/50 border-gray-700">
           <CardHeader>
@@ -803,8 +903,8 @@ function NewOrderContent({ staffId, location, onOrderCreated }: NewOrderContentP
         <div className="max-w-md mx-auto text-center space-y-6">
           <div>
             <p className="text-gray-300 mb-4">
-              Click the button below to create a new empty order. A QR code will be generated for
-              the customer to scan.
+              Click the button below to create a new empty order. You will be redirected to the
+              order page where customers can scan the QR code.
             </p>
           </div>
 

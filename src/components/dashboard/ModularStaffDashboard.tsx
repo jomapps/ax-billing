@@ -78,8 +78,10 @@ function ModularStaffDashboardContent({
     setRecentOrderId(orderId)
     setSelectedOrderId(orderId)
     setNotifications((prev) => [...prev, `New order created: ${orderId}`])
-    setCurrentStep('order-created')
     refreshData()
+
+    // Redirect to the order page instead of showing QR code on dashboard
+    router.push(`/order/${orderId}`)
   }
 
   const handleViewInitiated = () => {
@@ -226,9 +228,9 @@ function ModularStaffDashboardContent({
             )}
 
             {currentStep === 'new-order' && (
-              <WhatsAppQRCode
-                staffId={staffId}
-                location={location}
+              <NewOrderContent
+                staffId={staffId || 'staff-001'}
+                location={location || 'Main Branch'}
                 onOrderCreated={handleOrderCreated}
               />
             )}
@@ -275,6 +277,90 @@ function ModularStaffDashboardContent({
         </AnimatePresence>
       </div>
     </div>
+  )
+}
+
+// New Order Content Component
+interface NewOrderContentProps {
+  staffId: string
+  location: string
+  onOrderCreated: (orderId: string) => void
+}
+
+function NewOrderContent({ staffId, location, onOrderCreated }: NewOrderContentProps) {
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleCreateOrder = async () => {
+    setIsCreating(true)
+    setError(null)
+
+    try {
+      // TBD: Ensure database is properly connected and PayloadCMS is configured
+      const response = await fetch('/api/v1/orders/create-empty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staffId, location }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create order`)
+      }
+
+      const data = await response.json()
+      if (data.success && data.orderID) {
+        onOrderCreated(data.orderID)
+      } else {
+        throw new Error('Invalid response from server')
+      }
+    } catch (err) {
+      console.error('Failed to create order:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create order. Please try again.')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  return (
+    <Card className="bg-gray-800/50 border-gray-700 max-w-md mx-auto">
+      <CardContent className="p-6">
+        <div className="text-center space-y-6">
+          <div>
+            <h3 className="text-xl font-semibold text-white mb-2">Create New Order</h3>
+            <p className="text-gray-300 text-sm">
+              Click the button below to create a new empty order. You will be redirected to the
+              order page where customers can scan the QR code.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          <Button
+            onClick={handleCreateOrder}
+            disabled={isCreating}
+            className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold"
+            size="lg"
+          >
+            {isCreating ? (
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 animate-spin" />
+                <span>Creating Order...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                <span>CREATE NEW ORDER</span>
+              </div>
+            )}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

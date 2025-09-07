@@ -3,7 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Clock, Car, CreditCard, User, DollarSign, Camera, CheckCircle } from 'lucide-react'
+import { Clock, Car, CreditCard, User, DollarSign, Camera, CheckCircle, QrCode } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,9 +18,17 @@ interface OrderData {
   createdAt: string
   overallStatus: string
   paymentStatus: string
+  orderStage: 'empty' | 'initiated' | 'open' | 'billed' | 'paid'
+  servicesRendered?: Array<{
+    service: any
+    selectedOptions?: any[]
+    servicePrice: number
+    optionsPrice?: number
+  }>
 }
 
 interface OrderQueueCardsProps {
+  newOrders: OrderData[]
   initiatedOrders: OrderData[]
   openOrders: OrderData[]
   billedOrders: OrderData[]
@@ -28,6 +36,7 @@ interface OrderQueueCardsProps {
 }
 
 export function OrderQueueCards({
+  newOrders,
   initiatedOrders,
   openOrders,
   billedOrders,
@@ -39,27 +48,46 @@ export function OrderQueueCards({
     <Card
       key={order.id}
       className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer"
-      onClick={() => router.push(`/orders/${order.orderID}`)}
+      onClick={() => {
+        // For new orders, navigate to order page (/order/{id}) to show QR code
+        // For other orders, navigate to orders page (/orders/{id}) for management
+        if (order.orderStage === 'empty') {
+          router.push(`/order/${order.orderID}`)
+        } else {
+          router.push(`/orders/${order.orderID}`)
+        }
+      }}
     >
       <CardContent className="p-4">
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-white font-semibold text-lg">{order.orderID}</h3>
+          <div className="space-y-1">
+            <h3 className="text-white font-semibold text-sm">{order.orderID}</h3>
             <Badge
               variant="secondary"
-              className={
-                order.overallStatus === 'pending'
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                  : order.overallStatus === 'in_progress'
-                    ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                    : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-              }
+              className={`text-xs ${
+                order.orderStage === 'empty'
+                  ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                  : order.orderStage === 'initiated'
+                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                    : order.orderStage === 'open'
+                      ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                      : order.orderStage === 'billed'
+                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+              }`}
             >
-              {order.overallStatus === 'pending'
-                ? 'Initiated'
-                : order.overallStatus === 'in_progress'
-                  ? 'In Progress'
-                  : 'Pending Payment'}
+              {order.orderStage === 'empty'
+                ? 'Awaiting QR Scan'
+                : order.orderStage === 'initiated' &&
+                    (!order.servicesRendered || order.servicesRendered.length === 0)
+                  ? 'Awaiting Services'
+                  : order.orderStage === 'open'
+                    ? 'Services Added'
+                    : order.orderStage === 'billed' &&
+                        order.servicesRendered &&
+                        order.servicesRendered.length > 0
+                      ? 'Ready for Payment'
+                      : 'Unknown Status'}
             </Badge>
           </div>
 
@@ -99,39 +127,95 @@ export function OrderQueueCards({
           </div>
 
           <div className="pt-2 border-t border-gray-700">
-            <Button
-              onClick={(e) => {
-                e.stopPropagation()
-                router.push(`/orders/${order.orderID}`)
-              }}
-              size="sm"
-              className={`w-full ${
-                order.overallStatus === 'pending'
-                  ? 'bg-blue-500 hover:bg-blue-600'
-                  : order.overallStatus === 'in_progress'
-                    ? 'bg-green-500 hover:bg-green-600'
-                    : 'bg-yellow-500 hover:bg-yellow-600 text-black'
-              }`}
-            >
-              {order.overallStatus === 'pending' && (
-                <>
-                  <Camera className="w-4 h-4 mr-2" />
-                  Start Process
-                </>
-              )}
-              {order.overallStatus === 'in_progress' && (
-                <>
+            {/* Contextual buttons based on order stage */}
+            {order.orderStage === 'empty' && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/order/${order.orderID}`)
+                }}
+                size="sm"
+                className="w-full bg-purple-500 hover:bg-purple-600"
+                title="View QR code for customer to scan"
+              >
+                <QrCode className="w-4 h-4 mr-2" />
+                Show QR Code
+              </Button>
+            )}
+
+            {order.orderStage === 'initiated' &&
+              (!order.servicesRendered || order.servicesRendered.length === 0) && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    router.push(`/orders/${order.orderID}/add-services`)
+                  }}
+                  size="sm"
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  title="Add services to this order"
+                >
                   <Car className="w-4 h-4 mr-2" />
-                  Manage Order
-                </>
+                  Add Services
+                </Button>
               )}
-              {order.paymentStatus === 'pending' && (
-                <>
+
+            {order.orderStage === 'open' && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/orders/${order.orderID}/services`)
+                }}
+                size="sm"
+                className="w-full bg-green-500 hover:bg-green-600"
+                title="Manage services for this order"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Manage Services
+              </Button>
+            )}
+
+            {order.orderStage === 'billed' &&
+              order.servicesRendered &&
+              order.servicesRendered.length > 0 &&
+              order.paymentStatus === 'pending' && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    router.push(`/orders/${order.orderID}/payment`)
+                  }}
+                  size="sm"
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                  title="Process payment for this billed order"
+                >
                   <CreditCard className="w-4 h-4 mr-2" />
                   Process Payment
-                </>
+                </Button>
               )}
-            </Button>
+
+            {/* Fallback button for edge cases */}
+            {!(
+              order.orderStage === 'empty' ||
+              (order.orderStage === 'initiated' &&
+                (!order.servicesRendered || order.servicesRendered.length === 0)) ||
+              order.orderStage === 'open' ||
+              (order.orderStage === 'billed' &&
+                order.servicesRendered &&
+                order.servicesRendered.length > 0 &&
+                order.paymentStatus === 'pending')
+            ) && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/orders/${order.orderID}`)
+                }}
+                size="sm"
+                variant="outline"
+                className="w-full border-gray-600 text-gray-300"
+                title="View order details"
+              >
+                View Details
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
@@ -200,6 +284,7 @@ export function OrderQueueCards({
 
   return (
     <div className="space-y-8">
+      {renderSection('New Orders', newOrders, QrCode, 'text-purple-400')}
       {renderSection('Initiated Orders', initiatedOrders, Clock, 'text-blue-400')}
       {renderSection('Open Orders', openOrders, Car, 'text-green-400')}
       {renderSection('Billed Orders', billedOrders, CreditCard, 'text-yellow-400')}

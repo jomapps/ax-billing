@@ -9,13 +9,31 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    // Get all orders in 'initiated' status
+    // FIXED: Get orders in 'initiated' status with no services added yet
     const result = await payload.find({
       collection: 'orders',
       where: {
-        orderStage: {
-          equals: 'initiated',
-        },
+        and: [
+          {
+            orderStage: {
+              equals: 'initiated',
+            },
+          },
+          {
+            or: [
+              {
+                servicesRendered: {
+                  exists: false,
+                },
+              },
+              {
+                'servicesRendered.0': {
+                  exists: false,
+                },
+              },
+            ],
+          },
+        ],
       },
       limit,
       sort: '-qrCodeScannedAt', // Most recent scans first
