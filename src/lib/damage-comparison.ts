@@ -35,13 +35,13 @@ export async function compareDamageImages(
   try {
     // TODO: Implement actual AI image comparison
     // For now, return a mock result
-    
+
     // Simulate AI processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Mock damage detection logic
     const mockNewDamage = []
-    
+
     // Simple heuristic: if delivery has more images than intake, assume potential new damage
     if (deliveryImages.length > intakeImages.length) {
       mockNewDamage.push({
@@ -60,7 +60,7 @@ export async function compareDamageImages(
     return {
       newDamageDetected,
       newDamageItems: mockNewDamage,
-      comparisonNotes: newDamageDetected 
+      comparisonNotes: newDamageDetected
         ? 'AI detected potential new damage. Manual review recommended.'
         : 'No new damage detected during AI comparison.',
       aiProcessingStatus: 'completed',
@@ -91,17 +91,17 @@ export function generateDamageReport(
   riskLevel: 'low' | 'medium' | 'high'
   requiresCustomerNotification: boolean
 } {
-  const intakeDamageCount = intake.damageAssessment?.damageItems?.length || 0
+  const intakeDamageCount = intake.damageAssessment?.existingDamage?.length || 0
   const newDamageCount = comparisonResult.newDamageItems.length
-  
+
   let riskLevel: 'low' | 'medium' | 'high' = 'low'
   let requiresCustomerNotification = false
-  
+
   if (newDamageCount > 0) {
     const severeDamage = comparisonResult.newDamageItems.some(
-      item => item.severity === 'major' || item.severity === 'severe'
+      (item) => item.severity === 'major' || item.severity === 'severe',
     )
-    
+
     if (severeDamage) {
       riskLevel = 'high'
       requiresCustomerNotification = true
@@ -115,20 +115,20 @@ export function generateDamageReport(
   }
 
   const summary = `Vehicle inspection completed. ${intakeDamageCount} pre-existing damage items documented. ${newDamageCount} new damage items detected during service.`
-  
+
   const recommendations = []
-  
+
   if (newDamageCount > 0) {
     recommendations.push('Contact customer immediately to discuss new damage')
     recommendations.push('Document all new damage with detailed photos')
     recommendations.push('Review service procedures to prevent future damage')
   }
-  
+
   if (riskLevel === 'high') {
     recommendations.push('Consider offering compensation or repair services')
     recommendations.push('Escalate to management for review')
   }
-  
+
   if (comparisonResult.aiProcessingStatus === 'failed') {
     recommendations.push('Perform manual damage comparison')
     recommendations.push('Review AI system for technical issues')
@@ -151,8 +151,9 @@ export function formatDamageItems(damageItems: DamageItem[]): string {
   }
 
   return damageItems
-    .map((item, index) => 
-      `${index + 1}. ${item.type.toUpperCase()} - ${item.location.replace(/_/g, ' ')} (${item.severity}): ${item.description}`
+    .map(
+      (item, index) =>
+        `${index + 1}. ${item.type.toUpperCase()} - ${item.location.replace(/_/g, ' ')} (${item.severity}): ${item.description}`,
     )
     .join('\n')
 }
@@ -191,7 +192,9 @@ export function generateCustomerNotification(
   urgency: 'low' | 'medium' | 'high'
 } {
   const damageCount = newDamageItems.length
-  const severeDamage = newDamageItems.some(item => item.severity === 'major' || item.severity === 'severe')
+  const severeDamage = newDamageItems.some(
+    (item) => item.severity === 'major' || item.severity === 'severe',
+  )
 
   let subject = `Order ${orderID}: Vehicle Inspection Update`
   let urgency: 'low' | 'medium' | 'high' = 'low'
@@ -205,7 +208,7 @@ export function generateCustomerNotification(
   }
 
   const damageList = newDamageItems
-    .map(item => `• ${item.type} on ${item.location.replace(/_/g, ' ')} (${item.severity})`)
+    .map((item) => `• ${item.type} on ${item.location.replace(/_/g, ' ')} (${item.severity})`)
     .join('\n')
 
   const message = `Dear Customer,
@@ -216,9 +219,10 @@ During our post-service inspection, we detected ${damageCount} new damage item${
 
 ${damageList}
 
-${riskLevel === 'high' 
-  ? 'This damage requires immediate attention. Please contact us urgently to discuss next steps.'
-  : 'We take full responsibility for any damage that occurred during service. Please contact us to discuss resolution options.'
+${
+  riskLevel === 'high'
+    ? 'This damage requires immediate attention. Please contact us urgently to discuss next steps.'
+    : 'We take full responsibility for any damage that occurred during service. Please contact us to discuss resolution options.'
 }
 
 We sincerely apologize for any inconvenience and are committed to resolving this matter promptly.

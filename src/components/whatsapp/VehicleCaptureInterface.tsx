@@ -5,7 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Camera, Upload, Loader2, CheckCircle, AlertCircle, Edit } from 'lucide-react'
 
@@ -22,11 +28,11 @@ interface VehicleInfo {
   confidence: number
 }
 
-export function VehicleCaptureInterface({ 
-  orderId, 
+export function VehicleCaptureInterface({
+  orderId,
   onVehicleCaptured,
   onClose,
-  className = '' 
+  className = '',
 }: VehicleCaptureInterfaceProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -37,7 +43,7 @@ export function VehicleCaptureInterface({
   const [showManualInput, setShowManualInput] = useState(false)
   const [manualData, setManualData] = useState({
     licensePlate: '',
-    vehicleType: ''
+    vehicleType: '',
   })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -83,7 +89,7 @@ export function VehicleCaptureInterface({
       formData.append('orderId', orderId)
       formData.append('image', selectedFile)
 
-      const response = await fetch('/api/staff/capture-vehicle', {
+      const response = await fetch('/api/v1/staff/capture-vehicle', {
         method: 'POST',
         body: formData,
       })
@@ -125,12 +131,12 @@ export function VehicleCaptureInterface({
       formData.append('licensePlate', manualData.licensePlate)
       formData.append('vehicleType', manualData.vehicleType)
       formData.append('useManualData', 'true')
-      
+
       if (selectedFile) {
         formData.append('image', selectedFile)
       }
 
-      const response = await fetch('/api/staff/capture-vehicle', {
+      const response = await fetch('/api/v1/staff/capture-vehicle', {
         method: 'POST',
         body: formData,
       })
@@ -181,7 +187,9 @@ export function VehicleCaptureInterface({
               </div>
               <div className="flex justify-between">
                 <span>License Plate:</span>
-                <Badge variant="outline" className="font-mono">{aiResult.licensePlate}</Badge>
+                <Badge variant="outline" className="font-mono">
+                  {aiResult.licensePlate}
+                </Badge>
               </div>
               <div className="flex justify-between">
                 <span>Confidence:</span>
@@ -217,15 +225,11 @@ export function VehicleCaptureInterface({
         {/* Image Capture Section */}
         <div className="space-y-4">
           <div className="flex gap-2">
-            <Button 
-              onClick={handleCameraCapture}
-              variant="outline"
-              className="flex-1"
-            >
+            <Button onClick={handleCameraCapture} variant="outline" className="flex-1">
               <Camera className="w-4 h-4 mr-2" />
               Take Photo
             </Button>
-            <Button 
+            <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
               className="flex-1"
@@ -246,9 +250,9 @@ export function VehicleCaptureInterface({
 
           {previewUrl && (
             <div className="relative">
-              <img 
-                src={previewUrl} 
-                alt="Vehicle preview" 
+              <img
+                src={previewUrl}
+                alt="Vehicle preview"
                 className="w-full max-h-64 object-contain rounded-lg border"
               />
             </div>
@@ -258,7 +262,7 @@ export function VehicleCaptureInterface({
         {/* AI Processing or Manual Input */}
         {!showManualInput ? (
           <div className="space-y-4">
-            <Button 
+            <Button
               onClick={processVehicleImage}
               disabled={!selectedFile || isProcessing}
               className="w-full"
@@ -276,11 +280,7 @@ export function VehicleCaptureInterface({
               )}
             </Button>
 
-            <Button 
-              onClick={() => setShowManualInput(true)}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={() => setShowManualInput(true)} variant="outline" className="w-full">
               <Edit className="w-4 h-4 mr-2" />
               Enter Manually
             </Button>
@@ -292,7 +292,9 @@ export function VehicleCaptureInterface({
               <Input
                 id="licensePlate"
                 value={manualData.licensePlate}
-                onChange={(e) => setManualData(prev => ({ ...prev, licensePlate: e.target.value }))}
+                onChange={(e) =>
+                  setManualData((prev) => ({ ...prev, licensePlate: e.target.value }))
+                }
                 placeholder="Enter license plate number"
                 className="font-mono"
               />
@@ -300,9 +302,11 @@ export function VehicleCaptureInterface({
 
             <div className="space-y-2">
               <Label htmlFor="vehicleType">Vehicle Type *</Label>
-              <Select 
-                value={manualData.vehicleType} 
-                onValueChange={(value) => setManualData(prev => ({ ...prev, vehicleType: value }))}
+              <Select
+                value={manualData.vehicleType}
+                onValueChange={(value) =>
+                  setManualData((prev) => ({ ...prev, vehicleType: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select vehicle type" />
@@ -318,14 +322,14 @@ export function VehicleCaptureInterface({
             </div>
 
             <div className="flex gap-2">
-              <Button 
+              <Button
                 onClick={() => setShowManualInput(false)}
                 variant="outline"
                 className="flex-1"
               >
                 Back to AI
               </Button>
-              <Button 
+              <Button
                 onClick={submitManualData}
                 disabled={isProcessing || !manualData.licensePlate || !manualData.vehicleType}
                 className="flex-1"

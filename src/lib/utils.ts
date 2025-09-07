@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -21,10 +21,31 @@ export function formatTime(minutes: number): string {
   return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
 }
 
+export function formatTimeAgo(timestamp: number | string | Date): string {
+  const now = new Date().getTime()
+  const time = new Date(timestamp).getTime()
+  const diffInMinutes = Math.floor((now - time) / (1000 * 60))
+
+  if (diffInMinutes < 1) {
+    return 'Just now'
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes}m ago`
+  } else if (diffInMinutes < 1440) {
+    // 24 hours
+    const hours = Math.floor(diffInMinutes / 60)
+    return `${hours}h ago`
+  } else {
+    const days = Math.floor(diffInMinutes / 1440)
+    return `${days}d ago`
+  }
+}
+
 export function generateOrderId(): string {
   const date = new Date()
   const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '')
-  const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0')
+  const random = Math.floor(Math.random() * 9999)
+    .toString()
+    .padStart(4, '0')
   return `AX-${dateStr}-${random}`
 }
 
@@ -72,7 +93,7 @@ export function getVehicleTypeLabel(type: string): string {
 
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout
   return (...args: Parameters<T>) => {

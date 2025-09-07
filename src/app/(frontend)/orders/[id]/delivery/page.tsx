@@ -27,7 +27,7 @@ export default function DeliveryPage() {
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
-  
+
   const [orderData, setOrderData] = useState<OrderData | null>(null)
   const [existingDelivery, setExistingDelivery] = useState<any>(null)
   const [intakeData, setIntakeData] = useState<any>(null)
@@ -52,7 +52,7 @@ export default function DeliveryPage() {
       setOrderData(orderData.order)
 
       // Check if intake exists (required for delivery)
-      const intakeResponse = await fetch(`/api/orders/${orderId}/intake`)
+      const intakeResponse = await fetch(`/api/v1/orders/${orderId}/intake`)
       if (!intakeResponse.ok) {
         throw new Error('Intake must be completed before starting delivery')
       }
@@ -60,7 +60,7 @@ export default function DeliveryPage() {
       setIntakeData(intakeData.intake)
 
       // Check if delivery already exists
-      const deliveryResponse = await fetch(`/api/orders/${orderId}/delivery`)
+      const deliveryResponse = await fetch(`/api/v1/orders/${orderId}/delivery`)
       if (deliveryResponse.ok) {
         const deliveryData = await deliveryResponse.json()
         setExistingDelivery(deliveryData.delivery)
@@ -77,7 +77,7 @@ export default function DeliveryPage() {
   const handleDeliveryComplete = async (deliveryData: any) => {
     try {
       const method = existingDelivery ? 'PUT' : 'POST'
-      const response = await fetch(`/api/orders/${orderId}/delivery`, {
+      const response = await fetch(`/api/v1/orders/${orderId}/delivery`, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -92,12 +92,12 @@ export default function DeliveryPage() {
 
       const result = await response.json()
       console.log('Delivery saved successfully:', result)
-      
+
       // Show damage alert if new damage detected
       if (result.damageAlert) {
         alert(result.damageAlert)
       }
-      
+
       // Navigate back to order detail page
       router.push(`/orders/${orderId}`)
     } catch (error) {
@@ -135,7 +135,11 @@ export default function DeliveryPage() {
                 <Button onClick={fetchData} className="bg-red-500 hover:bg-red-600">
                   Try Again
                 </Button>
-                <Button onClick={handleCancel} variant="outline" className="border-gray-600 text-gray-300">
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Order
                 </Button>
@@ -165,17 +169,23 @@ export default function DeliveryPage() {
                 <AlertTriangle className="w-6 h-6 text-yellow-400" />
                 <div>
                   <h3 className="text-yellow-400 font-semibold">Intake Required</h3>
-                  <p className="text-yellow-300">Vehicle intake must be completed before starting delivery process.</p>
+                  <p className="text-yellow-300">
+                    Vehicle intake must be completed before starting delivery process.
+                  </p>
                 </div>
               </div>
               <div className="mt-4 flex gap-3">
-                <Button 
-                  onClick={() => router.push(`/orders/${orderId}/intake`)} 
+                <Button
+                  onClick={() => router.push(`/orders/${orderId}/intake`)}
                   className="bg-green-500 hover:bg-green-600"
                 >
                   Start Intake Process
                 </Button>
-                <Button onClick={handleCancel} variant="outline" className="border-gray-600 text-gray-300">
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Order
                 </Button>

@@ -16,6 +16,9 @@
     "seed:enhanced": "cross-env NODE_OPTIONS=--no-deprecation tsx seed-data/enhanced-seed.ts",
     "seed:clear": "cross-env NODE_OPTIONS=--no-deprecation tsx seed-data/clear-database.ts",
     "seed:fresh": "pnpm run seed:clear && pnpm run seed:enhanced",
+    "seed:clean": "cross-env NODE_OPTIONS=--no-deprecation tsx seed-data/clean-seed.ts",
+    "reset:clean": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/reset-and-seed.ts",
+    "reset:simple": "mongosh mongodb://127.0.0.1:27017/ax-billing --eval \"db.dropDatabase()\" && node scripts/create-admin-simple.js",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test",
@@ -32,6 +35,7 @@
     "@payloadcms/richtext-lexical": "3.54.0",
     "@payloadcms/storage-s3": "^3.54.0",
     "@payloadcms/ui": "3.54.0",
+    "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
@@ -61,6 +65,7 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@playwright/test": "1.54.1",
     "@tailwindcss/postcss": "^4.1.12",
     "@testing-library/react": "16.3.0",

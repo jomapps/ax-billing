@@ -4,7 +4,13 @@ export const Intake: CollectionConfig = {
   slug: 'intake',
   admin: {
     useAsTitle: 'orderID',
-    defaultColumns: ['orderID', 'numberplateImage', 'vehicleImages', 'damageAssessment', 'createdAt'],
+    defaultColumns: [
+      'orderID',
+      'numberplateImage',
+      'vehicleImages',
+      'damageAssessment',
+      'createdAt',
+    ],
     description: 'Vehicle intake documentation with images and damage assessment',
   },
   fields: [
@@ -30,7 +36,7 @@ export const Intake: CollectionConfig = {
       hooks: {
         beforeValidate: [
           async ({ data, req }) => {
-            if (data.order && req.payload) {
+            if (data && data.order && req.payload) {
               try {
                 const order = await req.payload.findByID({
                   collection: 'orders',
@@ -41,7 +47,7 @@ export const Intake: CollectionConfig = {
                 console.error('Error fetching order:', error)
               }
             }
-            return data.orderID
+            return data?.orderID
           },
         ],
       },

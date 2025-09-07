@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import CryptoJS from 'crypto-js'
 import { WhatsAppService } from '@/lib/whatsapp/whatsapp-service'
 import { OrderLinkingService } from '@/lib/whatsapp/order-linking-service'
 import { QRCodeService } from '@/lib/whatsapp/qr-service'
@@ -27,9 +28,7 @@ export async function POST(request: NextRequest) {
       console.error('❌ Invalid webhook signature')
       console.log(
         'Expected signature would be:',
-        require('crypto-js')
-          .HmacSHA256(body, process.env.GUPSHUP_WEBHOOK_SECRET || '')
-          .toString(),
+        CryptoJS.HmacSHA256(body, process.env.GUPSHUP_WEBHOOK_SECRET || '').toString(),
       )
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }

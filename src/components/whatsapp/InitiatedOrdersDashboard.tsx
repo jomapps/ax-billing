@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { RefreshCw, Clock, User, Phone, Camera } from 'lucide-react'
+import { RefreshCw, Clock, User, Phone, Camera, Car, DollarSign } from 'lucide-react'
+import { formatCurrency, formatTimeAgo } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 interface InitiatedOrder {
   id: string
@@ -16,6 +18,9 @@ interface InitiatedOrder {
   createdAt: string
   qrCodeScannedAt: string
   waitingTime: number
+  totalAmount?: number
+  overallStatus?: string
+  vehicle?: any
   metadata?: any
 }
 
@@ -32,6 +37,7 @@ export function InitiatedOrdersDashboard({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     fetchInitiatedOrders()
@@ -40,14 +46,39 @@ export function InitiatedOrdersDashboard({
   const fetchInitiatedOrders = async () => {
     try {
       setRefreshing(true)
-      const response = await fetch('/api/staff/initiated-orders')
+      // Fetch orders that have QR codes generated (truly initiated orders)
+      // These are orders where customers have scanned the QR code to initiate the process
+      const response = await fetch(
+        '/api/orders?where={"qrCodeGenerated":{"equals":true}}&depth=2&limit=10',
+      )
 
       if (!response.ok) {
         throw new Error('Failed to fetch initiated orders')
       }
 
       const data = await response.json()
-      setOrders(data.orders || [])
+      // Transform the orders to match the expected format
+      const transformedOrders = data.docs.map((order: any) => ({
+        id: order.id,
+        orderID: order.orderID,
+        whatsappNumber: order.whatsappNumber || 'N/A',
+        customerName:
+          order.customer && typeof order.customer === 'object'
+            ? `${order.customer.firstName || ''} ${order.customer.lastName || ''}`.trim() ||
+              'Unknown Customer'
+            : 'Unknown Customer',
+        customerId: order.customer?.id,
+        customerEmail: order.customer?.email,
+        createdAt: order.createdAt,
+        qrCodeScannedAt: order.qrCodeScannedAt || order.createdAt,
+        waitingTime: order.qrCodeScannedAt
+          ? Math.floor((Date.now() - new Date(order.qrCodeScannedAt).getTime()) / 60000)
+          : Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000),
+        totalAmount: order.totalAmount,
+        overallStatus: order.overallStatus,
+        vehicle: order.vehicle,
+      }))
+      setOrders(transformedOrders)
       setError(null)
     } catch (error) {
       console.error('Failed to fetch initiated orders:', error)
@@ -140,59 +171,81 @@ export function InitiatedOrdersDashboard({
             <p className="text-sm">Orders will appear here when customers scan QR codes</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {orders.map((order) => (
-              <div
+              <Card
                 key={order.id}
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                className="bg-gray-800 border-gray-700 hover:border-blue-500 transition-all duration-300 cursor-pointer group"
+                onClick={() => router.push(`/orders/${order.orderID}`)}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <h3 className="font-semibold text-lg">{order.orderID}</h3>
-                      <p className="text-sm text-gray-600 flex items-center gap-1">
-                        <User className="w-3 h-3" />
-                        {order.customerName}
-                      </p>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white text-lg">{order.orderID}</h3>
+                    <Badge className={`${getWaitingTimeColor(order.waitingTime)} text-xs`}>
+                      {order.overallStatus === 'pending'
+                        ? 'Pending'
+                        : order.overallStatus === 'in_progress'
+                          ? 'In Progress'
+                          : 'Waiting'}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-300 text-sm">{order.customerName}</span>
                     </div>
-                  </div>
-                  <Badge className={getWaitingTimeColor(order.waitingTime)}>
-                    <Clock className="w-3 h-3 mr-1" />
-                    {formatWaitingTime(order.waitingTime)}
-                  </Badge>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Phone className="w-4 h-4" />
-                    <span className="font-mono">{order.whatsappNumber}</span>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <span>Scanned: </span>
-                    <span>{new Date(order.qrCodeScannedAt).toLocaleTimeString()}</span>
-                  </div>
-                </div>
+                    {order.vehicle && typeof order.vehicle === 'object' && (
+                      <div className="flex items-center gap-2">
+                        <Car className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-300 text-sm">
+                          {order.vehicle.licensePlate || 'No License'}
+                        </span>
+                      </div>
+                    )}
 
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => onCaptureVehicle?.(order.orderID)}
-                    className="flex-1"
-                    size="sm"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capture Vehicle
-                  </Button>
+                    {order.totalAmount && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-300 text-sm font-medium">
+                          {formatCurrency(order.totalAmount)}
+                        </span>
+                      </div>
+                    )}
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`https://wa.me/${order.whatsappNumber}`, '_blank')}
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Contact
-                  </Button>
-                </div>
-              </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-300 text-sm">
+                        {formatTimeAgo(order.createdAt)}
+                      </span>
+                    </div>
+
+                    {order.whatsappNumber !== 'N/A' && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-300 text-sm font-mono">
+                          {order.whatsappNumber}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-700 mt-3">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onCaptureVehicle?.(order.orderID)
+                      }}
+                      size="sm"
+                      className="w-full bg-blue-500 hover:bg-blue-600"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Capture Vehicle
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}

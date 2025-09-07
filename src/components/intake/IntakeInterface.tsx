@@ -32,6 +32,8 @@ import { cn } from '@/lib/utils'
 
 interface IntakeInterfaceProps {
   orderId: string
+  orderData?: any
+  existingData?: any
   onComplete?: (intakeData: any) => void
   onCancel?: () => void
   className?: string
@@ -92,6 +94,8 @@ const CONDITION_OPTIONS = [
 
 export function IntakeInterface({
   orderId,
+  orderData,
+  existingData,
   onComplete,
   onCancel,
   className,

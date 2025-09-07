@@ -4,7 +4,7 @@ import { withPayload } from '@payloadcms/next/withPayload'
 const nextConfig = {
   // Allow cross-origin requests from specified domains
   allowedDevOrigins: [
-    'localhost:3000',
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, '') || 'localhost:3000',
     'localhost:3001',
     'localhost:3002',
     'localhost:3003',
@@ -12,7 +12,7 @@ const nextConfig = {
     'ax.ft.tc',
   ],
 
-  // CORS headers for API routes
+  // CORS headers for API routes and CSP for admin
   async headers() {
     return [
       {
@@ -20,8 +20,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value:
-              'localhost:3000,localhost:3001,localhost:3002,localhost:3003,https://local.ft.tc,https://ax.ft.tc',
+            value: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'},localhost:3001,localhost:3002,localhost:3003,https://local.ft.tc,https://ax.ft.tc`,
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -34,6 +33,25 @@ const nextConfig = {
           {
             key: 'Access-Control-Allow-Credentials',
             value: 'true',
+          },
+        ],
+      },
+      {
+        source: '/admin/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: `
+              default-src 'self';
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://local.ft.tc https://ax.ft.tc;
+              style-src 'self' 'unsafe-inline';
+              img-src 'self' data: blob: https:;
+              font-src 'self' data:;
+              connect-src 'self' https://local.ft.tc https://ax.ft.tc;
+              frame-src 'self' https://local.ft.tc https://ax.ft.tc;
+            `
+              .replace(/\s+/g, ' ')
+              .trim(),
           },
         ],
       },

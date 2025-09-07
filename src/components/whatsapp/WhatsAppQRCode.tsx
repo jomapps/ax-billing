@@ -14,12 +14,12 @@ interface WhatsAppQRCodeProps {
   className?: string
 }
 
-export function WhatsAppQRCode({ 
-  orderId, 
-  staffId, 
-  location, 
+export function WhatsAppQRCode({
+  orderId,
+  staffId,
+  location,
   onOrderCreated,
-  className = '' 
+  className = '',
 }: WhatsAppQRCodeProps) {
   const [qrValue, setQrValue] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -38,25 +38,25 @@ export function WhatsAppQRCode({
   const createOrderAndGenerateQR = async () => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       // Create empty order first
-      const orderResponse = await fetch('/api/orders/create-empty', {
+      const orderResponse = await fetch('/api/v1/orders/create-empty', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ staffId, location })
+        body: JSON.stringify({ staffId, location }),
       })
-      
+
       if (!orderResponse.ok) {
         throw new Error('Failed to create order')
       }
-      
+
       const orderData = await orderResponse.json()
       const newOrderId = orderData.orderID
-      
+
       setCurrentOrderId(newOrderId)
       onOrderCreated?.(newOrderId)
-      
+
       // Generate QR code with order ID
       await generateQRCodeWithOrder(newOrderId)
     } catch (error) {
@@ -70,23 +70,23 @@ export function WhatsAppQRCode({
   const generateQRCodeWithOrder = async (orderIdToUse?: string) => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const orderIdForQR = orderIdToUse || currentOrderId
-      const response = await fetch('/api/whatsapp/qr-code', {
+      const response = await fetch('/api/v1/whatsapp/qr-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           orderId: orderIdForQR,
-          staffId, 
-          location 
-        })
+          staffId,
+          location,
+        }),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to generate QR code')
       }
-      
+
       const data = await response.json()
       setQrValue(data.qrValue)
     } catch (error) {
@@ -166,7 +166,7 @@ export function WhatsAppQRCode({
             className="border-2 border-gray-200 rounded-lg"
           />
         </div>
-        
+
         <div className="text-center max-w-xs space-y-2">
           <p className="text-sm text-gray-600">
             Scan this QR code with your phone to start your car wash service via WhatsApp
@@ -183,7 +183,7 @@ export function WhatsAppQRCode({
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          
+
           <Button onClick={handleCopyLink} variant="outline" size="sm">
             {copied ? (
               <>

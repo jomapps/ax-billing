@@ -15,6 +15,7 @@
     "paymentStatus": "paid",
     "queue": "regular",
     "overallStatus": "in_progress",
+    "qrCodeGenerated": true,
     "estimatedCompletionTime": "2024-12-04T15:30:00Z",
     "jobStatus": [
       {
@@ -52,6 +53,7 @@
     "paymentStatus": "paid",
     "queue": "vip",
     "overallStatus": "pending",
+    "qrCodeGenerated": true,
     "estimatedCompletionTime": "2024-12-04T16:00:00Z",
     "jobStatus": [
       {
@@ -92,6 +94,7 @@
     "paymentStatus": "pending",
     "queue": "regular",
     "overallStatus": "pending",
+    "qrCodeGenerated": true,
     "estimatedCompletionTime": "2024-12-04T17:00:00Z",
     "jobStatus": [
       {

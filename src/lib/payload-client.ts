@@ -1,6 +1,6 @@
 import { Order, User, Vehicle, Service, CustomerTier } from '@/payload-types'
 
-const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_PAYLOAD_URL || 'http://localhost:3001'
+const PAYLOAD_API_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
 export interface DashboardStats {
   todayOrders: number
@@ -177,8 +177,32 @@ class PayloadClient {
         .filter((order) => order.paymentStatus === 'paid')
         .reduce((total, order) => total + (order.totalAmount || 0), 0)
 
-      // Calculate average completion time (mock for now)
-      const avgCompletionTime = 35 // TODO: Calculate from actual completion times
+      // Calculate average completion time from completed orders
+      const completedOrdersResult = await this.getOrders({
+        where: {
+          overallStatus: {
+            in: ['completed', 'picked_up'],
+          },
+          createdAt: {
+            greater_than_equal: today.toISOString(),
+            less_than: tomorrow.toISOString(),
+          },
+        },
+      })
+
+      let avgCompletionTime = 0
+      if (completedOrdersResult.docs.length > 0) {
+        const totalTime = completedOrdersResult.docs.reduce((total, order) => {
+          if (order.createdAt && order.updatedAt) {
+            const created = new Date(order.createdAt)
+            const completed = new Date(order.updatedAt)
+            const diffMinutes = Math.floor((completed.getTime() - created.getTime()) / (1000 * 60))
+            return total + diffMinutes
+          }
+          return total
+        }, 0)
+        avgCompletionTime = Math.round(totalTime / completedOrdersResult.docs.length)
+      }
 
       return {
         todayOrders: todayOrdersResult.totalDocs,

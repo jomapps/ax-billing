@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { EnhancedStaffDashboard } from './EnhancedStaffDashboard'
+import { ModularStaffDashboard } from './ModularStaffDashboard'
 
 interface ClientDashboardWrapperProps {
   staffId: string
@@ -9,5 +9,5 @@ interface ClientDashboardWrapperProps {
 }
 
 export function ClientDashboardWrapper({ staffId, location }: ClientDashboardWrapperProps) {
-  return <EnhancedStaffDashboard staffId={staffId} location={location} />
+  return <ModularStaffDashboard staffId={staffId} location={location} />
 }

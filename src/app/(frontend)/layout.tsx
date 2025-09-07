@@ -19,7 +19,12 @@ export const metadata = {
   description: 'Modern carwash management system with AI-powered vehicle classification',
   keywords: 'carwash, management, AI, vehicle, classification, billing',
   authors: [{ name: 'AX Billing Team' }],
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

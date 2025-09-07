@@ -46,12 +46,12 @@
 - [ ] Add error handling and logging
 
 ### 6. API Endpoints
-- [ ] Create webhook handler `/api/webhooks/whatsapp` with order linking
-- [ ] Create empty order creation `/api/orders/create-empty`
-- [ ] Create QR code generator `/api/whatsapp/qr-code` with order ID
-- [ ] Create initiated orders dashboard `/api/staff/initiated-orders`
-- [ ] Create vehicle capture endpoint `/api/staff/capture-vehicle`
-- [ ] Create order stage update `/api/orders/:id/update-stage`
+- [ ] Create webhook handler `/api/v1/webhooks/whatsapp` with order linking
+- [ ] Create empty order creation `/api/v1/orders/create-empty`
+- [ ] Create QR code generator `/api/v1/whatsapp/qr-code` with order ID
+- [ ] Create initiated orders dashboard `/api/v1/staff/initiated-orders`
+- [ ] Create vehicle capture endpoint `/api/v1/staff/capture-vehicle`
+- [ ] Create order stage update `/api/v1/orders/:id/update-stage`
 - [ ] Add webhook signature verification
 - [ ] Implement rate limiting
 

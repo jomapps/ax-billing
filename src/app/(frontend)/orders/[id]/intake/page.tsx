@@ -27,7 +27,7 @@ export default function IntakePage() {
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
-  
+
   const [orderData, setOrderData] = useState<OrderData | null>(null)
   const [existingIntake, setExistingIntake] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -51,7 +51,7 @@ export default function IntakePage() {
       setOrderData(orderData.order)
 
       // Check if intake already exists
-      const intakeResponse = await fetch(`/api/orders/${orderId}/intake`)
+      const intakeResponse = await fetch(`/api/v1/orders/${orderId}/intake`)
       if (intakeResponse.ok) {
         const intakeData = await intakeResponse.json()
         setExistingIntake(intakeData.intake)
@@ -68,7 +68,7 @@ export default function IntakePage() {
   const handleIntakeComplete = async (intakeData: any) => {
     try {
       const method = existingIntake ? 'PUT' : 'POST'
-      const response = await fetch(`/api/orders/${orderId}/intake`, {
+      const response = await fetch(`/api/v1/orders/${orderId}/intake`, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default function IntakePage() {
 
       const result = await response.json()
       console.log('Intake saved successfully:', result)
-      
+
       // Navigate back to order detail page
       router.push(`/orders/${orderId}`)
     } catch (error) {
@@ -121,7 +121,11 @@ export default function IntakePage() {
                 <Button onClick={fetchData} className="bg-red-500 hover:bg-red-600">
                   Try Again
                 </Button>
-                <Button onClick={handleCancel} variant="outline" className="border-gray-600 text-gray-300">
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="border-gray-600 text-gray-300"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Order
                 </Button>

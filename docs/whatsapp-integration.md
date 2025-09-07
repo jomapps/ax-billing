@@ -198,34 +198,34 @@ The existing User collection already includes `whatsappNumber` field. Additional
 
 ```typescript
 // Webhook endpoints
-POST /api/webhooks/whatsapp          // Receive messages from Gupshup.io
-POST /api/webhooks/whatsapp/status   // Receive delivery status updates
+POST /api/v1/webhooks/whatsapp          // Receive messages from Gupshup.io
+POST /api/v1/webhooks/whatsapp/status   // Receive delivery status updates
 
 // Order Management endpoints
-POST /api/orders/create-empty        // Create empty order and return order ID
-GET  /api/orders/initiated           // Get all orders in 'initiated' status
-POST /api/orders/:id/link-whatsapp   // Link WhatsApp number to order
-POST /api/orders/:id/update-stage    // Update order stage
-POST /api/orders/:id/add-vehicle     // Add vehicle information to order
-POST /api/orders/:id/process-ai      // Trigger AI processing for vehicle
+POST /api/v1/orders/create-empty        // Create empty order and return order ID
+GET  /api/orders/initiated              // Get all orders in 'initiated' status (PayloadCMS)
+POST /api/v1/orders/:id/link-whatsapp   // Link WhatsApp number to order
+POST /api/v1/orders/:id/update-stage    // Update order stage
+POST /api/v1/orders/:id/add-vehicle     // Add vehicle information to order
+POST /api/v1/orders/:id/process-ai      // Trigger AI processing for vehicle
 
 // WhatsApp API endpoints
-POST /api/whatsapp/send-message      // Send individual messages
-POST /api/whatsapp/send-template     // Send template messages
-GET  /api/whatsapp/conversation/:id  // Get conversation history
-POST /api/whatsapp/opt-in            // Handle user opt-in
-POST /api/whatsapp/opt-out           // Handle user opt-out
-POST /api/whatsapp/extract-order-id  // Extract order ID from message
+POST /api/v1/whatsapp/send-message      // Send individual messages
+POST /api/v1/whatsapp/send-template     // Send template messages
+GET  /api/v1/whatsapp/conversation/:id  // Get conversation history
+POST /api/v1/whatsapp/opt-in            // Handle user opt-in
+POST /api/v1/whatsapp/opt-out           // Handle user opt-out
+POST /api/v1/whatsapp/extract-order-id  // Extract order ID from message
 
 // QR Code and onboarding
-POST /api/whatsapp/qr-code           // Generate QR code with order ID
-GET  /api/whatsapp/link/:orderId     // Generate WhatsApp link with order ID
-POST /api/whatsapp/verify-user       // Verify and link user to order
+POST /api/v1/whatsapp/qr-code           // Generate QR code with order ID
+GET  /api/v1/whatsapp/link/:orderId     // Generate WhatsApp link with order ID
+POST /api/v1/whatsapp/verify-user       // Verify and link user to order
 
 // Staff Interface endpoints
-GET  /api/staff/initiated-orders     // Get dashboard of initiated orders
-POST /api/staff/capture-vehicle      // Handle vehicle photo capture
-GET  /api/staff/order-progress/:id   // Get order progress status
+GET  /api/v1/staff/initiated-orders     // Get dashboard of initiated orders
+POST /api/v1/staff/capture-vehicle      // Handle vehicle photo capture
+GET  /api/v1/staff/order-progress/:id   // Get order progress status
 ```
 
 ### Core Service Classes
@@ -442,7 +442,7 @@ Rate your experience: {{feedbackLink}}`,
 
 ### Webhook Implementation
 
-#### Gupshup.io Webhook Handler (`src/app/api/webhooks/whatsapp/route.ts`)
+#### Gupshup.io Webhook Handler (`src/app/api/v1/webhooks/whatsapp/route.ts`)
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -829,7 +829,7 @@ export function InitiatedOrdersDashboard() {
 
   const fetchInitiatedOrders = async () => {
     try {
-      const response = await fetch('/api/staff/initiated-orders')
+      const response = await fetch('/api/v1/staff/initiated-orders')
       const data = await response.json()
       setOrders(data.orders)
     } catch (error) {
@@ -959,7 +959,7 @@ export function VehicleCaptureInterface({ orderId, orderDetails }: VehicleCaptur
       formData.append('image', file)
       formData.append('orderId', orderId)
 
-      const response = await fetch('/api/staff/capture-vehicle', {
+      const response = await fetch('/api/v1/staff/capture-vehicle', {
         method: 'POST',
         body: formData
       })
@@ -1140,7 +1140,7 @@ export function WhatsAppQRCode({ orderId, staffId, location, onOrderCreated }: W
   const generateQRCodeWithOrder = async (orderIdToUse?: string) => {
     try {
       const orderIdForQR = orderIdToUse || currentOrderId
-      const response = await fetch('/api/whatsapp/qr-code', {
+      const response = await fetch('/api/v1/whatsapp/qr-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1317,7 +1317,7 @@ export function WhatsAppDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/whatsapp/stats')
+      const response = await fetch('/api/v1/whatsapp/stats')
       const data = await response.json()
       setStats(data)
     } catch (error) {
@@ -1327,7 +1327,7 @@ export function WhatsAppDashboard() {
 
   const fetchRecentMessages = async () => {
     try {
-      const response = await fetch('/api/whatsapp/messages/recent')
+      const response = await fetch('/api/v1/whatsapp/messages/recent')
       const data = await response.json()
       setRecentMessages(data.messages)
     } catch (error) {

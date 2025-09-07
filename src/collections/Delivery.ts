@@ -36,7 +36,7 @@ export const Delivery: CollectionConfig = {
       hooks: {
         beforeValidate: [
           async ({ data, req }) => {
-            if (data.order && req.payload) {
+            if (data && data.order && req.payload) {
               try {
                 const order = await req.payload.findByID({
                   collection: 'orders',
@@ -47,7 +47,7 @@ export const Delivery: CollectionConfig = {
                 console.error('Error fetching order:', error)
               }
             }
-            return data.orderID
+            return data?.orderID
           },
         ],
       },

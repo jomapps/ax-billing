@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import {
   Camera,
@@ -43,6 +43,9 @@ import {
 interface DeliveryInterfaceProps {
   orderId: string
   intakeId?: string
+  orderData?: any
+  intakeData?: any
+  existingData?: any
   onComplete?: (deliveryData: any) => void
   onCancel?: () => void
   className?: string
@@ -159,6 +162,9 @@ const PRIORITY_LEVELS = [
 export function DeliveryInterface({
   orderId,
   intakeId,
+  orderData,
+  intakeData,
+  existingData,
   onComplete,
   onCancel,
   className,
@@ -210,14 +216,7 @@ export function DeliveryInterface({
     }
   }, [existingData])
 
-  // Auto-trigger damage comparison when delivery images are added
-  useEffect(() => {
-    if (deliveryImages.length > 0 && intakeData?.vehicleImages && !isComparingDamage) {
-      performDamageComparison()
-    }
-  }, [deliveryImages, intakeData])
-
-  const performDamageComparison = async () => {
+  const performDamageComparison = useCallback(async () => {
     if (!intakeData?.vehicleImages || deliveryImages.length === 0) return
 
     try {
@@ -255,6 +254,7 @@ export function DeliveryInterface({
             severity: item.severity,
             description: item.description,
             likelyDuringService: item.likelyDuringService,
+            images: [],
           })),
         )
         setDamageComparisonAlert(
@@ -269,7 +269,14 @@ export function DeliveryInterface({
     } finally {
       setIsComparingDamage(false)
     }
-  }
+  }, [intakeData, deliveryImages])
+
+  // Auto-trigger damage comparison when delivery images are added
+  useEffect(() => {
+    if (deliveryImages.length > 0 && intakeData?.vehicleImages && !isComparingDamage) {
+      performDamageComparison()
+    }
+  }, [deliveryImages, intakeData, isComparingDamage, performDamageComparison])
 
   const handleDeliveryImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
@@ -826,7 +833,7 @@ export function DeliveryInterface({
 
                 {newDamageItems.length === 0 ? (
                   <p className="text-gray-400 text-center py-4">
-                    Click "Add Damage Item" to document new damage
+                    Click &quot;Add Damage Item&quot; to document new damage
                   </p>
                 ) : (
                   <div className="space-y-4">

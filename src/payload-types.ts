@@ -77,6 +77,8 @@ export interface Config {
     media: Media;
     'whatsapp-messages': WhatsappMessage;
     'whatsapp-templates': WhatsappTemplate;
+    intake: Intake;
+    delivery: Delivery;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -93,6 +95,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     'whatsapp-messages': WhatsappMessagesSelect<false> | WhatsappMessagesSelect<true>;
     'whatsapp-templates': WhatsappTemplatesSelect<false> | WhatsappTemplatesSelect<true>;
+    intake: IntakeSelect<false> | IntakeSelect<true>;
+    delivery: DeliverySelect<false> | DeliverySelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -800,6 +804,300 @@ export interface WhatsappTemplate {
   createdAt: string;
 }
 /**
+ * Vehicle intake documentation with images and damage assessment
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "intake".
+ */
+export interface Intake {
+  id: string;
+  /**
+   * Order this intake belongs to
+   */
+  order: string | Order;
+  /**
+   * Auto-populated from related order
+   */
+  orderID?: string | null;
+  /**
+   * Clear image of vehicle numberplate for AI extraction
+   */
+  numberplateImage: string | Media;
+  /**
+   * Multiple angle images for vehicle type detection and damage assessment
+   */
+  vehicleImages?:
+    | {
+        image: string | Media;
+        angle:
+          | 'front'
+          | 'rear'
+          | 'left'
+          | 'right'
+          | 'front_left'
+          | 'front_right'
+          | 'rear_left'
+          | 'rear_right'
+          | 'interior'
+          | 'engine';
+        /**
+         * Optional description of what this image shows
+         */
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Initial damage assessment during intake
+   */
+  damageAssessment: {
+    overallCondition: 'excellent' | 'good' | 'fair' | 'poor';
+    /**
+     * Document any existing damage found during intake
+     */
+    existingDamage?:
+      | {
+          type: 'scratch' | 'dent' | 'crack' | 'rust' | 'paint_damage' | 'broken_part' | 'missing_part' | 'other';
+          /**
+           * Where on the vehicle is this damage located
+           */
+          location: string;
+          severity: 'minor' | 'moderate' | 'major' | 'severe';
+          /**
+           * Detailed description of the damage
+           */
+          description?: string | null;
+          /**
+           * Close-up images of this specific damage
+           */
+          images?: (string | Media)[] | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Any additional observations or notes about the vehicle condition
+     */
+    notes?: string | null;
+  };
+  /**
+   * Results from AI analysis of intake images
+   */
+  aiProcessingResults?: {
+    /**
+     * Numberplate text extracted by AI
+     */
+    numberplateExtracted?: string | null;
+    /**
+     * Vehicle type detected by AI
+     */
+    vehicleTypeDetected?: string | null;
+    /**
+     * Damage detected by AI analysis
+     */
+    damageDetected?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    processingStatus?: ('pending' | 'processing' | 'completed' | 'failed') | null;
+    /**
+     * Any errors encountered during AI processing
+     */
+    processingErrors?: string | null;
+  };
+  /**
+   * Staff member who performed the intake
+   */
+  staffMember?: (string | null) | User;
+  /**
+   * When the intake process was completed
+   */
+  intakeCompletedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Vehicle delivery documentation with inspection and damage comparison
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery".
+ */
+export interface Delivery {
+  id: string;
+  /**
+   * Order this delivery belongs to
+   */
+  order: string | Order;
+  /**
+   * Auto-populated from related order
+   */
+  orderID?: string | null;
+  /**
+   * Intake record for damage comparison
+   */
+  intake?: (string | null) | Intake;
+  /**
+   * Images taken during delivery for damage comparison
+   */
+  deliveryImages?:
+    | {
+        image: string | Media;
+        angle:
+          | 'front'
+          | 'rear'
+          | 'left'
+          | 'right'
+          | 'front_left'
+          | 'front_right'
+          | 'rear_left'
+          | 'rear_right'
+          | 'interior'
+          | 'engine'
+          | 'damage_detail';
+        /**
+         * Description of what this image shows
+         */
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Detailed vehicle inspection during delivery
+   */
+  vehicleInspection: {
+    batteryStatus: 'excellent' | 'good' | 'fair' | 'poor' | 'needs_replacement';
+    tyreCondition?: {
+      frontLeft?: ('excellent' | 'good' | 'fair' | 'poor' | 'needs_replacement') | null;
+      frontRight?: ('excellent' | 'good' | 'fair' | 'poor' | 'needs_replacement') | null;
+      rearLeft?: ('excellent' | 'good' | 'fair' | 'poor' | 'needs_replacement') | null;
+      rearRight?: ('excellent' | 'good' | 'fair' | 'poor' | 'needs_replacement') | null;
+    };
+    tyrePressure?: {
+      frontLeft?: number | null;
+      frontRight?: number | null;
+      rearLeft?: number | null;
+      rearRight?: number | null;
+    };
+    engineStatus: 'excellent' | 'good' | 'fair' | 'poor' | 'needs_service' | 'not_checked';
+    rimCondition?: {
+      frontLeft?: ('excellent' | 'good' | 'fair' | 'poor' | 'damaged') | null;
+      frontRight?: ('excellent' | 'good' | 'fair' | 'poor' | 'damaged') | null;
+      rearLeft?: ('excellent' | 'good' | 'fair' | 'poor' | 'damaged') | null;
+      rearRight?: ('excellent' | 'good' | 'fair' | 'poor' | 'damaged') | null;
+    };
+    /**
+     * Any recommendations for the customer
+     */
+    recommendations?:
+      | {
+          category:
+            | 'battery'
+            | 'tyres'
+            | 'engine'
+            | 'rims'
+            | 'brakes'
+            | 'fluids'
+            | 'electrical'
+            | 'body_work'
+            | 'other';
+          priority: 'low' | 'medium' | 'high' | 'urgent';
+          /**
+           * Detailed recommendation description
+           */
+          description: string;
+          /**
+           * Estimated cost for this recommendation
+           */
+          estimatedCost?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * General notes about the vehicle condition and delivery
+     */
+    overallNotes?: string | null;
+  };
+  /**
+   * Comparison between intake and delivery images for new damage detection
+   */
+  damageComparison?: {
+    /**
+     * Whether new damage was found during delivery inspection
+     */
+    newDamageDetected?: boolean | null;
+    /**
+     * Document any new damage found during delivery
+     */
+    newDamage?:
+      | {
+          type: 'scratch' | 'dent' | 'crack' | 'rust' | 'paint_damage' | 'broken_part' | 'missing_part' | 'other';
+          /**
+           * Where on the vehicle is this new damage located
+           */
+          location: string;
+          severity: 'minor' | 'moderate' | 'major' | 'severe';
+          /**
+           * Detailed description of the new damage
+           */
+          description?: string | null;
+          /**
+           * Close-up images of this specific new damage
+           */
+          images?: (string | Media)[] | null;
+          /**
+           * Whether this damage likely occurred during the service
+           */
+          likelyDuringService?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Results from AI-powered damage comparison
+     */
+    aiComparisonResults?: {
+      comparisonStatus?: ('pending' | 'processing' | 'completed' | 'failed') | null;
+      /**
+       * New damage detected by AI comparison
+       */
+      aiDetectedDamage?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      /**
+       * AI confidence score for damage detection (0-1)
+       */
+      confidenceScore?: number | null;
+      /**
+       * Any errors encountered during AI comparison
+       */
+      comparisonErrors?: string | null;
+    };
+  };
+  /**
+   * Staff member who performed the delivery inspection
+   */
+  staffMember?: (string | null) | User;
+  /**
+   * When the delivery inspection was completed
+   */
+  deliveryCompletedAt?: string | null;
+  /**
+   * Whether customer has been notified of any new damage
+   */
+  customerNotified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
@@ -845,6 +1143,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'whatsapp-templates';
         value: string | WhatsappTemplate;
+      } | null)
+    | ({
+        relationTo: 'intake';
+        value: string | Intake;
+      } | null)
+    | ({
+        relationTo: 'delivery';
+        value: string | Delivery;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1185,6 +1491,138 @@ export interface WhatsappTemplatesSelect<T extends boolean = true> {
   usageCount?: T;
   lastUsed?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "intake_select".
+ */
+export interface IntakeSelect<T extends boolean = true> {
+  order?: T;
+  orderID?: T;
+  numberplateImage?: T;
+  vehicleImages?:
+    | T
+    | {
+        image?: T;
+        angle?: T;
+        description?: T;
+        id?: T;
+      };
+  damageAssessment?:
+    | T
+    | {
+        overallCondition?: T;
+        existingDamage?:
+          | T
+          | {
+              type?: T;
+              location?: T;
+              severity?: T;
+              description?: T;
+              images?: T;
+              id?: T;
+            };
+        notes?: T;
+      };
+  aiProcessingResults?:
+    | T
+    | {
+        numberplateExtracted?: T;
+        vehicleTypeDetected?: T;
+        damageDetected?: T;
+        processingStatus?: T;
+        processingErrors?: T;
+      };
+  staffMember?: T;
+  intakeCompletedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery_select".
+ */
+export interface DeliverySelect<T extends boolean = true> {
+  order?: T;
+  orderID?: T;
+  intake?: T;
+  deliveryImages?:
+    | T
+    | {
+        image?: T;
+        angle?: T;
+        description?: T;
+        id?: T;
+      };
+  vehicleInspection?:
+    | T
+    | {
+        batteryStatus?: T;
+        tyreCondition?:
+          | T
+          | {
+              frontLeft?: T;
+              frontRight?: T;
+              rearLeft?: T;
+              rearRight?: T;
+            };
+        tyrePressure?:
+          | T
+          | {
+              frontLeft?: T;
+              frontRight?: T;
+              rearLeft?: T;
+              rearRight?: T;
+            };
+        engineStatus?: T;
+        rimCondition?:
+          | T
+          | {
+              frontLeft?: T;
+              frontRight?: T;
+              rearLeft?: T;
+              rearRight?: T;
+            };
+        recommendations?:
+          | T
+          | {
+              category?: T;
+              priority?: T;
+              description?: T;
+              estimatedCost?: T;
+              id?: T;
+            };
+        overallNotes?: T;
+      };
+  damageComparison?:
+    | T
+    | {
+        newDamageDetected?: T;
+        newDamage?:
+          | T
+          | {
+              type?: T;
+              location?: T;
+              severity?: T;
+              description?: T;
+              images?: T;
+              likelyDuringService?: T;
+              id?: T;
+            };
+        aiComparisonResults?:
+          | T
+          | {
+              comparisonStatus?: T;
+              aiDetectedDamage?: T;
+              confidenceScore?: T;
+              comparisonErrors?: T;
+            };
+      };
+  staffMember?: T;
+  deliveryCompletedAt?: T;
+  customerNotified?: T;
   updatedAt?: T;
   createdAt?: T;
 }

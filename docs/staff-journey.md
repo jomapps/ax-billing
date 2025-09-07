@@ -118,9 +118,9 @@ This document outlines the complete staff journey from order creation to complet
 5. **Order Completion Interface** (`/src/components/orders/OrderCompletion.tsx`)
 
 ### API Endpoints Needed
-1. **Service Management**: `/api/orders/[id]/add-services`
-2. **Payment Processing**: `/api/orders/[id]/generate-payment-link`
-3. **Order Completion**: `/api/orders/[id]/complete`
+1. **Service Management**: `/api/v1/orders/[id]/add-services`
+2. **Payment Processing**: `/api/v1/orders/[id]/generate-payment-link`
+3. **Order Completion**: `/api/v1/orders/[id]/complete`
 4. **Real-time Updates**: WebSocket or Server-Sent Events
 
 ### Database Schema Updates
