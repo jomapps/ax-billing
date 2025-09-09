@@ -33,7 +33,7 @@ export class WhatsAppService {
     this.apiKey = process.env.GUPSHUP_API_KEY!
     this.appName = process.env.GUPSHUP_APP_NAME!
     this.sourceNumber = process.env.GUPSHUP_SOURCE_NUMBER!
-    this.baseUrl = 'https://api.gupshup.io/sm/api/v1'
+    this.baseUrl = 'https://api.gupshup.io/wa/api/v1' // Corrected URL
 
     if (!this.apiKey || !this.appName || !this.sourceNumber) {
       throw new Error('Missing required Gupshup configuration')
@@ -45,25 +45,29 @@ export class WhatsAppService {
    */
   async sendMessage(to: string, message: string): Promise<boolean> {
     try {
-      const response = await axios.post(
-        `${this.baseUrl}/msg`,
-        {
-          channel: 'whatsapp',
-          source: this.sourceNumber,
-          destination: to,
-          message: {
-            type: 'text',
-            text: message,
-          },
-          'src.name': this.appName,
+      // According to Gupshup docs, we need to use form-encoded data, not JSON
+      // URL: https://api.gupshup.io/wa/api/v1/msg
+      // Content-Type: application/x-www-form-urlencoded
+
+      const messageObject = {
+        type: 'text',
+        text: message,
+      }
+
+      // Create form data
+      const formData = new URLSearchParams()
+      formData.append('channel', 'whatsapp')
+      formData.append('source', this.sourceNumber)
+      formData.append('destination', to)
+      formData.append('message', JSON.stringify(messageObject))
+      formData.append('src.name', this.appName)
+
+      const response = await axios.post(`${this.baseUrl}/msg`, formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          apikey: this.apiKey,
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: this.apiKey,
-          },
-        },
-      )
+      })
 
       return response.data.status === 'submitted'
     } catch (error) {
@@ -87,25 +91,25 @@ export class WhatsAppService {
     variables: Record<string, string> = {},
   ): Promise<boolean> {
     try {
-      const response = await axios.post(
-        `${this.baseUrl}/msg`,
-        {
-          channel: 'whatsapp',
-          source: this.sourceNumber,
-          destination: to,
-          template: {
-            id: templateId,
-            params: Object.values(variables),
-          },
-          'src.name': this.appName,
+      // Template messages also need form-encoded data
+      const templateObject = {
+        id: templateId,
+        params: Object.values(variables),
+      }
+
+      const formData = new URLSearchParams()
+      formData.append('channel', 'whatsapp')
+      formData.append('source', this.sourceNumber)
+      formData.append('destination', to)
+      formData.append('template', JSON.stringify(templateObject))
+      formData.append('src.name', this.appName)
+
+      const response = await axios.post(`${this.baseUrl}/msg`, formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          apikey: this.apiKey,
         },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: this.apiKey,
-          },
-        },
-      )
+      })
 
       return response.data.status === 'submitted'
     } catch (error) {

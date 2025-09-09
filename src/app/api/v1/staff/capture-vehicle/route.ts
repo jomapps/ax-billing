@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     // Link vehicle to order and update stage
     const updatedOrder = await vehicleService.linkVehicleToOrder(vehicle.id, orderId)
 
-    // Send WhatsApp notification to customer
+    // Send WhatsApp notification to customer (if WhatsApp number exists)
     const vehicleMessage = `📸 *Vehicle Information Captured*
 
 Order ID: *${orderId}*
@@ -168,24 +168,74 @@ License Plate: *${vehicleInfo.licensePlate}*
 
 Our team is now selecting the appropriate services for your vehicle. You'll receive an update shortly!`
 
-    if (order.whatsappNumber) {
-      await whatsappService.sendMessage(order.whatsappNumber, vehicleMessage)
+    console.log('📱 WhatsApp notification check:', {
+      hasWhatsappNumber: !!order.whatsappNumber,
+      whatsappNumber: order.whatsappNumber,
+      customerId: typeof customer === 'string' ? customer : customer?.id,
+    })
 
-      // Log the message
-      await payload.create({
-        collection: 'whatsapp-messages',
-        data: {
-          user: customer.id,
-          order: order.id,
-          whatsappNumber: order.whatsappNumber,
-          messageId: `vehicle_captured_${Date.now()}`,
-          direction: 'outbound',
-          messageType: 'text',
-          content: vehicleMessage,
-          status: 'sent',
-          timestamp: new Date().toISOString(),
-        },
-      })
+    // Check if WhatsApp is enabled (can be disabled for development)
+    const whatsappEnabled = process.env.WHATSAPP_ENABLED !== 'false'
+    console.log(`📱 WhatsApp enabled: ${whatsappEnabled}`)
+
+    if (order.whatsappNumber && whatsappEnabled) {
+      try {
+        console.log('📤 Sending WhatsApp message...')
+        const messageSuccess = await whatsappService.sendMessage(
+          order.whatsappNumber,
+          vehicleMessage,
+        )
+
+        if (messageSuccess) {
+          console.log('✅ WhatsApp message sent successfully')
+
+          // Log the message
+          await payload.create({
+            collection: 'whatsapp-messages',
+            data: {
+              user: typeof customer === 'string' ? customer : customer.id,
+              order: order.id,
+              whatsappNumber: order.whatsappNumber,
+              messageId: `vehicle_captured_${Date.now()}`,
+              direction: 'outbound',
+              messageType: 'text',
+              content: vehicleMessage,
+              status: 'sent',
+              timestamp: new Date().toISOString(),
+            },
+          })
+        } else {
+          console.log('⚠️ WhatsApp message sending returned false (but no error thrown)')
+        }
+      } catch (whatsappError) {
+        console.error('❌ WhatsApp message failed (non-critical):', whatsappError.message)
+        // Don't fail the entire vehicle capture process due to WhatsApp issues
+        // Log the failed attempt
+        try {
+          await payload.create({
+            collection: 'whatsapp-messages',
+            data: {
+              user: typeof customer === 'string' ? customer : customer.id,
+              order: order.id,
+              whatsappNumber: order.whatsappNumber,
+              messageId: `vehicle_captured_failed_${Date.now()}`,
+              direction: 'outbound',
+              messageType: 'text',
+              content: vehicleMessage,
+              status: 'failed',
+              timestamp: new Date().toISOString(),
+              error: whatsappError.message,
+            },
+          })
+        } catch (logError) {
+          console.error('Failed to log WhatsApp error:', logError.message)
+        }
+      }
+    } else if (!whatsappEnabled) {
+      console.log('ℹ️ WhatsApp notifications disabled via WHATSAPP_ENABLED=false')
+    } else {
+      console.log('ℹ️ No WhatsApp number found - skipping WhatsApp notification')
+      console.log("   This is normal for orders that haven't been linked to WhatsApp yet")
     }
 
     return NextResponse.json({
