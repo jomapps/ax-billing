@@ -17,17 +17,15 @@ export interface AIProcessingResult {
 }
 
 export class VehicleProcessingService {
-  private openRouterApiKey: string
-  private openRouterModel: string
-  private openRouterBaseUrl: string
+  private falApiKey: string
+  private falVisionModel: string
 
   constructor() {
-    this.openRouterApiKey = process.env.OPENROUTER_API_KEY!
-    this.openRouterModel = process.env.OPENROUTER_MODEL || 'gpt-4-vision-preview'
-    this.openRouterBaseUrl = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1'
+    this.falApiKey = process.env.FAL_KEY!
+    this.falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
 
-    if (!this.openRouterApiKey) {
-      console.warn('OpenRouter API key not configured. AI processing will be disabled.')
+    if (!this.falApiKey) {
+      console.warn('Fal.ai API key not configured. AI processing will be disabled.')
     }
   }
 
@@ -35,7 +33,7 @@ export class VehicleProcessingService {
    * Process vehicle photo with AI to extract vehicle type and license plate
    */
   async processVehiclePhoto(imageUrl: string): Promise<AIProcessingResult> {
-    if (!this.openRouterApiKey) {
+    if (!this.falApiKey) {
       return {
         success: false,
         error: 'AI processing not configured',
@@ -47,7 +45,7 @@ export class VehicleProcessingService {
         Analyze this vehicle image and extract the following information:
         1. Vehicle type (classify as: sedan, suv, hatchback, mpv, pickup, motorcycle, heavy_bike, van, truck)
         2. License plate number (extract the exact text)
-        
+
         Please respond in JSON format:
         {
           "vehicleType": "sedan|suv|hatchback|mpv|pickup|motorcycle|heavy_bike|van|truck",
@@ -55,51 +53,48 @@ export class VehicleProcessingService {
           "confidence": 0.95,
           "extractedText": "any other text visible on the vehicle"
         }
-        
+
         If you cannot clearly identify the vehicle type or license plate, set confidence to a lower value.
       `
 
       const response = await axios.post(
-        `${this.openRouterBaseUrl}/chat/completions`,
+        `https://fal.run/${this.falVisionModel}`,
         {
-          model: this.openRouterModel,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: prompt,
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: imageUrl,
-                  },
-                },
-              ],
-            },
-          ],
-          max_tokens: 500,
-          temperature: 0.1,
+          image_url: imageUrl,
+          prompt: prompt,
         },
         {
           headers: {
-            Authorization: `Bearer ${this.openRouterApiKey}`,
+            Authorization: `Key ${this.falApiKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-            'X-Title': 'AX Billing Vehicle Processing',
           },
         },
       )
 
-      const aiResponse = response.data.choices[0]?.message?.content
+      const aiResponse = response.data.output
       if (!aiResponse) {
         throw new Error('No response from AI model')
       }
 
-      // Parse JSON response
-      const vehicleInfo = JSON.parse(aiResponse) as VehicleInfo
+      // Try to parse JSON response, fallback to text parsing if needed
+      let vehicleInfo: VehicleInfo
+      try {
+        // Clean the response to extract just the JSON part
+        const cleanResponse = aiResponse.trim()
+        let jsonStr = cleanResponse
+
+        // If the response contains extra text, try to extract the JSON part
+        const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          jsonStr = jsonMatch[0]
+        }
+
+        vehicleInfo = JSON.parse(jsonStr) as VehicleInfo
+      } catch (parseError) {
+        console.warn('Failed to parse JSON response, falling back to text parsing:', parseError)
+        // If JSON parsing fails, try to extract information from text
+        vehicleInfo = this.parseTextResponse(aiResponse)
+      }
 
       // Validate the response
       if (!vehicleInfo.vehicleType || !vehicleInfo.licensePlate) {
@@ -117,6 +112,53 @@ export class VehicleProcessingService {
         error: error instanceof Error ? error.message : 'Unknown AI processing error',
       }
     }
+  }
+
+  /**
+   * Parse text response when JSON parsing fails
+   */
+  private parseTextResponse(text: string): VehicleInfo {
+    const vehicleInfo: VehicleInfo = {
+      vehicleType: 'sedan',
+      licensePlate: '',
+      confidence: 0.5,
+      extractedText: text,
+    }
+
+    // Extract vehicle type
+    const vehicleTypes = [
+      'sedan',
+      'suv',
+      'hatchback',
+      'mpv',
+      'pickup',
+      'motorcycle',
+      'heavy_bike',
+      'van',
+      'truck',
+    ]
+    for (const type of vehicleTypes) {
+      if (text.toLowerCase().includes(type.toLowerCase())) {
+        vehicleInfo.vehicleType = type
+        break
+      }
+    }
+
+    // Extract license plate using regex patterns
+    const platePatterns = [
+      /[A-Z]{1,3}[-\s]?\d{1,4}[-\s]?[A-Z]?/g, // Common patterns like ABC-123, AB-1234
+      /\b[A-Z0-9]{3,8}\b/g, // General alphanumeric patterns
+    ]
+
+    for (const pattern of platePatterns) {
+      const matches = text.match(pattern)
+      if (matches && matches.length > 0) {
+        vehicleInfo.licensePlate = matches[0].replace(/[-\s]/g, '')
+        break
+      }
+    }
+
+    return vehicleInfo
   }
 
   /**
