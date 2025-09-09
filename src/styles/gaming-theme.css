@@ -55,6 +55,25 @@
   --font-family-gaming: 'Orbitron', monospace;
   --font-family-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 
+  /* Responsive font sizes */
+  --font-size-xs: clamp(0.625rem, 0.5rem + 0.5vw, 0.75rem);
+  --font-size-sm: clamp(0.75rem, 0.625rem + 0.5vw, 0.875rem);
+  --font-size-base: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
+  --font-size-lg: clamp(1rem, 0.875rem + 0.5vw, 1.125rem);
+  --font-size-xl: clamp(1.125rem, 1rem + 0.5vw, 1.25rem);
+  --font-size-2xl: clamp(1.25rem, 1.125rem + 0.5vw, 1.5rem);
+  --font-size-3xl: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
+  --font-size-4xl: clamp(1.875rem, 1.5rem + 1.5vw, 2.25rem);
+  --font-size-5xl: clamp(2.25rem, 1.875rem + 2vw, 3rem);
+  --font-size-6xl: clamp(3rem, 2.25rem + 3vw, 3.75rem);
+
+  /* Button-specific responsive font sizes */
+  --font-size-btn-xs: clamp(0.75rem, 0.625rem + 0.5vw, 0.875rem);
+  --font-size-btn-sm: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
+  --font-size-btn-base: clamp(1rem, 0.875rem + 0.5vw, 1.125rem);
+  --font-size-btn-lg: clamp(1.125rem, 1rem + 0.75vw, 1.25rem);
+  --font-size-btn-xl: clamp(1.25rem, 1.125rem + 0.75vw, 1.5rem);
+
   --shadow-gaming: 0 4px 14px 0 rgba(0, 212, 255, 0.39);
   --shadow-gaming-lg: 0 10px 25px 0 rgba(0, 212, 255, 0.5);
   --shadow-neon: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
@@ -398,3 +417,22 @@ body {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* Responsive font size utility classes */
+.text-responsive-xs { font-size: var(--font-size-xs); }
+.text-responsive-sm { font-size: var(--font-size-sm); }
+.text-responsive-base { font-size: var(--font-size-base); }
+.text-responsive-lg { font-size: var(--font-size-lg); }
+.text-responsive-xl { font-size: var(--font-size-xl); }
+.text-responsive-2xl { font-size: var(--font-size-2xl); }
+.text-responsive-3xl { font-size: var(--font-size-3xl); }
+.text-responsive-4xl { font-size: var(--font-size-4xl); }
+.text-responsive-5xl { font-size: var(--font-size-5xl); }
+.text-responsive-6xl { font-size: var(--font-size-6xl); }
+
+/* Button-specific responsive font size utility classes */
+.text-btn-xs { font-size: var(--font-size-btn-xs); }
+.text-btn-sm { font-size: var(--font-size-btn-sm); }
+.text-btn-base { font-size: var(--font-size-btn-base); }
+.text-btn-lg { font-size: var(--font-size-btn-lg); }
+.text-btn-xl { font-size: var(--font-size-btn-xl); }

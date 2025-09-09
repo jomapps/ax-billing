@@ -1,14 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// List of allowed origins
-const allowedOrigins = [
-  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'http://localhost:3003',
-  'https://local.ft.tc',
-  'https://ax.ft.tc',
-]
+// Build allowed origins from environment variables
+function buildAllowedOrigins(): string[] {
+  const origins: string[] = []
+
+  // Add main app URL
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    origins.push(process.env.NEXT_PUBLIC_APP_URL)
+  } else {
+    origins.push('http://localhost:3000')
+  }
+
+  // Add localhost ports from environment
+  const localhostPorts = process.env.CORS_LOCALHOST_PORTS?.split(',') || [
+    '3000',
+    '3001',
+    '3002',
+    '3003',
+  ]
+  localhostPorts.forEach((port) => {
+    origins.push(`http://localhost:${port.trim()}`)
+    origins.push(`https://localhost:${port.trim()}`)
+  })
+
+  // Add custom domains from environment
+  const customDomains = process.env.CORS_CUSTOM_DOMAINS?.split(',') || ['local.ft.tc', 'ax.ft.tc']
+  customDomains.forEach((domain) => {
+    origins.push(`https://${domain.trim()}`)
+    origins.push(`http://${domain.trim()}`)
+  })
+
+  // Remove duplicates
+  return [...new Set(origins)]
+}
+
+const allowedOrigins = buildAllowedOrigins()
 
 export function middleware(request: NextRequest) {
   // Handle CORS for API routes

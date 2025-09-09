@@ -21,7 +21,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { OrderStagePoller } from '../OrderStagePoller'
 
 import { cn, formatDisplayDate } from '@/lib/utils'
 
@@ -59,10 +58,17 @@ export function OrderNewView({ orderId, initialOrderData, className }: OrderNewV
   const qrGeneratedRef = useRef(false)
 
   useEffect(() => {
-    if (!initialOrderData) {
-      fetchFullOrderData()
+    // Set initial data from server-side props
+    if (initialOrderData) {
+      setOrderData(initialOrderData)
+      setOrderNotFound(false)
+      setLoading(false)
+    } else {
+      setOrderNotFound(true)
+      setLoading(false)
+      setError(`Order ${orderId} not found.`)
     }
-  }, [initialOrderData])
+  }, [initialOrderData, orderId])
 
   useEffect(() => {
     if (orderData && orderData.orderStage === 'empty' && !qrGeneratedRef.current) {
@@ -70,34 +76,6 @@ export function OrderNewView({ orderId, initialOrderData, className }: OrderNewV
       generateQRCode()
     }
   }, [orderData])
-
-  const fetchFullOrderData = async () => {
-    try {
-      setError(null)
-
-      const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=2`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch order data`)
-      }
-
-      const data = await response.json()
-
-      if (data.docs && data.docs.length > 0) {
-        setOrderData(data.docs[0])
-        setOrderNotFound(false)
-      } else {
-        setError(`Order ${orderId} not found. It may not exist or may have been deleted.`)
-        setOrderNotFound(true)
-      }
-      setLoading(false)
-    } catch (err) {
-      console.error('Failed to fetch order data:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load order data. Please try again.')
-      setOrderNotFound(true)
-      setLoading(false)
-    }
-  }
 
   const generateQRCode = async () => {
     if (qrLoading || qrValue) {
@@ -240,8 +218,7 @@ export function OrderNewView({ orderId, initialOrderData, className }: OrderNewV
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-4xl', className)}>
-      {/* Order Stage Poller - invisible component that polls for stage changes */}
-      {orderData && <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />}
+      {/* Server-side architecture - no polling needed */}
 
       {/* Header */}
       <motion.div

@@ -44,6 +44,12 @@ export function OverviewDashboard({
   onViewInitiated,
   onOpenWhatsApp,
 }: OverviewDashboardProps) {
+  // DEBUG: Log props received
+  console.log('🔍 OverviewDashboard: Props received:', {
+    ordersLength: orders?.length || 0,
+    loading,
+    stats,
+  })
   // Transform stats into format for StatsCards
   const statsCards = useMemo(() => {
     if (!stats) {
@@ -127,33 +133,38 @@ export function OverviewDashboard({
     ]
   }, [stats])
 
-  // Filter orders by status - FIXED LOGIC + NEW ORDERS
+  // Filter orders by status - SIMPLIFIED AND ACCURATE LOGIC
   const { newOrders, initiatedOrders, openOrders, billedOrders } = useMemo(() => {
+    // DEBUG: Log all orders and their stages
+    console.log('🔍 OverviewDashboard: Total orders received:', orders.length)
+    console.log(
+      '🔍 OverviewDashboard: All orders:',
+      orders.map((order) => ({
+        orderID: order.orderID,
+        orderStage: order.orderStage,
+        overallStatus: order.overallStatus,
+      })),
+    )
+
     // New Orders: orderStage 'empty' - created but waiting for QR scan
     const newOnes = orders.filter((order) => order.orderStage === 'empty')
 
-    // Initiated Orders: orderStage 'initiated' with no services added yet
-    const initiated = orders.filter(
-      (order) =>
-        order.orderStage === 'initiated' &&
-        (!order.servicesRendered || order.servicesRendered.length === 0),
-    )
+    // Initiated Orders: ALL orders in 'initiated' stage (customer scanned QR, vehicle info captured)
+    const initiated = orders.filter((order) => order.orderStage === 'initiated')
 
-    // Open Orders: orderStage 'open' - services being selected/added
-    const open = orders.filter(
-      (order) =>
-        order.orderStage === 'open' ||
-        (order.overallStatus === 'in_progress' && order.orderStage !== 'billed'),
-    )
+    // Open Orders: ALL orders in 'open' stage (services being worked on)
+    const open = orders.filter((order) => order.orderStage === 'open')
 
-    // Billed Orders: orderStage 'billed' AND has actual services to bill
-    const billed = orders.filter(
-      (order) =>
-        order.orderStage === 'billed' &&
-        order.servicesRendered &&
-        order.servicesRendered.length > 0 &&
-        order.paymentStatus === 'pending',
-    )
+    // Billed Orders: ALL orders in 'billed' stage (ready for payment)
+    const billed = orders.filter((order) => order.orderStage === 'billed')
+
+    // DEBUG: Log filtered results
+    console.log('🔍 OverviewDashboard: Filtered counts:', {
+      newOrders: newOnes.length,
+      initiatedOrders: initiated.length,
+      openOrders: open.length,
+      billedOrders: billed.length,
+    })
 
     return {
       newOrders: newOnes,
@@ -167,7 +178,7 @@ export function OverviewDashboard({
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
       {/* Stats Overview */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-6">Dashboard Overview</h2>
+        <h2 className="text-responsive-2xl font-bold text-white mb-6">Dashboard Overview</h2>
         <StatsCards stats={statsCards} loading={loading} />
       </div>
 
@@ -180,7 +191,7 @@ export function OverviewDashboard({
 
       {/* Order Queues */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-6">Order Queues</h2>
+        <h2 className="text-responsive-2xl font-bold text-white mb-6">Order Queues</h2>
         <OrderQueueCards
           newOrders={newOrders}
           initiatedOrders={initiatedOrders}

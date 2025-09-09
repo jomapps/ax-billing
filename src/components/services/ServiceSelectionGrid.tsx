@@ -332,9 +332,9 @@ export function ServiceSelectionGrid({
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white text-lg">{pkg.name}</CardTitle>
+                    <CardTitle className="text-white text-responsive-lg">{pkg.name}</CardTitle>
                     {pkg.popular && (
-                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-responsive-xs">
                         <Star className="w-3 h-3 mr-1" />
                         Popular
                       </Badge>
@@ -433,10 +433,10 @@ export function ServiceSelectionGrid({
                       </div>
 
                       <div className="text-right">
-                        <div className="text-green-400 font-bold text-lg">
+                        <div className="text-green-400 font-bold text-responsive-lg">
                           {formatCurrency(service.basePrice)}
                         </div>
-                        <div className="text-gray-400 text-sm flex items-center">
+                        <div className="text-gray-400 text-responsive-sm flex items-center">
                           <Clock className="w-3 h-3 mr-1" />
                           {service.estimatedTime}m
                         </div>
@@ -444,12 +444,14 @@ export function ServiceSelectionGrid({
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-400 text-sm mb-3">{service.description}</p>
+                    <p className="text-gray-400 text-responsive-sm mb-3">{service.description}</p>
 
                     {isSelected && (
                       <div className="flex items-center justify-center pt-2">
                         <Check className="w-5 h-5 text-blue-400" />
-                        <span className="text-blue-400 ml-2 font-medium">Selected</span>
+                        <span className="text-blue-400 ml-2 font-medium text-responsive-sm">
+                          Selected
+                        </span>
                       </div>
                     )}
                   </CardContent>
@@ -466,17 +468,17 @@ export function ServiceSelectionGrid({
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-white font-semibold text-lg mb-2">Order Summary</h3>
+                <h3 className="text-white font-semibold text-responsive-lg mb-2">Order Summary</h3>
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-gray-300">
+                  <div className="flex items-center gap-2 text-gray-300 text-responsive-sm">
                     <Car className="w-4 h-4" />
                     <span>{selectedServices.length} service(s) selected</span>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-300">
+                  <div className="flex items-center gap-2 text-gray-300 text-responsive-sm">
                     <Clock className="w-4 h-4" />
                     <span>Est. {calculateEstimatedTime()} minutes</span>
                   </div>
-                  <div className="flex items-center gap-2 text-green-400 font-semibold">
+                  <div className="flex items-center gap-2 text-green-400 font-semibold text-responsive-sm">
                     <DollarSign className="w-4 h-4" />
                     <span>Total: {formatCurrency(calculateTotal())}</span>
                   </div>

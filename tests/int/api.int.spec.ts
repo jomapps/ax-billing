@@ -7,8 +7,7 @@ let payload: Payload
 
 describe('API', () => {
   beforeAll(async () => {
-    const payloadConfig = await config
-    payload = await getPayload({ config: payloadConfig })
+    payload = await getPayload({ config })
   })
 
   it('fetches users', async () => {

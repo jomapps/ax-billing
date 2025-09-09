@@ -5,16 +5,7 @@ import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { 
-  Car, 
-  User, 
-  CreditCard, 
-  Clock, 
-  Plus,
-  Minus,
-  Camera,
-  Search
-} from 'lucide-react'
+import { Car, User, CreditCard, Clock, Plus, Minus, Camera, Search } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,7 +17,14 @@ const orderSchema = z.object({
   licensePlate: z.string().min(1, 'License plate is required'),
   customerName: z.string().min(1, 'Customer name is required'),
   customerPhone: z.string().optional(),
-  vehicleType: z.enum(['sedan', 'mpv_van', 'large_pickup', 'regular_bike', 'heavy_bike', 'very_heavy_bike']),
+  vehicleType: z.enum([
+    'sedan',
+    'mpv_van',
+    'large_pickup',
+    'regular_bike',
+    'heavy_bike',
+    'very_heavy_bike',
+  ]),
   services: z.array(z.string()).min(1, 'At least one service is required'),
   paymentMethod: z.enum(['cash', 'online']),
   queue: z.enum(['regular', 'vip', 'remnant']),
@@ -54,41 +52,41 @@ const mockServices: Service[] = [
   {
     id: '1',
     name: 'Basic Wash',
-    basePrice: 15.00,
+    basePrice: 15.0,
     estimatedMinutes: 20,
     category: 'Exterior',
-    icon: 'car'
+    icon: 'car',
   },
   {
     id: '2',
     name: 'Premium Wash',
-    basePrice: 25.00,
+    basePrice: 25.0,
     estimatedMinutes: 35,
     category: 'Exterior',
-    icon: 'sparkles'
+    icon: 'sparkles',
   },
   {
     id: '3',
     name: 'Interior Clean',
-    basePrice: 20.00,
+    basePrice: 20.0,
     estimatedMinutes: 30,
     category: 'Interior',
-    icon: 'vacuum'
+    icon: 'vacuum',
   },
   {
     id: '4',
     name: 'Full Detail',
-    basePrice: 45.00,
+    basePrice: 45.0,
     estimatedMinutes: 60,
     category: 'Complete',
-    icon: 'star'
-  }
+    icon: 'star',
+  },
 ]
 
 const mockOptions: ServiceOption[] = [
-  { id: '1', name: 'Tire Shine', additionalPrice: 5.00, icon: 'circle' },
-  { id: '2', name: 'Wax Coating', additionalPrice: 10.00, icon: 'shield' },
-  { id: '3', name: 'Air Freshener', additionalPrice: 3.00, icon: 'wind' },
+  { id: '1', name: 'Tire Shine', additionalPrice: 5.0, icon: 'circle' },
+  { id: '2', name: 'Wax Coating', additionalPrice: 10.0, icon: 'shield' },
+  { id: '3', name: 'Air Freshener', additionalPrice: 3.0, icon: 'wind' },
 ]
 
 export function NewOrderForm({ onClose }: { onClose?: () => void }) {
@@ -102,14 +100,14 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors }
+    formState: { errors },
   } = useForm<OrderFormData>({
     resolver: zodResolver(orderSchema),
     defaultValues: {
       queue: 'regular',
       paymentMethod: 'cash',
       services: [],
-    }
+    },
   })
 
   const watchedServices = watch('services')
@@ -117,12 +115,12 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
 
   const calculateTotal = () => {
     const serviceTotal = selectedServices.reduce((total, serviceId) => {
-      const service = mockServices.find(s => s.id === serviceId)
+      const service = mockServices.find((s) => s.id === serviceId)
       return total + (service?.basePrice || 0)
     }, 0)
 
     const optionsTotal = selectedOptions.reduce((total, optionId) => {
-      const option = mockOptions.find(o => o.id === optionId)
+      const option = mockOptions.find((o) => o.id === optionId)
       return total + (option?.additionalPrice || 0)
     }, 0)
 
@@ -131,25 +129,23 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
 
   const calculateEstimatedTime = () => {
     return selectedServices.reduce((total, serviceId) => {
-      const service = mockServices.find(s => s.id === serviceId)
+      const service = mockServices.find((s) => s.id === serviceId)
       return total + (service?.estimatedMinutes || 0)
     }, 0)
   }
 
   const toggleService = (serviceId: string) => {
     const newServices = selectedServices.includes(serviceId)
-      ? selectedServices.filter(id => id !== serviceId)
+      ? selectedServices.filter((id) => id !== serviceId)
       : [...selectedServices, serviceId]
-    
+
     setSelectedServices(newServices)
     setValue('services', newServices)
   }
 
   const toggleOption = (optionId: string) => {
-    setSelectedOptions(prev => 
-      prev.includes(optionId)
-        ? prev.filter(id => id !== optionId)
-        : [...prev, optionId]
+    setSelectedOptions((prev) =>
+      prev.includes(optionId) ? prev.filter((id) => id !== optionId) : [...prev, optionId],
     )
   }
 
@@ -165,10 +161,10 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
         totalAmount: calculateTotal(),
         estimatedTime: calculateEstimatedTime(),
       })
-      
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
       alert('Order created successfully!')
       onClose?.()
     } catch (error) {
@@ -181,14 +177,8 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className="min-h-screen p-6 max-w-4xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
-      >
-        <h1 className="text-3xl font-gaming font-bold text-primary-400 mb-2">
-          NEW ORDER
-        </h1>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+        <h1 className="text-3xl font-gaming font-bold text-primary-400 mb-2">NEW ORDER</h1>
         <p className="text-gray-400">Create a new carwash service order</p>
       </motion.div>
 
@@ -283,11 +273,7 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Customer Name</label>
-                  <Input
-                    variant="gaming"
-                    placeholder="John Doe"
-                    {...register('customerName')}
-                  />
+                  <Input variant="gaming" placeholder="John Doe" {...register('customerName')} />
                   {errors.customerName && (
                     <p className="text-red-400 text-sm mt-1">{errors.customerName.message}</p>
                   )}
@@ -323,10 +309,10 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
                     key={service.id}
                     onClick={() => toggleService(service.id)}
                     className={cn(
-                      "p-4 rounded-lg border-2 cursor-pointer transition-all hover:scale-105",
+                      'p-4 rounded-lg border-2 cursor-pointer transition-all hover:scale-105',
                       selectedServices.includes(service.id)
-                        ? "border-primary-400 bg-primary-500/10"
-                        : "border-gray-600 hover:border-primary-500/50"
+                        ? 'border-primary-400 bg-primary-500/10'
+                        : 'border-gray-600 hover:border-primary-500/50',
                     )}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -351,10 +337,10 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
                         key={option.id}
                         onClick={() => toggleOption(option.id)}
                         className={cn(
-                          "p-3 rounded-lg border cursor-pointer transition-all",
+                          'p-3 rounded-lg border cursor-pointer transition-all',
                           selectedOptions.includes(option.id)
-                            ? "border-secondary-400 bg-secondary-500/10"
-                            : "border-gray-600 hover:border-secondary-500/50"
+                            ? 'border-secondary-400 bg-secondary-500/10'
+                            : 'border-gray-600 hover:border-secondary-500/50',
                         )}
                       >
                         <div className="flex items-center justify-between">
@@ -399,10 +385,12 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Queue Priority</label>
+                  <label className="block text-responsive-sm font-medium mb-2">
+                    Queue Priority
+                  </label>
                   <select
                     {...register('queue')}
-                    className="w-full h-12 px-4 py-3 rounded-lg border border-primary-500/30 bg-dark-900/80 text-white focus:border-primary-400"
+                    className="w-full h-12 px-4 py-3 rounded-lg border border-primary-500/30 bg-dark-900/80 text-white focus:border-primary-400 text-responsive-sm"
                   >
                     <option value="regular">Regular</option>
                     <option value="vip">VIP (+RM5)</option>
@@ -412,11 +400,11 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
 
                 <div className="flex flex-col justify-center">
                   <div className="text-center">
-                    <p className="text-sm text-gray-400">Total Amount</p>
-                    <p className="text-2xl font-bold text-accent-400">
+                    <p className="text-responsive-sm text-gray-400">Total Amount</p>
+                    <p className="text-responsive-2xl font-bold text-accent-400">
                       {formatCurrency(calculateTotal())}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-responsive-xs text-gray-400">
                       Est. {calculateEstimatedTime()}min
                     </p>
                   </div>
@@ -424,12 +412,7 @@ export function NewOrderForm({ onClose }: { onClose?: () => void }) {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={onClose}
-                >
+                <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
                   Cancel
                 </Button>
                 <Button

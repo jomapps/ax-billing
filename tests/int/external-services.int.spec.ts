@@ -10,8 +10,7 @@ let payload: Payload
 
 describe('External Services Integration Tests', () => {
   beforeAll(async () => {
-    const payloadConfig = await config
-    payload = await getPayload({ config: payloadConfig })
+    payload = await getPayload({ config })
   })
 
   describe('Database Connection (MongoDB)', () => {
@@ -99,11 +98,11 @@ describe('External Services Integration Tests', () => {
       const validNumbers = ['60123456789', '601234567890']
       const invalidNumbers = ['123456789', '70123456789', '60123']
 
-      validNumbers.forEach(number => {
+      validNumbers.forEach((number) => {
         expect(whatsappService.isValidWhatsAppNumber(number)).toBe(true)
       })
 
-      invalidNumbers.forEach(number => {
+      invalidNumbers.forEach((number) => {
         expect(whatsappService.isValidWhatsAppNumber(number)).toBe(false)
       })
     })
@@ -111,7 +110,7 @@ describe('External Services Integration Tests', () => {
     it('should generate WhatsApp links correctly', () => {
       const orderId = 'AX-20241206-0001'
       const link = whatsappService.generateWhatsAppLink(orderId)
-      
+
       expect(link).toContain('https://wa.me/')
       expect(link).toContain(process.env.GUPSHUP_SOURCE_NUMBER)
       expect(link).toContain(encodeURIComponent(`Hi-Welcome-To-AX:OrderId-[${orderId}]`))
@@ -120,7 +119,7 @@ describe('External Services Integration Tests', () => {
     it('should extract order ID from message content', () => {
       const messageWithOrderId = 'Hi-Welcome-To-AX:OrderId-[AX-20241206-0001]'
       const messageWithoutOrderId = 'Hello, I need help'
-      
+
       expect(whatsappService.extractOrderId(messageWithOrderId)).toBe('AX-20241206-0001')
       expect(whatsappService.extractOrderId(messageWithoutOrderId)).toBeNull()
     })
@@ -129,7 +128,7 @@ describe('External Services Integration Tests', () => {
       const now = new Date()
       const within24Hours = new Date(now.getTime() - 23 * 60 * 60 * 1000) // 23 hours ago
       const beyond24Hours = new Date(now.getTime() - 25 * 60 * 60 * 1000) // 25 hours ago
-      
+
       expect(whatsappService.isWithin24HourWindow(within24Hours)).toBe(true)
       expect(whatsappService.isWithin24HourWindow(beyond24Hours)).toBe(false)
     })
@@ -207,7 +206,7 @@ describe('External Services Integration Tests', () => {
       expect(process.env.FIUU_VERIFY_KEY).toBeDefined()
       expect(process.env.FIUU_SECRET_KEY).toBeDefined()
       expect(process.env.FIUU_SANDBOX).toBeDefined()
-      
+
       expect(process.env.FIUU_MERCHANT_ID).toBe('axautoexpressca')
       expect(process.env.FIUU_SANDBOX).toBe('false')
     })
@@ -216,7 +215,7 @@ describe('External Services Integration Tests', () => {
       const merchantId = process.env.FIUU_MERCHANT_ID!
       const verifyKey = process.env.FIUU_VERIFY_KEY!
       const secretKey = process.env.FIUU_SECRET_KEY!
-      
+
       expect(merchantId).toMatch(/^[a-zA-Z0-9]+$/)
       expect(verifyKey).toHaveLength(32) // Fiuu keys are typically 32 characters
       expect(secretKey).toHaveLength(32)

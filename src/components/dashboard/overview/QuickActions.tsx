@@ -12,11 +12,7 @@ interface QuickActionsProps {
   onOpenWhatsApp?: () => void
 }
 
-export function QuickActions({ 
-  onNewOrder, 
-  onViewInitiated, 
-  onOpenWhatsApp 
-}: QuickActionsProps) {
+export function QuickActions({ onNewOrder, onViewInitiated, onOpenWhatsApp }: QuickActionsProps) {
   const actions = [
     {
       title: 'New Order',
@@ -68,8 +64,8 @@ export function QuickActions({
                 <div className="flex flex-col items-center gap-2">
                   <action.icon className="w-6 h-6" />
                   <div className="text-center">
-                    <div className="font-semibold">{action.title}</div>
-                    <div className="text-xs opacity-90">{action.description}</div>
+                    <div className="font-semibold text-responsive-base">{action.title}</div>
+                    <div className="text-responsive-xs opacity-90">{action.description}</div>
                   </div>
                 </div>
               </Button>

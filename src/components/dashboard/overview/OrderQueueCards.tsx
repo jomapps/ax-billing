@@ -49,22 +49,26 @@ export function OrderQueueCards({
       key={order.id}
       className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer"
       onClick={() => {
-        // For new orders, navigate to order page (/order/{id}) to show QR code
-        // For other orders, navigate to orders page (/orders/{id}) for management
-        if (order.orderStage === 'empty') {
-          router.push(`/order/${order.orderID}`)
-        } else {
-          router.push(`/orders/${order.orderID}`)
+        // Navigate to the appropriate stage-specific page
+        const stageRoutes = {
+          empty: `/order/${order.orderID}/new`,
+          initiated: `/order/${order.orderID}/initiated`,
+          open: `/order/${order.orderID}/open`,
+          billed: `/order/${order.orderID}/billed`,
+          paid: `/order/${order.orderID}/paid`,
         }
+        const targetRoute =
+          stageRoutes[order.orderStage as keyof typeof stageRoutes] || `/order/${order.orderID}`
+        router.push(targetRoute)
       }}
     >
       <CardContent className="p-4">
         <div className="space-y-3">
           <div className="space-y-1">
-            <h3 className="text-white font-semibold text-sm">{order.orderID}</h3>
+            <h3 className="text-white font-semibold text-responsive-sm">{order.orderID}</h3>
             <Badge
               variant="secondary"
-              className={`text-xs ${
+              className={`text-responsive-xs ${
                 order.orderStage === 'empty'
                   ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
                   : order.orderStage === 'initiated'
@@ -94,7 +98,7 @@ export function OrderQueueCards({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-300 text-sm">
+              <span className="text-gray-300 text-responsive-sm">
                 {order.customer && typeof order.customer === 'object'
                   ? `${order.customer.firstName || ''} ${order.customer.lastName || ''}`.trim() ||
                     'Unknown Customer'
@@ -105,7 +109,7 @@ export function OrderQueueCards({
             {order.vehicle && typeof order.vehicle === 'object' && (
               <div className="flex items-center gap-2">
                 <Car className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300 text-sm">
+                <span className="text-gray-300 text-responsive-sm">
                   {order.vehicle.licensePlate || 'No License'}
                 </span>
               </div>
@@ -114,7 +118,7 @@ export function OrderQueueCards({
             {order.totalAmount && (
               <div className="flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300 text-sm font-medium">
+                <span className="text-gray-300 text-responsive-sm font-medium">
                   {formatCurrency(order.totalAmount)}
                 </span>
               </div>
@@ -122,7 +126,9 @@ export function OrderQueueCards({
 
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-300 text-sm">{formatTimeAgo(order.createdAt)}</span>
+              <span className="text-gray-300 text-responsive-sm">
+                {formatTimeAgo(order.createdAt)}
+              </span>
             </div>
           </div>
 
@@ -132,7 +138,7 @@ export function OrderQueueCards({
               <Button
                 onClick={(e) => {
                   e.stopPropagation()
-                  router.push(`/order/${order.orderID}`)
+                  router.push(`/order/${order.orderID}/new`)
                 }}
                 size="sm"
                 className="w-full bg-purple-500 hover:bg-purple-600"
@@ -148,14 +154,14 @@ export function OrderQueueCards({
                 <Button
                   onClick={(e) => {
                     e.stopPropagation()
-                    router.push(`/orders/${order.orderID}/add-services`)
+                    router.push(`/order/${order.orderID}/initiated`)
                   }}
                   size="sm"
                   className="w-full bg-blue-500 hover:bg-blue-600"
-                  title="Add services to this order"
+                  title="Capture vehicle information and add services"
                 >
                   <Car className="w-4 h-4 mr-2" />
-                  Add Services
+                  Capture Vehicle
                 </Button>
               )}
 
@@ -163,7 +169,7 @@ export function OrderQueueCards({
               <Button
                 onClick={(e) => {
                   e.stopPropagation()
-                  router.push(`/orders/${order.orderID}/services`)
+                  router.push(`/order/${order.orderID}/open`)
                 }}
                 size="sm"
                 className="w-full bg-green-500 hover:bg-green-600"
@@ -181,7 +187,7 @@ export function OrderQueueCards({
                 <Button
                   onClick={(e) => {
                     e.stopPropagation()
-                    router.push(`/orders/${order.orderID}/payment`)
+                    router.push(`/order/${order.orderID}/billed`)
                   }}
                   size="sm"
                   className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
@@ -206,7 +212,17 @@ export function OrderQueueCards({
               <Button
                 onClick={(e) => {
                   e.stopPropagation()
-                  router.push(`/orders/${order.orderID}`)
+                  const stageRoutes = {
+                    empty: `/order/${order.orderID}/new`,
+                    initiated: `/order/${order.orderID}/initiated`,
+                    open: `/order/${order.orderID}/open`,
+                    billed: `/order/${order.orderID}/billed`,
+                    paid: `/order/${order.orderID}/paid`,
+                  }
+                  const targetRoute =
+                    stageRoutes[order.orderStage as keyof typeof stageRoutes] ||
+                    `/order/${order.orderID}`
+                  router.push(targetRoute)
                 }}
                 size="sm"
                 variant="outline"
@@ -240,11 +256,13 @@ export function OrderQueueCards({
       </CardHeader>
       <CardContent className="space-y-3">
         {orders.length === 0 ? (
-          <p className="text-gray-400 text-center py-8">No {title.toLowerCase()}</p>
+          <p className="text-gray-400 text-responsive-base text-center py-8">
+            No {title.toLowerCase()}
+          </p>
         ) : (
           <>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-300 text-responsive-sm">
                 Showing {orders.length} order{orders.length !== 1 ? 's' : ''}
               </p>
             </div>

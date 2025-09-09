@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { OrderStagePoller } from '../OrderStagePoller'
+
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { VehicleCaptureInterface } from '@/components/whatsapp/VehicleCaptureInterface'
 import { cn } from '@/lib/utils'
@@ -141,7 +141,7 @@ export function OrderInitiatedView({
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-6xl', className)}>
-      <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
+      {/* Server-side architecture - no polling needed */}
 
       {/* Header */}
       <motion.div

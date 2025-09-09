@@ -380,25 +380,11 @@ function OverviewContent({
   onOrderCompletion,
 }: OverviewContentProps) {
   const router = useRouter()
-  // FIXED: Proper order filtering logic + NEW ORDERS
+  // SIMPLIFIED: Order filtering logic matching OverviewDashboard
   const newOrders = orders.filter((order) => order.orderStage === 'empty')
-  const initiatedOrders = orders.filter(
-    (order) =>
-      order.orderStage === 'initiated' &&
-      (!order.servicesRendered || order.servicesRendered.length === 0),
-  )
-  const openOrders = orders.filter(
-    (order) =>
-      order.orderStage === 'open' ||
-      (order.overallStatus === 'in_progress' && order.orderStage !== 'billed'),
-  )
-  const billedOrders = orders.filter(
-    (order) =>
-      order.orderStage === 'billed' &&
-      order.servicesRendered &&
-      order.servicesRendered.length > 0 &&
-      order.paymentStatus === 'pending',
-  )
+  const initiatedOrders = orders.filter((order) => order.orderStage === 'initiated')
+  const openOrders = orders.filter((order) => order.orderStage === 'open')
+  const billedOrders = orders.filter((order) => order.orderStage === 'billed')
 
   return (
     <div className="space-y-6">

@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { OrderStagePoller } from '../OrderStagePoller'
+
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { cn } from '@/lib/utils'
 
@@ -57,7 +57,7 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
   const fetchFullOrderData = async () => {
     try {
       setError(null)
-      
+
       const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=3`)
 
       if (!response.ok) {
@@ -116,8 +116,8 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-6xl', className)}>
-      <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
-      
+      {/* Server-side architecture - no polling needed */}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -140,12 +140,8 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
           </div>
         </div>
         <div className="text-right">
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-            Open
-          </Badge>
-          <p className="text-sm text-gray-400 mt-1">
-            Services Available
-          </p>
+          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Open</Badge>
+          <p className="text-sm text-gray-400 mt-1">Services Available</p>
         </div>
       </motion.div>
 
@@ -166,7 +162,8 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
             <Settings className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h3 className="text-xl font-semibold text-white mb-2">Service Selection Coming Soon</h3>
             <p className="text-gray-400 mb-6">
-              This stage will allow customers and staff to select services, add-ons, and customize the order.
+              This stage will allow customers and staff to select services, add-ons, and customize
+              the order.
             </p>
             <div className="space-y-2 text-sm text-gray-500">
               <p>• Service catalog with dynamic pricing</p>

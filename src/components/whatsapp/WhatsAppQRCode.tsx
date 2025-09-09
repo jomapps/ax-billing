@@ -151,7 +151,7 @@ export function WhatsAppQRCode({
       <CardHeader>
         <CardTitle className="text-center">Scan to Start Service</CardTitle>
         {currentOrderId && (
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-responsive-sm text-gray-600">
             Order ID: <span className="font-mono font-bold text-blue-600">{currentOrderId}</span>
           </p>
         )}
@@ -168,11 +168,11 @@ export function WhatsAppQRCode({
         </div>
 
         <div className="text-center max-w-xs space-y-2">
-          <p className="text-sm text-gray-600">
+          <p className="text-responsive-sm text-gray-600">
             Scan this QR code with your phone to start your car wash service via WhatsApp
           </p>
           {currentOrderId && (
-            <p className="text-xs text-gray-500">
+            <p className="text-responsive-xs text-gray-500">
               This QR code is linked to order {currentOrderId}
             </p>
           )}

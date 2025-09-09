@@ -29,7 +29,7 @@ async function testS3Upload() {
   try {
     // Initialize Payload with proper config
     const payload = await getPayload({
-      config: await config,
+      config,
       local: true,
     })
     console.log('✅ Payload initialized successfully')

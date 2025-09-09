@@ -61,18 +61,21 @@ export function StatsCards({ stats, loading = false }: StatsCardsProps) {
                   <stat.icon className={cn('w-6 h-6', stat.color)} />
                 </div>
                 {stat.trend && (
-                  <div className={cn(
-                    'text-sm font-medium',
-                    stat.trend.isPositive ? 'text-green-400' : 'text-red-400'
-                  )}>
-                    {stat.trend.isPositive ? '+' : ''}{stat.trend.value}%
+                  <div
+                    className={cn(
+                      'text-responsive-sm font-medium',
+                      stat.trend.isPositive ? 'text-green-400' : 'text-red-400',
+                    )}
+                  >
+                    {stat.trend.isPositive ? '+' : ''}
+                    {stat.trend.value}%
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-sm text-gray-400">{stat.title}</p>
+                <p className="text-responsive-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-responsive-sm text-gray-400">{stat.title}</p>
               </div>
             </CardContent>
           </Card>

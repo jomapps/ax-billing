@@ -22,16 +22,11 @@ body,
 
 body {
   font-family: system-ui;
-  font-size: 18px;
-  line-height: 32px;
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1.125rem);
+  line-height: 1.6;
 
   margin: 0;
   color: rgb(255, 255, 255);
-
-  @media (max-width: 1024px) {
-    font-size: 15px;
-    line-height: 24px;
-  }
 }
 
 img {
@@ -41,34 +36,46 @@ img {
 }
 
 h1 {
-  margin: 40px 0;
-  font-size: 64px;
-  line-height: 70px;
+  margin: clamp(1.5rem, 2rem + 1vw, 2.5rem) 0;
+  font-size: clamp(2rem, 1.5rem + 3vw, 4rem);
+  line-height: 1.1;
   font-weight: bold;
+}
 
-  @media (max-width: 1024px) {
-    margin: 24px 0;
-    font-size: 42px;
-    line-height: 42px;
-  }
+h2 {
+  font-size: clamp(1.5rem, 1.25rem + 1.5vw, 2.25rem);
+  line-height: 1.2;
+  font-weight: 600;
+}
 
-  @media (max-width: 768px) {
-    font-size: 38px;
-    line-height: 38px;
-  }
+h3 {
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.875rem);
+  line-height: 1.3;
+  font-weight: 600;
+}
 
-  @media (max-width: 400px) {
-    font-size: 32px;
-    line-height: 32px;
-  }
+h4 {
+  font-size: clamp(1.125rem, 0.875rem + 0.75vw, 1.5rem);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+h5 {
+  font-size: clamp(1rem, 0.875rem + 0.5vw, 1.25rem);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+h6 {
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1.125rem);
+  line-height: 1.5;
+  font-weight: 500;
 }
 
 p {
-  margin: 24px 0;
-
-  @media (max-width: 1024px) {
-    margin: calc(var(--base) * 0.75) 0;
-  }
+  margin: clamp(1rem, 1rem + 0.5vw, 1.5rem) 0;
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
+  line-height: 1.6;
 }
 
 a {
@@ -160,5 +167,42 @@ svg {
       background: rgb(60, 60, 60);
       border-radius: 4px;
     }
+  }
+}
+
+/* Additional responsive typography utilities */
+.text-responsive {
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
+}
+
+.text-responsive-small {
+  font-size: clamp(0.75rem, 0.625rem + 0.5vw, 0.875rem);
+}
+
+.text-responsive-large {
+  font-size: clamp(1rem, 0.875rem + 0.75vw, 1.25rem);
+}
+
+/* Responsive button text sizing */
+button, .btn {
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
+}
+
+/* Responsive form element sizing */
+input, textarea, select {
+  font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
+}
+
+/* Ensure minimum touch target sizes on mobile */
+@media (max-width: 768px) {
+  button, .btn, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: clamp(1rem, 0.875rem + 0.5vw, 1.125rem);
+  }
+
+  input, textarea, select {
+    min-height: 44px;
+    font-size: clamp(1rem, 0.875rem + 0.5vw, 1.125rem);
   }
 }

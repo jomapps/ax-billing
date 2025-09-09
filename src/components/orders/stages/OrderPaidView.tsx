@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { OrderStagePoller } from '../OrderStagePoller'
+
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { cn } from '@/lib/utils'
 
@@ -50,35 +50,15 @@ export function OrderPaidView({ orderId, initialOrderData, className }: OrderPai
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!initialOrderData) {
-      fetchFullOrderData()
-    }
-  }, [initialOrderData])
-
-  const fetchFullOrderData = async () => {
-    try {
-      setError(null)
-      
-      const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=3`)
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch order data`)
-      }
-
-      const data = await response.json()
-
-      if (data.docs && data.docs.length > 0) {
-        setOrderData(data.docs[0])
-      } else {
-        setError(`Order ${orderId} not found.`)
-      }
+    // Set initial data from server-side props
+    if (initialOrderData) {
+      setOrderData(initialOrderData)
       setLoading(false)
-    } catch (err) {
-      console.error('Failed to fetch order data:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load order data.')
+    } else {
+      setError(`Order ${orderId} not found.`)
       setLoading(false)
     }
-  }
+  }, [initialOrderData, orderId])
 
   if (loading) {
     return (
@@ -117,8 +97,8 @@ export function OrderPaidView({ orderId, initialOrderData, className }: OrderPai
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-6xl', className)}>
-      <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
-      
+      {/* Server-side architecture - no polling needed */}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -144,9 +124,7 @@ export function OrderPaidView({ orderId, initialOrderData, className }: OrderPai
           <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
             Paid - In Service
           </Badge>
-          <p className="text-sm text-gray-400 mt-1">
-            Status: {orderData.overallStatus}
-          </p>
+          <p className="text-sm text-gray-400 mt-1">Status: {orderData.overallStatus}</p>
         </div>
       </motion.div>
 
@@ -167,7 +145,8 @@ export function OrderPaidView({ orderId, initialOrderData, className }: OrderPai
             <ClipboardList className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h3 className="text-xl font-semibold text-white mb-2">Job Tracking Coming Soon</h3>
             <p className="text-gray-400 mb-6">
-              This stage will provide real-time job tracking, staff assignments, and progress monitoring.
+              This stage will provide real-time job tracking, staff assignments, and progress
+              monitoring.
             </p>
             <div className="space-y-2 text-sm text-gray-500">
               <p>• Real-time job progress tracking</p>

@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { OrderStagePoller } from './OrderStagePoller'
+
 import { cn } from '@/lib/utils'
 
 interface OrderPageViewProps {
@@ -252,8 +252,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-4xl', className)}>
-      {/* Order Stage Poller - invisible component that polls for stage changes */}
-      {orderData && <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />}
+      {/* Server-side architecture - no polling needed */}
 
       {/* Header */}
       <motion.div

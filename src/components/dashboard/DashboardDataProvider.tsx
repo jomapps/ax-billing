@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { payloadClient } from '@/lib/payload-client'
+import { fetchDashboardData } from '@/lib/actions/dashboard-actions'
 
 interface DashboardData {
   orders: any[]
@@ -18,9 +18,9 @@ interface DashboardDataProviderProps {
   refreshInterval?: number // in milliseconds, default 30000 (30 seconds)
 }
 
-export function DashboardDataProvider({ 
-  children, 
-  refreshInterval = 30000 
+export function DashboardDataProvider({
+  children,
+  refreshInterval = 30000,
 }: DashboardDataProviderProps) {
   const [orders, setOrders] = useState<any[]>([])
   const [stats, setStats] = useState<any>(null)
@@ -30,25 +30,35 @@ export function DashboardDataProvider({
   const fetchData = useCallback(async () => {
     try {
       setError(null)
-      
-      const [ordersResult, dashboardStats] = await Promise.all([
-        payloadClient.getOrders({
-          where: {
-            overallStatus: {
-              not_in: ['completed', 'picked_up', 'cancelled'],
-            },
-          },
-          sort: '-createdAt',
-          limit: 50,
-        }),
-        payloadClient.getDashboardStats(),
-      ])
 
-      setOrders(ordersResult.docs)
-      setStats(dashboardStats)
+      const result = await fetchDashboardData()
+
+      if (result.success) {
+        // DEBUG: Log the actual data being received
+        console.log('🔍 DashboardDataProvider: Raw orders result:', result.data.orders)
+        console.log('🔍 DashboardDataProvider: Orders count:', result.data.orders.length)
+        console.log(
+          '🔍 DashboardDataProvider: First few orders:',
+          result.data.orders.slice(0, 3).map((order) => ({
+            orderID: order.orderID,
+            orderStage: order.orderStage,
+            overallStatus: order.overallStatus,
+            paymentStatus: order.paymentStatus,
+          })),
+        )
+
+        setOrders(result.data.orders)
+        setStats(result.data.stats)
+      } else {
+        setError(result.error || 'Failed to load dashboard data. Please try again.')
+        setOrders([])
+        setStats(null)
+      }
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
       setError('Failed to load dashboard data. Please try again.')
+      setOrders([])
+      setStats(null)
     } finally {
       setLoading(false)
     }
@@ -73,11 +83,7 @@ export function DashboardDataProvider({
     refreshData: fetchData,
   }
 
-  return (
-    <DashboardContext.Provider value={value}>
-      {children}
-    </DashboardContext.Provider>
-  )
+  return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>
 }
 
 export function useDashboardData() {

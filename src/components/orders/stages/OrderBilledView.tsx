@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { OrderStagePoller } from '../OrderStagePoller'
+
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { cn } from '@/lib/utils'
 
@@ -57,7 +57,7 @@ export function OrderBilledView({ orderId, initialOrderData, className }: OrderB
   const fetchFullOrderData = async () => {
     try {
       setError(null)
-      
+
       const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=3`)
 
       if (!response.ok) {
@@ -116,8 +116,8 @@ export function OrderBilledView({ orderId, initialOrderData, className }: OrderB
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-6xl', className)}>
-      <OrderStagePoller orderId={orderId} currentStage={orderData.orderStage} />
-      
+      {/* Server-side architecture - no polling needed */}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -143,9 +143,7 @@ export function OrderBilledView({ orderId, initialOrderData, className }: OrderB
           <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
             Ready for Payment
           </Badge>
-          <p className="text-sm text-gray-400 mt-1">
-            Total: RM {orderData.totalAmount.toFixed(2)}
-          </p>
+          <p className="text-sm text-gray-400 mt-1">Total: RM {orderData.totalAmount.toFixed(2)}</p>
         </div>
       </motion.div>
 
@@ -164,7 +162,9 @@ export function OrderBilledView({ orderId, initialOrderData, className }: OrderB
           </CardHeader>
           <CardContent className="text-center py-12">
             <Receipt className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold text-white mb-2">Payment Processing Coming Soon</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              Payment Processing Coming Soon
+            </h3>
             <p className="text-gray-400 mb-6">
               This stage will handle invoice generation, payment links, and payment confirmation.
             </p>
