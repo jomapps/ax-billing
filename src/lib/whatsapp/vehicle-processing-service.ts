@@ -41,6 +41,12 @@ export class VehicleProcessingService {
     }
 
     try {
+      console.log('🚀 Starting Fal.ai vehicle processing:', {
+        imageUrl,
+        model: this.falVisionModel,
+        hasApiKey: !!this.falApiKey,
+      })
+
       const prompt = `
         Analyze this vehicle image and extract the following information:
         1. Vehicle type (classify as: sedan, suv, hatchback, mpv, pickup, motorcycle, heavy_bike, van, truck)
@@ -107,6 +113,20 @@ export class VehicleProcessingService {
       }
     } catch (error) {
       console.error('AI processing error:', error)
+
+      // Log detailed error information for debugging
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as any
+        console.error('Fal.ai API Error Details:', {
+          status: axiosError.response?.status,
+          statusText: axiosError.response?.statusText,
+          data: axiosError.response?.data,
+          url: axiosError.config?.url,
+          method: axiosError.config?.method,
+          requestData: axiosError.config?.data,
+        })
+      }
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown AI processing error',
@@ -167,10 +187,19 @@ export class VehicleProcessingService {
   async createOrUpdateVehicle(
     vehicleInfo: VehicleInfo,
     customerId: string,
-    imageUrl?: string,
+    mediaId?: string,
   ): Promise<Vehicle> {
     try {
       const payload = await getPayload({ config })
+
+      console.log('🔍 Creating/updating vehicle:', {
+        licensePlate: vehicleInfo.licensePlate,
+        vehicleType: vehicleInfo.vehicleType,
+        customerId,
+        mediaId,
+        customerIdType: typeof customerId,
+        mediaIdType: typeof mediaId,
+      })
 
       // Check if vehicle with this license plate already exists for this customer
       const existingVehicle = await payload.find({
@@ -195,28 +224,43 @@ export class VehicleProcessingService {
       if (existingVehicle.docs.length > 0) {
         // Update existing vehicle
         const vehicle = existingVehicle.docs[0] as Vehicle
+        console.log('🔄 Updating existing vehicle:', vehicle.id)
+
+        const updateData: any = {
+          vehicleType: this.mapVehicleType(vehicleInfo.vehicleType),
+          isActive: true,
+        }
+
+        // Only update image if mediaId is provided
+        if (mediaId) {
+          updateData.image = mediaId
+        }
+
         const updatedVehicle = await payload.update({
           collection: 'vehicles',
           id: vehicle.id,
-          data: {
-            vehicleType: this.mapVehicleType(vehicleInfo.vehicleType),
-            image: imageUrl,
-            isActive: true,
-            // Update any other relevant fields
-          },
+          data: updateData,
         })
         return updatedVehicle as Vehicle
       } else {
         // Create new vehicle
+        console.log('➕ Creating new vehicle')
+
+        const createData: any = {
+          licensePlate: vehicleInfo.licensePlate,
+          vehicleType: this.mapVehicleType(vehicleInfo.vehicleType),
+          owner: customerId,
+          isActive: true,
+        }
+
+        // Only add image if mediaId is provided
+        if (mediaId) {
+          createData.image = mediaId
+        }
+
         const newVehicle = await payload.create({
           collection: 'vehicles',
-          data: {
-            licensePlate: vehicleInfo.licensePlate,
-            vehicleType: this.mapVehicleType(vehicleInfo.vehicleType),
-            owner: customerId,
-            image: imageUrl,
-            isActive: true,
-          },
+          data: createData,
         })
         return newVehicle as Vehicle
       }

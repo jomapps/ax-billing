@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     let vehicleInfo
     let imageUrl = ''
+    let mediaResult: any = null
 
     if (useManualData && manualLicensePlate && manualVehicleType) {
       // Use manual data
@@ -82,11 +83,12 @@ export async function POST(request: NextRequest) {
       // Upload image to storage first
       const imageBuffer = Buffer.from(await image.arrayBuffer())
 
-      // Create a media record in Payload
+      // Create a media record in Payload using the correct v3 pattern
       const mediaResult = await payload.create({
         collection: 'media',
         data: {
           alt: `Vehicle photo for order ${orderId}`,
+          category: 'vehicle',
         },
         file: {
           data: imageBuffer,
@@ -96,7 +98,25 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      imageUrl = mediaResult.url || ''
+      // Construct the full public URL for Fal.ai access
+      const publicBucketUrl = process.env.S3_PUBLIC_BUCKET || 'https://media.ft.tc'
+      const filename = mediaResult.filename || `vehicle-${orderId}-${Date.now()}.jpg`
+
+      // Ensure we have the full public URL that Fal.ai can access
+      if (mediaResult.url && mediaResult.url.startsWith('http')) {
+        // Already a full URL
+        imageUrl = mediaResult.url
+      } else {
+        // Construct full URL using public bucket URL and filename
+        imageUrl = `${publicBucketUrl}/media/${filename}`
+      }
+
+      console.log('🔍 Processing vehicle image with Fal.ai:', {
+        orderId,
+        imageUrl,
+        filename: mediaResult.filename,
+        mediaResultUrl: mediaResult.url,
+      })
 
       // Process with AI
       const aiResult = await vehicleService.processVehiclePhoto(imageUrl)
@@ -123,7 +143,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or update vehicle record
-    const vehicle = await vehicleService.createOrUpdateVehicle(vehicleInfo, customer.id, imageUrl)
+    // Ensure we have a valid customer ID (string format for PayloadCMS relationships)
+    const customerId = typeof customer === 'string' ? customer : customer.id
+    console.log('🔍 Customer ID for vehicle creation:', {
+      customerId,
+      customerType: typeof customer,
+    })
+
+    const vehicle = await vehicleService.createOrUpdateVehicle(
+      vehicleInfo,
+      customerId,
+      mediaResult?.id, // Use optional chaining for manual data case
+    )
 
     // Link vehicle to order and update stage
     const updatedOrder = await vehicleService.linkVehicleToOrder(vehicle.id, orderId)
