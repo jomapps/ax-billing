@@ -1136,7 +1136,11 @@ function OrderCreatedContent({
 
                     <div className="flex gap-2 justify-center">
                       <Button
-                        onClick={() => navigator.clipboard.writeText(qrValue)}
+                        onClick={() => {
+                          if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                            navigator.clipboard.writeText(qrValue)
+                          }
+                        }}
                         variant="outline"
                         size="sm"
                       >
@@ -1145,7 +1149,11 @@ function OrderCreatedContent({
                       </Button>
 
                       <Button
-                        onClick={() => window.open(qrValue, '_blank')}
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            window.open(qrValue, '_blank')
+                          }
+                        }}
                         variant="outline"
                         size="sm"
                       >

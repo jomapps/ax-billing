@@ -106,7 +106,7 @@ export function WhatsAppQRCode({
   }
 
   const handleCopyLink = async () => {
-    if (qrValue) {
+    if (qrValue && typeof navigator !== 'undefined' && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(qrValue)
         setCopied(true)

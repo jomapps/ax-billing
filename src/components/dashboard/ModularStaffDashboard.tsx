@@ -223,7 +223,11 @@ function ModularStaffDashboardContent({
                 loading={loading}
                 onNewOrder={handleNewOrder}
                 onViewInitiated={handleViewInitiated}
-                onOpenWhatsApp={() => window.open('/whatsapp-demo', '_blank')}
+                onOpenWhatsApp={() => {
+                  if (typeof window !== 'undefined') {
+                    window.open('/whatsapp-demo', '_blank')
+                  }
+                }}
               />
             )}
 

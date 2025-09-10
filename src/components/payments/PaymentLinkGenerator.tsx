@@ -211,7 +211,7 @@ export function PaymentLinkGenerator({
   }
 
   const copyToClipboard = async () => {
-    if (!paymentLink) return
+    if (!paymentLink || typeof navigator === 'undefined' || !navigator.clipboard) return
 
     try {
       await navigator.clipboard.writeText(paymentLink)

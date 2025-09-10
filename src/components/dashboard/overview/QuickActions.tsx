@@ -13,6 +13,13 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onNewOrder, onViewInitiated, onOpenWhatsApp }: QuickActionsProps) {
+  // Safe browser-only function to avoid hydration mismatch
+  const handleOpenWhatsApp = () => {
+    if (typeof window !== 'undefined') {
+      window.open('/whatsapp-demo', '_blank')
+    }
+  }
+
   const actions = [
     {
       title: 'New Order',
@@ -32,7 +39,7 @@ export function QuickActions({ onNewOrder, onViewInitiated, onOpenWhatsApp }: Qu
       title: 'WhatsApp Hub',
       description: 'Open WhatsApp integration',
       icon: MessageSquare,
-      onClick: onOpenWhatsApp || (() => window.open('/whatsapp-demo', '_blank')),
+      onClick: onOpenWhatsApp || handleOpenWhatsApp,
       className: 'bg-purple-500 hover:bg-purple-600',
     },
   ]

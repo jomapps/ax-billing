@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     let vehicleInfo
     let imageUrl = ''
-    let mediaResult: any = null
+    const mediaResult: any = null
 
     if (useManualData && manualLicensePlate && manualVehicleType) {
       // Use manual data

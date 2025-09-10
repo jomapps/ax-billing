@@ -138,7 +138,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
   }
 
   const copyToClipboard = async () => {
-    if (qrValue) {
+    if (qrValue && typeof navigator !== 'undefined' && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(qrValue)
         setCopied(true)
@@ -150,7 +150,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
   }
 
   const openWhatsApp = () => {
-    if (qrValue) {
+    if (qrValue && typeof window !== 'undefined') {
       window.open(qrValue, '_blank')
     }
   }
