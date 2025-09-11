@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator'
 
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { VehicleCaptureInterface } from '@/components/whatsapp/VehicleCaptureInterface'
+import { MultiImageVehicleCaptureInterface } from '@/components/whatsapp/MultiImageVehicleCaptureInterface'
 import { cn } from '@/lib/utils'
 
 interface OrderData {
@@ -249,7 +250,7 @@ export function OrderInitiatedView({
               </CardHeader>
               <CardContent className="space-y-4">
                 {showVehicleCapture ? (
-                  <VehicleCaptureInterface
+                  <MultiImageVehicleCaptureInterface
                     orderId={orderId}
                     onVehicleCaptured={handleVehicleCaptured}
                     onCancel={() => setShowVehicleCapture(false)}
@@ -258,18 +259,19 @@ export function OrderInitiatedView({
                   <div className="text-center py-8">
                     <Upload className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                     <h3 className="text-lg font-semibold text-white mb-2">
-                      Capture Vehicle Information
+                      Comprehensive Vehicle Capture
                     </h3>
                     <p className="text-gray-400 mb-6">
-                      Take a photo of the vehicle to automatically extract license plate and vehicle
-                      type.
+                      Take multiple photos of the vehicle (front, back, left, right) to
+                      automatically extract license plate, analyze vehicle size, and detect any
+                      damage.
                     </p>
                     <Button
                       onClick={() => setShowVehicleCapture(true)}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <Camera className="w-4 h-4 mr-2" />
-                      Start Vehicle Capture
+                      Start Multi-Image Capture
                     </Button>
                   </div>
                 )}

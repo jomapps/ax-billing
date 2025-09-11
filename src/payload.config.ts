@@ -11,6 +11,7 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Vehicles } from './collections/Vehicles'
+import { VehicleImages } from './collections/VehicleImages'
 import { Services } from './collections/Services'
 import { ServiceCategories } from './collections/ServiceCategories'
 import { ServiceOptions } from './collections/ServiceOptions'
@@ -37,6 +38,7 @@ export default buildConfig({
   collections: [
     Users,
     Vehicles,
+    VehicleImages,
     Services,
     ServiceCategories,
     ServiceOptions,

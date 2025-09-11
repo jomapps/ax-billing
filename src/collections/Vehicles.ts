@@ -130,6 +130,212 @@ export const Vehicles: CollectionConfig = {
         description: 'Whether this vehicle is actively used by the customer',
       },
     },
+    // Vehicle Images Relationship
+    {
+      name: 'vehicleImages',
+      type: 'relationship',
+      relationTo: 'vehicle-images',
+      hasMany: true,
+      label: 'Vehicle Images',
+      admin: {
+        description: 'All images captured for this vehicle during intake and delivery',
+      },
+    },
+    // Vehicle Size Analysis
+    {
+      name: 'sizeAnalysis',
+      type: 'group',
+      label: 'Vehicle Size Analysis',
+      admin: {
+        description: 'AI-analyzed vehicle dimensions and size category',
+      },
+      fields: [
+        {
+          name: 'length',
+          type: 'number',
+          label: 'Length (meters)',
+          admin: {
+            description: 'Vehicle length in meters (AI estimated)',
+          },
+        },
+        {
+          name: 'width',
+          type: 'number',
+          label: 'Width (meters)',
+          admin: {
+            description: 'Vehicle width in meters (AI estimated)',
+          },
+        },
+        {
+          name: 'height',
+          type: 'number',
+          label: 'Height (meters)',
+          admin: {
+            description: 'Vehicle height in meters (AI estimated)',
+          },
+        },
+        {
+          name: 'sizeCategory',
+          type: 'select',
+          label: 'Size Category',
+          options: [
+            { label: 'Compact', value: 'compact' },
+            { label: 'Mid-size', value: 'midsize' },
+            { label: 'Large', value: 'large' },
+            { label: 'Extra Large', value: 'extra_large' },
+          ],
+          admin: {
+            description: 'AI-determined vehicle size category',
+          },
+        },
+        {
+          name: 'confidence',
+          type: 'number',
+          label: 'Size Analysis Confidence',
+          min: 0,
+          max: 1,
+          admin: {
+            description: 'AI confidence score for size analysis (0-1)',
+          },
+        },
+      ],
+    },
+    // Damage Assessment
+    {
+      name: 'damageAssessment',
+      type: 'group',
+      label: 'Damage Assessment',
+      admin: {
+        description: 'Comprehensive damage analysis from vehicle images',
+      },
+      fields: [
+        {
+          name: 'intakeDamages',
+          type: 'array',
+          label: 'Intake Damages',
+          admin: {
+            description: 'Damages detected during vehicle intake',
+          },
+          fields: [
+            {
+              name: 'description',
+              type: 'textarea',
+              required: true,
+              label: 'Damage Description',
+            },
+            {
+              name: 'severity',
+              type: 'select',
+              required: true,
+              label: 'Severity',
+              options: [
+                { label: 'Minor', value: 'minor' },
+                { label: 'Moderate', value: 'moderate' },
+                { label: 'Major', value: 'major' },
+                { label: 'Severe', value: 'severe' },
+              ],
+            },
+            {
+              name: 'location',
+              type: 'text',
+              required: true,
+              label: 'Location on Vehicle',
+            },
+            {
+              name: 'confidence',
+              type: 'number',
+              label: 'AI Confidence',
+              min: 0,
+              max: 1,
+            },
+            {
+              name: 'relatedImage',
+              type: 'relationship',
+              relationTo: 'vehicle-images',
+              label: 'Related Image',
+            },
+          ],
+        },
+        {
+          name: 'deliveryDamages',
+          type: 'array',
+          label: 'Delivery Damages',
+          admin: {
+            description: 'Damages detected during vehicle delivery (comparison with intake)',
+          },
+          fields: [
+            {
+              name: 'description',
+              type: 'textarea',
+              required: true,
+              label: 'Damage Description',
+            },
+            {
+              name: 'severity',
+              type: 'select',
+              required: true,
+              label: 'Severity',
+              options: [
+                { label: 'Minor', value: 'minor' },
+                { label: 'Moderate', value: 'moderate' },
+                { label: 'Major', value: 'major' },
+                { label: 'Severe', value: 'severe' },
+              ],
+            },
+            {
+              name: 'location',
+              type: 'text',
+              required: true,
+              label: 'Location on Vehicle',
+            },
+            {
+              name: 'isNewDamage',
+              type: 'checkbox',
+              label: 'New Damage',
+              admin: {
+                description: 'Whether this damage occurred during service',
+              },
+            },
+            {
+              name: 'confidence',
+              type: 'number',
+              label: 'AI Confidence',
+              min: 0,
+              max: 1,
+            },
+            {
+              name: 'relatedImage',
+              type: 'relationship',
+              relationTo: 'vehicle-images',
+              label: 'Related Image',
+            },
+          ],
+        },
+        {
+          name: 'overallCondition',
+          type: 'select',
+          label: 'Overall Condition',
+          options: [
+            { label: 'Excellent', value: 'excellent' },
+            { label: 'Good', value: 'good' },
+            { label: 'Fair', value: 'fair' },
+            { label: 'Poor', value: 'poor' },
+            { label: 'Damaged', value: 'damaged' },
+          ],
+          admin: {
+            description: 'AI assessment of overall vehicle condition',
+          },
+        },
+        {
+          name: 'lastAssessmentDate',
+          type: 'date',
+          label: 'Last Assessment Date',
+          admin: {
+            description: 'When the damage assessment was last updated',
+          },
+        },
+      ],
+    },
   ],
   hooks: {
     afterChange: [

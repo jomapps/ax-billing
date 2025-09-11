@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     vehicles: Vehicle;
+    'vehicle-images': VehicleImage;
     services: Service;
     'service-categories': ServiceCategory;
     'service-options': ServiceOption;
@@ -87,6 +88,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     vehicles: VehiclesSelect<false> | VehiclesSelect<true>;
+    'vehicle-images': VehicleImagesSelect<false> | VehicleImagesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     'service-categories': ServiceCategoriesSelect<false> | ServiceCategoriesSelect<true>;
     'service-options': ServiceOptionsSelect<false> | ServiceOptionsSelect<true>;
@@ -530,6 +532,218 @@ export interface Vehicle {
    * Whether this vehicle is actively used by the customer
    */
   isActive?: boolean | null;
+  /**
+   * All images captured for this vehicle during intake and delivery
+   */
+  vehicleImages?: (string | VehicleImage)[] | null;
+  /**
+   * AI-analyzed vehicle dimensions and size category
+   */
+  sizeAnalysis?: {
+    /**
+     * Vehicle length in meters (AI estimated)
+     */
+    length?: number | null;
+    /**
+     * Vehicle width in meters (AI estimated)
+     */
+    width?: number | null;
+    /**
+     * Vehicle height in meters (AI estimated)
+     */
+    height?: number | null;
+    /**
+     * AI-determined vehicle size category
+     */
+    sizeCategory?: ('compact' | 'midsize' | 'large' | 'extra_large') | null;
+    /**
+     * AI confidence score for size analysis (0-1)
+     */
+    confidence?: number | null;
+  };
+  /**
+   * Comprehensive damage analysis from vehicle images
+   */
+  damageAssessment?: {
+    /**
+     * Damages detected during vehicle intake
+     */
+    intakeDamages?:
+      | {
+          description: string;
+          severity: 'minor' | 'moderate' | 'major' | 'severe';
+          location: string;
+          confidence?: number | null;
+          relatedImage?: (string | null) | VehicleImage;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Damages detected during vehicle delivery (comparison with intake)
+     */
+    deliveryDamages?:
+      | {
+          description: string;
+          severity: 'minor' | 'moderate' | 'major' | 'severe';
+          location: string;
+          /**
+           * Whether this damage occurred during service
+           */
+          isNewDamage?: boolean | null;
+          confidence?: number | null;
+          relatedImage?: (string | null) | VehicleImage;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * AI assessment of overall vehicle condition
+     */
+    overallCondition?: ('excellent' | 'good' | 'fair' | 'poor' | 'damaged') | null;
+    /**
+     * When the damage assessment was last updated
+     */
+    lastAssessmentDate?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vehicle-images".
+ */
+export interface VehicleImage {
+  id: string;
+  /**
+   * Vehicle this image belongs to
+   */
+  vehicle: string | Vehicle;
+  /**
+   * Order during which this image was captured
+   */
+  order: string | Order;
+  /**
+   * The actual vehicle image file
+   */
+  image: string | Media;
+  /**
+   * Type/angle of the vehicle image
+   */
+  imageType: 'front' | 'back' | 'left' | 'right' | 'interior' | 'damage' | 'license_plate' | 'additional';
+  /**
+   * Whether this image was taken during intake or delivery
+   */
+  captureStage: 'intake' | 'delivery';
+  /**
+   * Whether this image has been processed by AI for analysis
+   */
+  aiProcessed?: boolean | null;
+  /**
+   * Whether AI detected damage in this image
+   */
+  damageDetected?: boolean | null;
+  /**
+   * AI-generated description of any damage found in the image
+   */
+  damageDescription?: string | null;
+  /**
+   * AI confidence score for damage detection (0-1)
+   */
+  damageConfidence?: number | null;
+  /**
+   * Any text extracted from the image (license plates, etc.)
+   */
+  extractedText?: string | null;
+  /**
+   * AI analysis of vehicle dimensions and size
+   */
+  vehicleSize?: {
+    /**
+     * AI estimated vehicle length in meters
+     */
+    estimatedLength?: number | null;
+    /**
+     * AI estimated vehicle width in meters
+     */
+    estimatedWidth?: number | null;
+    /**
+     * AI estimated vehicle height in meters
+     */
+    estimatedHeight?: number | null;
+    /**
+     * AI-determined vehicle size category
+     */
+    sizeCategory?: ('compact' | 'midsize' | 'large' | 'extra_large') | null;
+    /**
+     * AI confidence score for size analysis (0-1)
+     */
+    confidence?: number | null;
+  };
+  /**
+   * Comprehensive AI analysis of the vehicle image
+   */
+  aiAnalysis?: {
+    /**
+     * AI assessment of overall vehicle condition
+     */
+    vehicleCondition?: ('excellent' | 'good' | 'fair' | 'poor' | 'damaged') | null;
+    /**
+     * List of vehicle features visible in this image
+     */
+    visibleFeatures?:
+      | {
+          feature: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * AI analysis of vehicle color(s)
+     */
+    colorAnalysis?: string | null;
+    /**
+     * Time taken for AI processing in seconds
+     */
+    processingTime?: number | null;
+    /**
+     * Complete raw response from AI service for debugging
+     */
+    rawAiResponse?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  /**
+   * Technical metadata about the image capture
+   */
+  metadata?: {
+    /**
+     * Staff member who captured this image
+     */
+    capturedBy?: (string | null) | User;
+    /**
+     * Device used to capture the image (camera, phone, etc.)
+     */
+    captureDevice?: string | null;
+    /**
+     * GPS coordinates where the image was captured
+     *
+     * @minItems 2
+     * @maxItems 2
+     */
+    gpsLocation?: [number, number] | null;
+    /**
+     * Weather conditions during image capture
+     */
+    weather?: string | null;
+    /**
+     * Lighting conditions during capture
+     */
+    lighting?: ('daylight' | 'artificial' | 'low_light' | 'night') | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1113,6 +1327,10 @@ export interface PayloadLockedDocument {
         value: string | Vehicle;
       } | null)
     | ({
+        relationTo: 'vehicle-images';
+        value: string | VehicleImage;
+      } | null)
+    | ({
         relationTo: 'services';
         value: string | Service;
       } | null)
@@ -1241,6 +1459,93 @@ export interface VehiclesSelect<T extends boolean = true> {
   notes?: T;
   aiClassificationConfidence?: T;
   isActive?: T;
+  vehicleImages?: T;
+  sizeAnalysis?:
+    | T
+    | {
+        length?: T;
+        width?: T;
+        height?: T;
+        sizeCategory?: T;
+        confidence?: T;
+      };
+  damageAssessment?:
+    | T
+    | {
+        intakeDamages?:
+          | T
+          | {
+              description?: T;
+              severity?: T;
+              location?: T;
+              confidence?: T;
+              relatedImage?: T;
+              id?: T;
+            };
+        deliveryDamages?:
+          | T
+          | {
+              description?: T;
+              severity?: T;
+              location?: T;
+              isNewDamage?: T;
+              confidence?: T;
+              relatedImage?: T;
+              id?: T;
+            };
+        overallCondition?: T;
+        lastAssessmentDate?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vehicle-images_select".
+ */
+export interface VehicleImagesSelect<T extends boolean = true> {
+  vehicle?: T;
+  order?: T;
+  image?: T;
+  imageType?: T;
+  captureStage?: T;
+  aiProcessed?: T;
+  damageDetected?: T;
+  damageDescription?: T;
+  damageConfidence?: T;
+  extractedText?: T;
+  vehicleSize?:
+    | T
+    | {
+        estimatedLength?: T;
+        estimatedWidth?: T;
+        estimatedHeight?: T;
+        sizeCategory?: T;
+        confidence?: T;
+      };
+  aiAnalysis?:
+    | T
+    | {
+        vehicleCondition?: T;
+        visibleFeatures?:
+          | T
+          | {
+              feature?: T;
+              id?: T;
+            };
+        colorAnalysis?: T;
+        processingTime?: T;
+        rawAiResponse?: T;
+      };
+  metadata?:
+    | T
+    | {
+        capturedBy?: T;
+        captureDevice?: T;
+        gpsLocation?: T;
+        weather?: T;
+        lighting?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
