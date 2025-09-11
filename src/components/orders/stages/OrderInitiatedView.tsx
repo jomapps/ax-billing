@@ -141,42 +141,49 @@ export function OrderInitiatedView({
   const hasCustomer = orderData.customer && orderData.whatsappLinked
 
   return (
-    <div className={cn('container mx-auto p-6 space-y-6 max-w-6xl', className)}>
+    <div className={cn('container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-6xl', className)}>
       {/* Server-side architecture - no polling needed */}
 
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
           <Button
             onClick={() => router.push('/')}
             variant="outline"
             size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 flex-shrink-0"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Dashboard
+            <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Dashboard</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-white">{orderData.orderID}</h1>
-            <p className="text-gray-400">Customer Connected - Capturing Vehicle</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-responsive-xl sm:text-responsive-2xl font-bold text-white truncate">
+              {orderData.orderID}
+            </h1>
+            <p className="text-gray-400 text-responsive-xs sm:text-responsive-sm">
+              Customer Connected - Capturing Vehicle
+            </p>
           </div>
         </div>
-        <div className="text-right">
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Initiated</Badge>
-          <p className="text-sm text-gray-400 mt-1">
+        <div className="flex flex-col sm:items-end gap-1 flex-shrink-0">
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 self-start sm:self-auto">
+            Initiated
+          </Badge>
+          <p className="text-responsive-xs text-gray-400">
             Connected{' '}
             {orderData.qrCodeScannedAt
-              ? new Date(orderData.qrCodeScannedAt).toLocaleString()
+              ? new Date(orderData.qrCodeScannedAt).toLocaleDateString()
               : 'Recently'}
           </p>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Customer Information */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -268,10 +275,11 @@ export function OrderInitiatedView({
                     </p>
                     <Button
                       onClick={() => setShowVehicleCapture(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                     >
                       <Camera className="w-4 h-4 mr-2" />
-                      Start Multi-Image Capture
+                      <span className="hidden sm:inline">Start Multi-Image Capture</span>
+                      <span className="sm:hidden">Start Capture</span>
                     </Button>
                   </div>
                 )}

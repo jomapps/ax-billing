@@ -1,0 +1,258 @@
+{
+  "timestamp": "2025-09-11T16:37:58.865Z",
+  "url": "https://local.ft.tc/order/AX-20250907-0699/initiated",
+  "mobileIssues": {
+    "viewport": {
+      "width": 375,
+      "height": 667
+    },
+    "hasHorizontalScroll": false,
+    "breakingElements": [],
+    "wideElements": [],
+    "fixedWidthElements": [],
+    "tables": [
+      {
+        "tagName": "div",
+        "className": "grid-bg min-h-screen",
+        "width": 367,
+        "overflows": false,
+        "display": "block",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4",
+        "width": 331,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "column"
+      },
+      {
+        "tagName": "div",
+        "className": "flex items-center gap-3 sm:gap-4 min-w-0 flex-1",
+        "width": 331,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "button",
+        "className": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group border-2 bg-transparent hover:text-primary-300 hover:border-primary-400 active:scale-95 h-9 px-4 py-2 border-gray-600 text-gray-300 hover:bg-gray-700 flex-shrink-0",
+        "width": 105,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "min-w-0 flex-1",
+        "width": 212.5,
+        "overflows": false,
+        "display": "block",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex flex-col sm:items-end gap-1 flex-shrink-0",
+        "width": 331,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "column"
+      },
+      {
+        "tagName": "div",
+        "className": "inline-flex items-center rounded-full border font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary-500 shadow-sm px-2.5 py-0.5 text-xs bg-blue-500/20 text-blue-400 border-blue-500/30 self-start sm:self-auto",
+        "width": 77.125,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6",
+        "width": 331,
+        "overflows": false,
+        "display": "grid",
+        "gridTemplateColumns": "331px",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex flex-col space-y-1.5 pb-4",
+        "width": 275,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "column"
+      },
+      {
+        "tagName": "h3",
+        "className": "font-semibold leading-none tracking-tight text-white flex items-center gap-2",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex justify-between items-center",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "inline-flex items-center rounded-full border font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary-500 shadow-sm px-2.5 py-0.5 text-xs bg-green-500/20 text-green-400 border-green-500/30",
+        "width": 96.09375,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex justify-between items-center",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex justify-between items-center",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex justify-between items-center",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex flex-col space-y-1.5 pb-4",
+        "width": 275,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "column"
+      },
+      {
+        "tagName": "h3",
+        "className": "font-semibold leading-none tracking-tight text-white flex items-center gap-2",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "button",
+        "className": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 h-12 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto",
+        "width": 221,
+        "overflows": false,
+        "display": "inline-flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex flex-col space-y-1.5 pb-4",
+        "width": 275,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "column"
+      },
+      {
+        "tagName": "h3",
+        "className": "font-semibold leading-none tracking-tight text-white flex items-center gap-2",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex items-center gap-3",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex items-center gap-3",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "inline-flex items-center rounded-full border font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary-500 shadow-sm px-2.5 py-0.5 bg-green-500/20 text-green-400 border-green-500/30 text-xs",
+        "width": 87.390625,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex items-center gap-3",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "flex items-center gap-3",
+        "width": 221,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      },
+      {
+        "tagName": "div",
+        "className": "inline-flex items-center rounded-full border font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary-500 shadow-sm px-2.5 py-0.5 bg-gray-500/20 text-gray-400 border-gray-500/30 text-xs",
+        "width": 78.03125,
+        "overflows": false,
+        "display": "flex",
+        "gridTemplateColumns": "none",
+        "flexDirection": "row"
+      }
+    ],
+    "totalIssues": 0
+  },
+  "componentAnalysis": {
+    "forms": [],
+    "buttonIssues": [],
+    "cardIssues": [],
+    "inputIssues": []
+  },
+  "recommendations": []
+}

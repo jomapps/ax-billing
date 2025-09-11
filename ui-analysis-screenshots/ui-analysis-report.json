@@ -1,0 +1,531 @@
+{
+  "timestamp": "2025-09-11T16:05:19.989Z",
+  "viewports": {
+    "desktop": {
+      "width": 1920,
+      "height": 1080
+    },
+    "tablet": {
+      "width": 768,
+      "height": 1024
+    },
+    "mobile": {
+      "width": 375,
+      "height": 667
+    },
+    "smallMobile": {
+      "width": 320,
+      "height": 568
+    }
+  },
+  "fontAnalysis": {
+    "desktop": [
+      {
+        "type": "heading",
+        "tag": "h1",
+        "text": "Staff Dashboard",
+        "fontSize": "22.5px",
+        "fontSizePixels": 22.5,
+        "lineHeight": "27px",
+        "fontWeight": "700",
+        "classes": "text-responsive-xl sm:text-responsive-2xl font-bold text-white"
+      },
+      {
+        "type": "heading",
+        "tag": "h2",
+        "text": "Dashboard Overview",
+        "fontSize": "16.875px",
+        "fontSizePixels": 16.875,
+        "lineHeight": "21.9375px",
+        "fontWeight": "600",
+        "classes": "text-responsive-base sm:text-responsive-lg font-bold text-white mb-2 sm:mb-3"
+      },
+      {
+        "type": "heading",
+        "tag": "h3",
+        "text": "Quick Actions",
+        "fontSize": "20.25px",
+        "fontSizePixels": 20.25,
+        "lineHeight": "28.35px",
+        "fontWeight": "600",
+        "classes": "font-semibold leading-none tracking-tight flex items-center gap-2 text-responsive-lg"
+      },
+      {
+        "type": "heading",
+        "tag": "h2",
+        "text": "Order Queues",
+        "fontSize": "16.875px",
+        "fontSizePixels": 16.875,
+        "lineHeight": "21.9375px",
+        "fontWeight": "600",
+        "classes": "text-responsive-base sm:text-responsive-lg font-bold text-white mb-2 sm:mb-3"
+      },
+      {
+        "type": "heading",
+        "tag": "h3",
+        "text": "New Orders0",
+        "fontSize": "22.5px",
+        "fontSizePixels": 22.5,
+        "lineHeight": "31.5px",
+        "fontWeight": "600",
+        "classes": "font-semibold leading-none tracking-tight text-white flex items-center justify-between"
+      },
+      {
+        "type": "heading",
+        "tag": "h3",
+        "text": "Initiated Orders11",
+        "fontSize": "22.5px",
+        "fontSizePixels": 22.5,
+        "lineHeight": "31.5px",
+        "fontWeight": "600",
+        "classes": "font-semibold leading-none tracking-tight text-white flex items-center justify-between"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-1152",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-9699",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-1008",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-5914",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-5529",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-3372",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-6759",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-4184",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-0945",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-0699",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-5474",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h3",
+        "text": "Open Orders4",
+        "fontSize": "22.5px",
+        "fontSizePixels": 22.5,
+        "lineHeight": "31.5px",
+        "fontWeight": "600",
+        "classes": "font-semibold leading-none tracking-tight text-white flex items-center justify-between"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250910-3846",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250909-3309",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250908-5336",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h4",
+        "text": "AX-20250907-9045",
+        "fontSize": "19.2px",
+        "fontSizePixels": 19.2,
+        "lineHeight": "26.88px",
+        "fontWeight": "500",
+        "classes": "text-white font-medium text-[11px] sm:text-responsive-xs truncate"
+      },
+      {
+        "type": "heading",
+        "tag": "h3",
+        "text": "Billed Orders0",
+        "fontSize": "22.5px",
+        "fontSizePixels": 22.5,
+        "lineHeight": "31.5px",
+        "fontWeight": "600",
+        "classes": "font-semibold leading-none tracking-tight text-white flex items-center justify-between"
+      },
+      {
+        "type": "button",
+        "text": "Refresh",
+        "fontSize": "16.875px",
+        "fontSizePixels": 16.875,
+        "padding": "9px 18px",
+        "height": "40.5px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group border-2 bg-transparent hover:bg-primary-500/10 hover:text-primary-300 hover:border-primary-400 active:scale-95 h-9 px-4 py-2 border-gray-600 text-gray-300"
+      },
+      {
+        "type": "button",
+        "text": "New OrderCreate a new car wash",
+        "fontSize": "16.875px",
+        "fontSizePixels": 16.875,
+        "padding": "13.5px 27px",
+        "height": "72px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-6 py-3 w-full h-14 sm:h-16 bg-blue-500 hover:bg-blue-600 text-white"
+      },
+      {
+        "type": "button",
+        "text": "View InitiatedCheck initiated ",
+        "fontSize": "16.875px",
+        "fontSizePixels": 16.875,
+        "padding": "13.5px 27px",
+        "height": "72px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-6 py-3 w-full h-14 sm:h-16 bg-green-500 hover:bg-green-600 text-white"
+      },
+      {
+        "type": "button",
+        "text": "WhatsApp HubOpen WhatsApp inte",
+        "fontSize": "16.875px",
+        "fontSizePixels": 16.875,
+        "padding": "13.5px 27px",
+        "height": "72px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-6 py-3 w-full h-14 sm:h-16 bg-purple-500 hover:bg-purple-600 text-white"
+      },
+      {
+        "type": "button",
+        "text": "Capture",
+        "fontSize": "13.5px",
+        "fontSizePixels": 13.5,
+        "padding": "9px 18px",
+        "height": "27px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-4 py-2 text-btn-xs w-full h-6 bg-blue-500 hover:bg-blue-600 text-[10px] sm:text-responsive-xs"
+      },
+      {
+        "type": "button",
+        "text": "Capture",
+        "fontSize": "13.5px",
+        "fontSizePixels": 13.5,
+        "padding": "9px 18px",
+        "height": "27px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-4 py-2 text-btn-xs w-full h-6 bg-blue-500 hover:bg-blue-600 text-[10px] sm:text-responsive-xs"
+      },
+      {
+        "type": "button",
+        "text": "Capture",
+        "fontSize": "13.5px",
+        "fontSizePixels": 13.5,
+        "padding": "9px 18px",
+        "height": "27px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-4 py-2 text-btn-xs w-full h-6 bg-blue-500 hover:bg-blue-600 text-[10px] sm:text-responsive-xs"
+      },
+      {
+        "type": "button",
+        "text": "Capture",
+        "fontSize": "13.5px",
+        "fontSizePixels": 13.5,
+        "padding": "9px 18px",
+        "height": "27px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-4 py-2 text-btn-xs w-full h-6 bg-blue-500 hover:bg-blue-600 text-[10px] sm:text-responsive-xs"
+      },
+      {
+        "type": "button",
+        "text": "Capture",
+        "fontSize": "13.5px",
+        "fontSizePixels": 13.5,
+        "padding": "9px 18px",
+        "height": "27px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-4 py-2 text-btn-xs w-full h-6 bg-blue-500 hover:bg-blue-600 text-[10px] sm:text-responsive-xs"
+      },
+      {
+        "type": "button",
+        "text": "Capture",
+        "fontSize": "13.5px",
+        "fontSizePixels": 13.5,
+        "padding": "9px 18px",
+        "height": "27px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group from-primary-600 to-primary-500 shadow-gaming hover:shadow-gaming-lg hover:from-primary-500 hover:to-primary-400 active:scale-95 px-4 py-2 text-btn-xs w-full h-6 bg-blue-500 hover:bg-blue-600 text-[10px] sm:text-responsive-xs"
+      },
+      {
+        "type": "card",
+        "width": 1912,
+        "height": 1975.84375,
+        "padding": "18px",
+        "margin": "0px",
+        "classes": "min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-3 sm:p-4"
+      },
+      {
+        "type": "card",
+        "width": 129.359375,
+        "height": 40.5,
+        "padding": "9px 18px",
+        "margin": "0px",
+        "classes": "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 relative overflow-hidden group border-2 bg-transparent hover:bg-primary-500/10 hover:text-primary-300 hover:border-primary-400 active:scale-95 h-9 px-4 py-2 border-gray-600 text-gray-300"
+      },
+      {
+        "type": "card",
+        "width": 125.359375,
+        "height": 36.5,
+        "padding": "0px",
+        "margin": "0px",
+        "classes": "absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      },
+      {
+        "type": "card",
+        "width": 349.875,
+        "height": 152.1875,
+        "padding": "0px",
+        "margin": "0px",
+        "classes": "rounded-lg border text-card-foreground shadow-sm bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 hover:scale-[1.02] transition-transform"
+      },
+      {
+        "type": "card",
+        "width": 27,
+        "height": 27,
+        "padding": "4.5px",
+        "margin": "0px",
+        "classes": "p-1 rounded bg-blue-500/10"
+      }
+    ],
+    "tablet": [
+      {
+        "tag": "h1",
+        "fontSize": "19.59px",
+        "fontSizePixels": 19.59
+      },
+      {
+        "tag": "h2",
+        "fontSize": "15.42px",
+        "fontSizePixels": 15.42
+      },
+      {
+        "tag": "h3",
+        "fontSize": "17.28px",
+        "fontSizePixels": 17.28
+      },
+      {
+        "tag": "h2",
+        "fontSize": "15.42px",
+        "fontSizePixels": 15.42
+      },
+      {
+        "tag": "h3",
+        "fontSize": "19.59px",
+        "fontSizePixels": 19.59
+      },
+      {
+        "tag": "h3",
+        "fontSize": "19.59px",
+        "fontSizePixels": 19.59
+      },
+      {
+        "tag": "h3",
+        "fontSize": "19.59px",
+        "fontSizePixels": 19.59
+      },
+      {
+        "tag": "h3",
+        "fontSize": "19.59px",
+        "fontSizePixels": 19.59
+      }
+    ],
+    "mobile": [
+      {
+        "tag": "h1",
+        "fontSize": "18px",
+        "fontSizePixels": 18
+      },
+      {
+        "tag": "h2",
+        "fontSize": "14.625px",
+        "fontSizePixels": 14.625
+      },
+      {
+        "tag": "h3",
+        "fontSize": "15.8062px",
+        "fontSizePixels": 15.8062
+      },
+      {
+        "tag": "h2",
+        "fontSize": "14.625px",
+        "fontSizePixels": 14.625
+      },
+      {
+        "tag": "h3",
+        "fontSize": "18px",
+        "fontSizePixels": 18
+      },
+      {
+        "tag": "h3",
+        "fontSize": "18px",
+        "fontSizePixels": 18
+      },
+      {
+        "tag": "h3",
+        "fontSize": "18px",
+        "fontSizePixels": 18
+      },
+      {
+        "tag": "h3",
+        "fontSize": "18px",
+        "fontSizePixels": 18
+      }
+    ]
+  },
+  "mobileInteraction": [
+    {
+      "type": "button",
+      "width": 62.5,
+      "height": 44,
+      "minTouchTarget": true,
+      "fontSize": "18px",
+      "text": "Refresh"
+    },
+    {
+      "type": "button",
+      "width": 175,
+      "height": 63,
+      "minTouchTarget": true,
+      "fontSize": "18px",
+      "text": "New OrderCreate a ne"
+    },
+    {
+      "type": "button",
+      "width": 175,
+      "height": 63,
+      "minTouchTarget": true,
+      "fontSize": "18px",
+      "text": "View InitiatedCheck "
+    },
+    {
+      "type": "button",
+      "width": 175,
+      "height": 63,
+      "minTouchTarget": true,
+      "fontSize": "18px",
+      "text": "WhatsApp HubOpen Wha"
+    },
+    {
+      "type": "button",
+      "width": 236,
+      "height": 44,
+      "minTouchTarget": true,
+      "fontSize": "12.375px",
+      "text": "Capture"
+    },
+    {
+      "type": "spacing",
+      "verticalGap": 480.234375,
+      "horizontalGap": 230,
+      "adequateSpacing": true
+    },
+    {
+      "type": "spacing",
+      "verticalGap": 13.5,
+      "horizontalGap": 175,
+      "adequateSpacing": true
+    },
+    {
+      "type": "spacing",
+      "verticalGap": 13.5,
+      "horizontalGap": 175,
+      "adequateSpacing": true
+    }
+  ],
+  "issues": [],
+  "recommendations": []
+}

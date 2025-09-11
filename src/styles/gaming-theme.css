@@ -55,24 +55,24 @@
   --font-family-gaming: 'Orbitron', monospace;
   --font-family-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Responsive font sizes */
-  --font-size-xs: clamp(0.625rem, 0.5rem + 0.5vw, 0.75rem);
-  --font-size-sm: clamp(0.75rem, 0.625rem + 0.5vw, 0.875rem);
-  --font-size-base: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
-  --font-size-lg: clamp(1rem, 0.875rem + 0.5vw, 1.125rem);
-  --font-size-xl: clamp(1.125rem, 1rem + 0.5vw, 1.25rem);
-  --font-size-2xl: clamp(1.25rem, 1.125rem + 0.5vw, 1.5rem);
-  --font-size-3xl: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
-  --font-size-4xl: clamp(1.875rem, 1.5rem + 1.5vw, 2.25rem);
-  --font-size-5xl: clamp(2.25rem, 1.875rem + 2vw, 3rem);
-  --font-size-6xl: clamp(3rem, 2.25rem + 3vw, 3.75rem);
+  /* Compact responsive font sizes for business applications */
+  --font-size-xs: clamp(0.6875rem, 0.65rem + 0.125vw, 0.75rem);
+  --font-size-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-size-base: clamp(0.8125rem, 0.75rem + 0.25vw, 0.9375rem);
+  --font-size-lg: clamp(0.875rem, 0.8rem + 0.375vw, 1.125rem);
+  --font-size-xl: clamp(1rem, 0.875rem + 0.5vw, 1.25rem);
+  --font-size-2xl: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  --font-size-3xl: clamp(1.25rem, 1.125rem + 0.5vw, 1.5rem);
+  --font-size-4xl: clamp(1.375rem, 1.25rem + 0.75vw, 1.75rem);
+  --font-size-5xl: clamp(1.5rem, 1.375rem + 0.75vw, 2rem);
+  --font-size-6xl: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
 
-  /* Button-specific responsive font sizes */
-  --font-size-btn-xs: clamp(0.75rem, 0.625rem + 0.5vw, 0.875rem);
-  --font-size-btn-sm: clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
-  --font-size-btn-base: clamp(1rem, 0.875rem + 0.5vw, 1.125rem);
-  --font-size-btn-lg: clamp(1.125rem, 1rem + 0.75vw, 1.25rem);
-  --font-size-btn-xl: clamp(1.25rem, 1.125rem + 0.75vw, 1.5rem);
+  /* Compact button-specific responsive font sizes */
+  --font-size-btn-xs: clamp(0.6875rem, 0.65rem + 0.125vw, 0.75rem);
+  --font-size-btn-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-size-btn-base: clamp(0.8125rem, 0.75rem + 0.25vw, 0.9375rem);
+  --font-size-btn-lg: clamp(0.875rem, 0.8rem + 0.375vw, 1.125rem);
+  --font-size-btn-xl: clamp(1rem, 0.875rem + 0.5vw, 1.25rem);
 
   --shadow-gaming: 0 4px 14px 0 rgba(0, 212, 255, 0.39);
   --shadow-gaming-lg: 0 10px 25px 0 rgba(0, 212, 255, 0.5);
@@ -163,21 +163,21 @@ body {
     animation: neon-flicker 2s infinite alternate;
   }
 
-  /* Gaming title styling */
+  /* Compact gaming title styling */
   .gaming-title {
     font-family: 'Orbitron', monospace !important;
-    font-weight: 900 !important;
-    font-size: 3.5rem !important;
-    line-height: 1.1 !important;
-    letter-spacing: 0.05em !important;
+    font-weight: 700 !important;
+    font-size: clamp(1.5rem, 1.25rem + 0.75vw, 2rem) !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.025em !important;
   }
 
-  /* Gaming subtitle */
+  /* Compact gaming subtitle */
   .gaming-subtitle {
     font-family: 'Inter', sans-serif !important;
     font-weight: 500 !important;
     color: #94a3b8 !important;
-    font-size: 1.125rem !important;
+    font-size: clamp(0.875rem, 0.8rem + 0.25vw, 1rem) !important;
   }
 
   /* Gaming-style grid background */

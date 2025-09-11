@@ -1,0 +1,230 @@
+{
+  "timestamp": "2025-09-11T16:38:46.246Z",
+  "tests": [
+    {
+      "name": "Dashboard - Small Mobile",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 320,
+          "height": 568,
+          "name": "Small Mobile"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 53,
+        "details": []
+      }
+    },
+    {
+      "name": "Dashboard - Small Mobile - Navigation",
+      "passed": true,
+      "details": "Navigation fits in viewport"
+    },
+    {
+      "name": "Dashboard - Small Mobile - Forms",
+      "passed": true,
+      "details": "Form elements fit properly"
+    },
+    {
+      "name": "Dashboard - Mobile",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 375,
+          "height": 667,
+          "name": "Mobile"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 53,
+        "details": []
+      }
+    },
+    {
+      "name": "Dashboard - Mobile - Navigation",
+      "passed": true,
+      "details": "Navigation fits in viewport"
+    },
+    {
+      "name": "Dashboard - Mobile - Forms",
+      "passed": true,
+      "details": "Form elements fit properly"
+    },
+    {
+      "name": "Dashboard - Large Mobile",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 414,
+          "height": 896,
+          "name": "Large Mobile"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 53,
+        "details": []
+      }
+    },
+    {
+      "name": "Dashboard - Large Mobile - Navigation",
+      "passed": true,
+      "details": "Navigation fits in viewport"
+    },
+    {
+      "name": "Dashboard - Large Mobile - Forms",
+      "passed": true,
+      "details": "Form elements fit properly"
+    },
+    {
+      "name": "Dashboard - Tablet",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 768,
+          "height": 1024,
+          "name": "Tablet"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 53,
+        "details": []
+      }
+    },
+    {
+      "name": "Dashboard - Desktop Small",
+      "passed": false,
+      "details": {
+        "viewport": {
+          "width": 1024,
+          "height": 768,
+          "name": "Desktop Small"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 16,
+        "tinyText": 53,
+        "details": []
+      }
+    },
+    {
+      "name": "Initiated Order - Small Mobile",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 320,
+          "height": 568,
+          "name": "Small Mobile"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 0,
+        "details": []
+      }
+    },
+    {
+      "name": "Initiated Order - Small Mobile - Navigation",
+      "passed": true,
+      "details": "Navigation fits in viewport"
+    },
+    {
+      "name": "Initiated Order - Small Mobile - Forms",
+      "passed": true,
+      "details": "Form elements fit properly"
+    },
+    {
+      "name": "Initiated Order - Mobile",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 375,
+          "height": 667,
+          "name": "Mobile"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 0,
+        "details": []
+      }
+    },
+    {
+      "name": "Initiated Order - Mobile - Navigation",
+      "passed": true,
+      "details": "Navigation fits in viewport"
+    },
+    {
+      "name": "Initiated Order - Mobile - Forms",
+      "passed": true,
+      "details": "Form elements fit properly"
+    },
+    {
+      "name": "Initiated Order - Large Mobile",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 414,
+          "height": 896,
+          "name": "Large Mobile"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 0,
+        "details": []
+      }
+    },
+    {
+      "name": "Initiated Order - Large Mobile - Navigation",
+      "passed": true,
+      "details": "Navigation fits in viewport"
+    },
+    {
+      "name": "Initiated Order - Large Mobile - Forms",
+      "passed": true,
+      "details": "Form elements fit properly"
+    },
+    {
+      "name": "Initiated Order - Tablet",
+      "passed": true,
+      "details": {
+        "viewport": {
+          "width": 768,
+          "height": 1024,
+          "name": "Tablet"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 0,
+        "tinyText": 0,
+        "details": []
+      }
+    },
+    {
+      "name": "Initiated Order - Desktop Small",
+      "passed": false,
+      "details": {
+        "viewport": {
+          "width": 1024,
+          "height": 768,
+          "name": "Desktop Small"
+        },
+        "horizontalScroll": false,
+        "breakingElements": 0,
+        "smallTouchTargets": 1,
+        "tinyText": 0,
+        "details": []
+      }
+    }
+  ],
+  "summary": {
+    "passed": 20,
+    "failed": 2,
+    "total": 22
+  }
+}

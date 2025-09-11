@@ -143,15 +143,15 @@ function ModularStaffDashboardContent({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-3 sm:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {currentStep !== 'overview' && (
               <Button
                 onClick={handleBackToOverview}
@@ -160,25 +160,26 @@ function ModularStaffDashboardContent({
                 className="border-gray-600 text-gray-300"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Overview
+                <span className="hidden sm:inline">Back to Overview</span>
+                <span className="sm:hidden">Back</span>
               </Button>
             )}
             <div>
-              <h1 className="text-3xl font-bold text-white">
+              <h1 className="text-responsive-xl sm:text-responsive-2xl font-bold text-white">
                 {currentStep === 'overview'
                   ? 'Staff Dashboard'
                   : workflowSteps.find((step) => step.id === currentStep)?.label || 'Dashboard'}
               </h1>
-              <p className="text-gray-400">
+              <p className="text-gray-400 text-responsive-xs">
                 {location} • {staffId}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {notifications.length > 0 && (
               <Button variant="outline" size="sm" className="border-gray-600 text-gray-300">
-                <Bell className="w-4 h-4 mr-2" />
+                <Bell className="w-4 h-4 mr-1 sm:mr-2" />
                 <Badge variant="secondary" className="ml-1">
                   {notifications.length}
                 </Badge>
@@ -192,8 +193,8 @@ function ModularStaffDashboardContent({
               className="border-gray-600 text-gray-300"
               disabled={loading}
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCw className={`w-4 h-4 mr-1 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </motion.div>

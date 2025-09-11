@@ -46,14 +46,14 @@ export function QuickActions({ onNewOrder, onViewInitiated, onOpenWhatsApp }: Qu
 
   return (
     <Card className="bg-gray-800/50 border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Plus className="w-5 h-5 text-blue-400" />
+      <CardHeader className="pb-3">
+        <CardTitle className="text-white flex items-center gap-2 text-responsive-lg">
+          <Plus className="w-4 h-4 text-blue-400" />
           Quick Actions
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <CardContent className="pt-0">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {actions.map((action, index) => (
             <motion.div
               key={action.title}
@@ -65,14 +65,18 @@ export function QuickActions({ onNewOrder, onViewInitiated, onOpenWhatsApp }: Qu
             >
               <Button
                 onClick={action.onClick}
-                className={`w-full h-20 ${action.className} text-white`}
-                size="lg"
+                className={`w-full h-14 sm:h-16 ${action.className} text-white`}
+                size="default"
               >
-                <div className="flex flex-col items-center gap-2">
-                  <action.icon className="w-6 h-6" />
+                <div className="flex flex-col items-center gap-1">
+                  <action.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   <div className="text-center">
-                    <div className="font-semibold text-responsive-base">{action.title}</div>
-                    <div className="text-responsive-xs opacity-90">{action.description}</div>
+                    <div className="font-semibold text-responsive-xs sm:text-responsive-sm">
+                      {action.title}
+                    </div>
+                    <div className="text-responsive-xs opacity-90 hidden sm:block">
+                      {action.description}
+                    </div>
                   </div>
                 </div>
               </Button>

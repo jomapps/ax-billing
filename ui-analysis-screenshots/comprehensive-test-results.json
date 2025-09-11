@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-09-11T16:06:53.356Z",
+  "tests": [
+    {
+      "name": "H1 font size is reasonable (< 36px)",
+      "passed": true,
+      "details": "H1: 22.5px"
+    },
+    {
+      "name": "H2 font size is reasonable (< 28px)",
+      "passed": true,
+      "details": "H2: 16.875px"
+    },
+    {
+      "name": "H3 font size is reasonable (< 24px)",
+      "passed": true,
+      "details": "H3: 20.25px"
+    },
+    {
+      "name": "Mobile layout has grid system",
+      "passed": true,
+      "details": "Grid system detected"
+    },
+    {
+      "name": "All buttons meet touch target minimum (44px)",
+      "passed": true,
+      "details": "Button sizes: 62.5x44, 230x69.109375, 230x69.109375, 230x69.109375, 291x44"
+    },
+    {
+      "name": "Layout uses compact padding",
+      "passed": true,
+      "details": "Average padding: 0.0px"
+    },
+    {
+      "name": "Multiple cards visible",
+      "passed": true,
+      "details": "24 cards found"
+    },
+    {
+      "name": "All responsive breakpoints work",
+      "passed": true,
+      "details": "5/5 breakpoints passed"
+    },
+    {
+      "name": "Good accessibility score",
+      "passed": true,
+      "details": "100.0% accessibility score"
+    },
+    {
+      "name": "Fast load time",
+      "passed": true,
+      "details": "1471ms load time"
+    },
+    {
+      "name": "Screenshots captured successfully",
+      "passed": true,
+      "details": "Desktop and mobile screenshots saved"
+    }
+  ],
+  "summary": {
+    "passed": 11,
+    "failed": 0,
+    "total": 11
+  }
+}

@@ -2,10 +2,12 @@
 
 import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Car, Activity, DollarSign, Clock } from 'lucide-react'
+import { Car, Activity, DollarSign, Clock, QrCode, CreditCard } from 'lucide-react'
 import { StatsCards } from './StatsCards'
+import { CompactStatsCards } from './CompactStatsCards'
 import { QuickActions } from './QuickActions'
 import { OrderQueueCards } from './OrderQueueCards'
+import { CompactOrderQueue } from './CompactOrderQueue'
 import { formatCurrency } from '@/lib/utils'
 import type { DashboardStats } from '@/lib/payload-client'
 
@@ -175,11 +177,17 @@ export function OverviewDashboard({
   }, [orders])
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-3 sm:space-y-4"
+    >
       {/* Stats Overview */}
       <div>
-        <h2 className="text-responsive-2xl font-bold text-white mb-6">Dashboard Overview</h2>
-        <StatsCards stats={statsCards} loading={loading} />
+        <h2 className="text-responsive-base sm:text-responsive-lg font-bold text-white mb-2 sm:mb-3">
+          Dashboard Overview
+        </h2>
+        <CompactStatsCards stats={statsCards} loading={loading} />
       </div>
 
       {/* Quick Actions */}
@@ -189,16 +197,41 @@ export function OverviewDashboard({
         onOpenWhatsApp={onOpenWhatsApp}
       />
 
-      {/* Order Queues */}
-      <div>
-        <h2 className="text-responsive-2xl font-bold text-white mb-6">Order Queues</h2>
-        <OrderQueueCards
-          newOrders={newOrders}
-          initiatedOrders={initiatedOrders}
-          openOrders={openOrders}
-          billedOrders={billedOrders}
-          loading={loading}
-        />
+      {/* Order Queues - Compact Layout */}
+      <div className="space-y-3">
+        <h2 className="text-responsive-base sm:text-responsive-lg font-bold text-white mb-2 sm:mb-3">
+          Order Queues
+        </h2>
+        <div className="space-y-3">
+          <CompactOrderQueue
+            title="New Orders"
+            orders={newOrders}
+            icon={QrCode}
+            color="text-purple-400"
+            loading={loading}
+          />
+          <CompactOrderQueue
+            title="Initiated Orders"
+            orders={initiatedOrders}
+            icon={Clock}
+            color="text-blue-400"
+            loading={loading}
+          />
+          <CompactOrderQueue
+            title="Open Orders"
+            orders={openOrders}
+            icon={Car}
+            color="text-green-400"
+            loading={loading}
+          />
+          <CompactOrderQueue
+            title="Billed Orders"
+            orders={billedOrders}
+            icon={CreditCard}
+            color="text-yellow-400"
+            loading={loading}
+          />
+        </div>
       </div>
     </motion.div>
   )

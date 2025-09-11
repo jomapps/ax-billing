@@ -62,10 +62,10 @@ export function OrderQueueCards({
         router.push(targetRoute)
       }}
     >
-      <CardContent className="p-4">
-        <div className="space-y-3">
+      <CardContent className="p-3">
+        <div className="space-y-2">
           <div className="space-y-1">
-            <h3 className="text-white font-semibold text-responsive-sm">{order.orderID}</h3>
+            <h3 className="text-white font-semibold text-responsive-xs">{order.orderID}</h3>
             <Badge
               variant="secondary"
               className={`text-responsive-xs ${
@@ -95,10 +95,10 @@ export function OrderQueueCards({
             </Badge>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-300 text-responsive-sm">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <User className="w-3 h-3 text-gray-400" />
+              <span className="text-gray-300 text-responsive-xs">
                 {order.customer && typeof order.customer === 'object'
                   ? `${order.customer.firstName || ''} ${order.customer.lastName || ''}`.trim() ||
                     'Unknown Customer'
@@ -107,26 +107,26 @@ export function OrderQueueCards({
             </div>
 
             {order.vehicle && typeof order.vehicle === 'object' && (
-              <div className="flex items-center gap-2">
-                <Car className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300 text-responsive-sm">
+              <div className="flex items-center gap-1.5">
+                <Car className="w-3 h-3 text-gray-400" />
+                <span className="text-gray-300 text-responsive-xs">
                   {order.vehicle.licensePlate || 'No License'}
                 </span>
               </div>
             )}
 
             {order.totalAmount && (
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-300 text-responsive-sm font-medium">
+              <div className="flex items-center gap-1.5">
+                <DollarSign className="w-3 h-3 text-gray-400" />
+                <span className="text-gray-300 text-responsive-xs font-medium">
                   {formatCurrency(order.totalAmount)}
                 </span>
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-300 text-responsive-sm">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3 h-3 text-gray-400" />
+              <span className="text-gray-300 text-responsive-xs">
                 {formatTimeAgo(order.createdAt)}
               </span>
             </div>
@@ -141,11 +141,11 @@ export function OrderQueueCards({
                   router.push(`/order/${order.orderID}/new`)
                 }}
                 size="sm"
-                className="w-full bg-purple-500 hover:bg-purple-600"
+                className="w-full bg-purple-500 hover:bg-purple-600 h-8"
                 title="View QR code for customer to scan"
               >
-                <QrCode className="w-4 h-4 mr-2" />
-                Show QR Code
+                <QrCode className="w-3 h-3 mr-1" />
+                <span className="text-responsive-xs">Show QR</span>
               </Button>
             )}
 
@@ -157,11 +157,11 @@ export function OrderQueueCards({
                     router.push(`/order/${order.orderID}/initiated`)
                   }}
                   size="sm"
-                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  className="w-full bg-blue-500 hover:bg-blue-600 h-8"
                   title="Capture vehicle information and add services"
                 >
-                  <Car className="w-4 h-4 mr-2" />
-                  Capture Vehicle
+                  <Car className="w-3 h-3 mr-1" />
+                  <span className="text-responsive-xs">Capture</span>
                 </Button>
               )}
 
@@ -172,11 +172,11 @@ export function OrderQueueCards({
                   router.push(`/order/${order.orderID}/open`)
                 }}
                 size="sm"
-                className="w-full bg-green-500 hover:bg-green-600"
+                className="w-full bg-green-500 hover:bg-green-600 h-8"
                 title="Manage services for this order"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Manage Services
+                <CheckCircle className="w-3 h-3 mr-1" />
+                <span className="text-responsive-xs">Manage</span>
               </Button>
             )}
 
@@ -190,11 +190,11 @@ export function OrderQueueCards({
                     router.push(`/order/${order.orderID}/billed`)
                   }}
                   size="sm"
-                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black h-8"
                   title="Process payment for this billed order"
                 >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Process Payment
+                  <CreditCard className="w-3 h-3 mr-1" />
+                  <span className="text-responsive-xs">Payment</span>
                 </Button>
               )}
 
@@ -266,7 +266,7 @@ export function OrderQueueCards({
                 Showing {orders.length} order{orders.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {orders.map(renderOrderCard)}
             </div>
           </>
