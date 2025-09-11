@@ -40,7 +40,7 @@ async function cleanSeed() {
       'intake',
       'delivery',
       'media',
-    ]
+    ] as const
 
     for (const collection of collections) {
       try {
@@ -67,7 +67,7 @@ async function cleanSeed() {
       email: process.env.ADMIN_EMAIL || 'admin@example.com',
       password: process.env.ADMIN_PASSWORD || 'password123',
       whatsappNumber: process.env.ADMIN_PHONE || '',
-      role: 'admin',
+      role: 'admin' as const,
       isActive: true,
     }
 
@@ -143,7 +143,7 @@ async function cleanSeed() {
           estimatedMinutes: serviceData.estimatedMinutes,
           isActive: serviceData.isActive,
           steps: serviceData.steps,
-          availableOptions: availableOptions,
+          compatibleOptions: availableOptions,
         },
       })
 

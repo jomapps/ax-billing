@@ -7,7 +7,7 @@ dotenv.config()
 
 async function resetAndSeed() {
   console.log('🧹 Starting database reset and clean seed...')
-  
+
   // Debug environment loading
   console.log('Environment check:')
   console.log('- PAYLOAD_SECRET:', process.env.PAYLOAD_SECRET ? 'Set' : 'Missing')
@@ -25,8 +25,19 @@ async function resetAndSeed() {
 
     // Clear all collections
     console.log('🗑️  Clearing database...')
-    
-    const collections = ['orders', 'users', 'vehicles', 'services', 'service-categories', 'service-options', 'intake', 'delivery', 'media']
+
+    const collections = [
+      'orders',
+      'users',
+      'vehicles',
+      'vehicle-images',
+      'services',
+      'service-categories',
+      'service-options',
+      'intake',
+      'delivery',
+      'media',
+    ] as const
 
     for (const collection of collections) {
       try {
@@ -46,43 +57,63 @@ async function resetAndSeed() {
 
     // Create admin user
     console.log('👤 Creating admin user...')
-    
+
     const adminData = {
       firstName: process.env.ADMIN_NAME?.split(' ')[0] || 'Admin',
       lastName: process.env.ADMIN_NAME?.split(' ').slice(1).join(' ') || 'User',
       email: process.env.ADMIN_EMAIL || 'admin@example.com',
       password: process.env.ADMIN_PASSWORD || 'password123',
       whatsappNumber: process.env.ADMIN_PHONE || '',
-      role: 'admin',
-      isActive: true
+      role: 'admin' as const,
+      isActive: true,
     }
 
     const adminUser = await payload.create({
       collection: 'users',
-      data: adminData
+      data: adminData,
     })
 
     console.log(`✅ Admin user created: ${adminUser.email}`)
 
     // Create service categories
     console.log('📂 Creating service categories...')
-    
+
     const categories = [
-      { name: 'Exterior Wash', description: 'External vehicle cleaning services', icon: 'car', isActive: true },
-      { name: 'Interior Detailing', description: 'Internal vehicle cleaning services', icon: 'sparkles', isActive: true },
-      { name: 'Full Service', description: 'Complete interior and exterior packages', icon: 'star', isActive: true },
+      {
+        name: 'Exterior Wash',
+        description: 'External vehicle cleaning services',
+        icon: 'car',
+        isActive: true,
+      },
+      {
+        name: 'Interior Detailing',
+        description: 'Internal vehicle cleaning services',
+        icon: 'sparkles',
+        isActive: true,
+      },
+      {
+        name: 'Full Service',
+        description: 'Complete interior and exterior packages',
+        icon: 'star',
+        isActive: true,
+      },
       { name: 'Express Service', description: 'Quick wash services', icon: 'zap', isActive: true },
-      { name: 'Premium Detailing', description: 'High-end detailing services', icon: 'crown', isActive: true }
+      {
+        name: 'Premium Detailing',
+        description: 'High-end detailing services',
+        icon: 'crown',
+        isActive: true,
+      },
     ]
 
     const categoryMap = new Map()
-    
+
     for (const categoryData of categories) {
       const category = await payload.create({
         collection: 'service-categories',
-        data: categoryData
+        data: categoryData,
       })
-      
+
       const refName = categoryData.name.toLowerCase().replace(/\s+/g, '-')
       categoryMap.set(refName, category.id)
       console.log(`   ✅ Created category: ${category.name}`)
@@ -90,25 +121,60 @@ async function resetAndSeed() {
 
     // Create service options
     console.log('⚙️  Creating service options...')
-    
+
     const options = [
-      { name: 'Wax Coating', description: 'Premium wax protection', additionalPrice: 15, isActive: true },
-      { name: 'Tire Shine', description: 'Professional tire shine', additionalPrice: 8, isActive: true },
-      { name: 'Interior Fragrance', description: 'Pleasant vehicle fragrance', additionalPrice: 5, isActive: true },
-      { name: 'Leather Conditioning', description: 'Professional leather conditioning', additionalPrice: 20, isActive: true },
-      { name: 'Engine Bay Cleaning', description: 'Thorough engine cleaning', additionalPrice: 25, isActive: true },
-      { name: 'Ceramic Coating', description: 'Advanced ceramic protection', additionalPrice: 50, isActive: true },
-      { name: 'Headlight Restoration', description: 'Restore cloudy headlights', additionalPrice: 30, isActive: true }
+      {
+        name: 'Wax Coating',
+        description: 'Premium wax protection',
+        additionalPrice: 15,
+        isActive: true,
+      },
+      {
+        name: 'Tire Shine',
+        description: 'Professional tire shine',
+        additionalPrice: 8,
+        isActive: true,
+      },
+      {
+        name: 'Interior Fragrance',
+        description: 'Pleasant vehicle fragrance',
+        additionalPrice: 5,
+        isActive: true,
+      },
+      {
+        name: 'Leather Conditioning',
+        description: 'Professional leather conditioning',
+        additionalPrice: 20,
+        isActive: true,
+      },
+      {
+        name: 'Engine Bay Cleaning',
+        description: 'Thorough engine cleaning',
+        additionalPrice: 25,
+        isActive: true,
+      },
+      {
+        name: 'Ceramic Coating',
+        description: 'Advanced ceramic protection',
+        additionalPrice: 50,
+        isActive: true,
+      },
+      {
+        name: 'Headlight Restoration',
+        description: 'Restore cloudy headlights',
+        additionalPrice: 30,
+        isActive: true,
+      },
     ]
 
     const optionMap = new Map()
-    
+
     for (const optionData of options) {
       const option = await payload.create({
         collection: 'service-options',
-        data: optionData
+        data: optionData,
       })
-      
+
       const refName = optionData.name.toLowerCase().replace(/\s+/g, '-')
       optionMap.set(refName, option.id)
       console.log(`   ✅ Created option: ${option.name}`)
@@ -116,7 +182,7 @@ async function resetAndSeed() {
 
     // Create services
     console.log('🚗 Creating services...')
-    
+
     const services = [
       {
         name: 'Basic Wash',
@@ -129,9 +195,9 @@ async function resetAndSeed() {
           { stepName: 'Pre-wash', estimatedMinutes: 5 },
           { stepName: 'Soap & Scrub', estimatedMinutes: 15 },
           { stepName: 'Rinse', estimatedMinutes: 5 },
-          { stepName: 'Dry', estimatedMinutes: 5 }
+          { stepName: 'Dry', estimatedMinutes: 5 },
         ],
-        availableOptionsRefs: ['wax-coating', 'tire-shine', 'interior-fragrance']
+        availableOptionsRefs: ['wax-coating', 'tire-shine', 'interior-fragrance'],
       },
       {
         name: 'Premium Wash',
@@ -145,9 +211,14 @@ async function resetAndSeed() {
           { stepName: 'Exterior Wash', estimatedMinutes: 20 },
           { stepName: 'Interior Vacuum', estimatedMinutes: 15 },
           { stepName: 'Interior Wipe', estimatedMinutes: 10 },
-          { stepName: 'Final Dry', estimatedMinutes: 10 }
+          { stepName: 'Final Dry', estimatedMinutes: 10 },
         ],
-        availableOptionsRefs: ['wax-coating', 'tire-shine', 'interior-fragrance', 'leather-conditioning']
+        availableOptionsRefs: [
+          'wax-coating',
+          'tire-shine',
+          'interior-fragrance',
+          'leather-conditioning',
+        ],
       },
       {
         name: 'Express Wash',
@@ -159,9 +230,9 @@ async function resetAndSeed() {
         steps: [
           { stepName: 'Quick Rinse', estimatedMinutes: 3 },
           { stepName: 'Soap Wash', estimatedMinutes: 8 },
-          { stepName: 'Final Rinse & Dry', estimatedMinutes: 4 }
+          { stepName: 'Final Rinse & Dry', estimatedMinutes: 4 },
         ],
-        availableOptionsRefs: ['tire-shine']
+        availableOptionsRefs: ['tire-shine'],
       },
       {
         name: 'Deluxe Detailing',
@@ -176,9 +247,14 @@ async function resetAndSeed() {
           { stepName: 'Interior Deep Clean', estimatedMinutes: 40 },
           { stepName: 'Wax Application', estimatedMinutes: 20 },
           { stepName: 'Final Inspection', estimatedMinutes: 10 },
-          { stepName: 'Quality Check', estimatedMinutes: 10 }
+          { stepName: 'Quality Check', estimatedMinutes: 10 },
         ],
-        availableOptionsRefs: ['ceramic-coating', 'leather-conditioning', 'engine-bay-cleaning', 'headlight-restoration']
+        availableOptionsRefs: [
+          'ceramic-coating',
+          'leather-conditioning',
+          'engine-bay-cleaning',
+          'headlight-restoration',
+        ],
       },
       {
         name: 'Interior Only',
@@ -191,33 +267,60 @@ async function resetAndSeed() {
           { stepName: 'Vacuum', estimatedMinutes: 15 },
           { stepName: 'Dashboard Clean', estimatedMinutes: 10 },
           { stepName: 'Seat Cleaning', estimatedMinutes: 15 },
-          { stepName: 'Final Touch', estimatedMinutes: 5 }
+          { stepName: 'Final Touch', estimatedMinutes: 5 },
         ],
-        availableOptionsRefs: ['interior-fragrance', 'leather-conditioning']
-      }
+        availableOptionsRefs: ['interior-fragrance', 'leather-conditioning'],
+      },
     ]
-    
+
     for (const serviceData of services) {
       const categoryId = categoryMap.get(serviceData.categoryRef)
-      const availableOptions = serviceData.availableOptionsRefs
-        ?.map((ref: string) => optionMap.get(ref))
-        .filter(Boolean) || []
+      const availableOptions =
+        serviceData.availableOptionsRefs
+          ?.map((ref: string) => optionMap.get(ref))
+          .filter(Boolean) || []
 
       const service = await payload.create({
         collection: 'services',
         data: {
           name: serviceData.name,
-          description: serviceData.description,
+          description: {
+            root: {
+              type: 'root',
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    {
+                      type: 'text',
+                      text: serviceData.description,
+                      version: 1,
+                    },
+                  ],
+                  direction: 'ltr' as const,
+                  format: '',
+                  indent: 0,
+                  version: 1,
+                },
+              ],
+              direction: 'ltr' as const,
+              format: '',
+              indent: 0,
+              version: 1,
+            },
+          },
           category: categoryId,
           basePrice: serviceData.basePrice,
           estimatedMinutes: serviceData.estimatedMinutes,
           isActive: serviceData.isActive,
           steps: serviceData.steps,
-          availableOptions: availableOptions
-        }
+          compatibleOptions: availableOptions,
+        },
       })
-      
-      console.log(`   ✅ Created service: ${service.name} (RM${service.basePrice}, ${service.estimatedMinutes} min)`)
+
+      console.log(
+        `   ✅ Created service: ${service.name} (RM${service.basePrice}, ${service.estimatedMinutes} min)`,
+      )
     }
 
     console.log('\n🎉 Database reset and seeding completed successfully!')
@@ -227,7 +330,6 @@ async function resetAndSeed() {
     console.log(`   ⚙️  Options: ${options.length}`)
     console.log(`   🚗 Services: ${services.length}`)
     console.log(`   📦 Orders: 0 (clean start)`)
-
   } catch (error) {
     console.error('❌ Error during reset and seeding:', error)
     throw error

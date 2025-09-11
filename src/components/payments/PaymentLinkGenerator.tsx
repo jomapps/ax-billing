@@ -137,7 +137,7 @@ export function PaymentLinkGenerator({
 
         // Set default message
         setCustomMessage(
-          `Hi ${`${mockOrderDetails.customer.firstName || ''} ${mockOrderDetails.customer.lastName || ''}`.trim() || 'Customer'}! Your car wash service is ready for payment.\n\n` +
+          `Hi ${mockOrderDetails.customer.name || 'Customer'}! Your car wash service is ready for payment.\n\n` +
             `Order: ${mockOrderDetails.orderID}\n` +
             `Vehicle: ${mockOrderDetails.vehicle?.licensePlate}\n` +
             `Total: ${formatCurrency(mockOrderDetails.totalAmount)}\n\n` +
@@ -302,8 +302,7 @@ export function PaymentLinkGenerator({
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-400" />
                 <span className="text-gray-300">
-                  {`${orderDetails.customer.firstName || ''} ${orderDetails.customer.lastName || ''}`.trim() ||
-                    'Unknown Customer'}
+                  {orderDetails.customer.name || 'Unknown Customer'}
                 </span>
               </div>
               <div className="flex items-center gap-2">

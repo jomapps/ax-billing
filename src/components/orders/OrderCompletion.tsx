@@ -278,8 +278,7 @@ Have a great day! 🚗✨`
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-400" />
                 <span className="text-gray-300">
-                  {`${orderData.customer.firstName || ''} ${orderData.customer.lastName || ''}`.trim() ||
-                    'Unknown Customer'}
+                  {orderData.customer.name || 'Unknown Customer'}
                 </span>
               </div>
               <div className="flex items-center gap-2">

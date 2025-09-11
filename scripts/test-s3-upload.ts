@@ -30,7 +30,6 @@ async function testS3Upload() {
     // Initialize Payload with proper config
     const payload = await getPayload({
       config,
-      local: true,
     })
     console.log('✅ Payload initialized successfully')
 
@@ -98,7 +97,10 @@ async function testS3Upload() {
             console.log('   Status Text:', response.statusText)
           }
         } catch (error) {
-          console.log('❌ Error accessing file:', error.message)
+          console.log(
+            '❌ Error accessing file:',
+            error instanceof Error ? error.message : String(error),
+          )
         }
       }
 

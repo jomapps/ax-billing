@@ -117,7 +117,7 @@ export async function updateOrderStage(orderID: string, newStage: string): Promi
       collection: 'orders',
       id: result.docs[0].id,
       data: {
-        orderStage: newStage,
+        orderStage: newStage as 'empty' | 'initiated' | 'open' | 'billed' | 'paid',
       },
     })
 
@@ -244,6 +244,7 @@ export async function createOrder(data: Partial<Order>): Promise<Order | null> {
         overallStatus: 'pending',
         queue: 'regular',
         totalAmount: 0,
+        orderID: data.orderID || '',
         ...data,
       },
     })
@@ -270,9 +271,6 @@ export async function orderExists(orderID: string): Promise<boolean> {
         orderID: {
           equals: orderID,
         },
-      },
-      select: {
-        id: true,
       },
       limit: 1,
     })

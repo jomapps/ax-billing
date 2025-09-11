@@ -9,7 +9,7 @@ async function seedInitiatedOrders() {
 
     // 1. Create some basic users first
     console.log('Creating users...')
-    
+
     const user1 = await payload.create({
       collection: 'users',
       data: {
@@ -48,17 +48,53 @@ async function seedInitiatedOrders() {
 
     console.log('✅ Created 3 users')
 
-    // 2. Create some basic services
+    // 2. Create service category first
+    console.log('Creating service category...')
+
+    const washCategory = await payload.create({
+      collection: 'service-categories',
+      data: {
+        name: 'Car Wash',
+        description: 'Vehicle washing services',
+        isActive: true,
+      },
+    })
+
+    // 3. Create some basic services
     console.log('Creating services...')
-    
+
     const basicWash = await payload.create({
       collection: 'services',
       data: {
         name: 'Basic Wash',
-        slug: 'basic-wash',
-        description: 'Standard car wash service',
+        description: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Standard car wash service',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr' as const,
+                format: '',
+                indent: 0,
+                version: 1,
+              },
+            ],
+            direction: 'ltr' as const,
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
+        category: washCategory.id,
         basePrice: 25,
-        estimatedDuration: 30,
+        estimatedMinutes: 30,
         isActive: true,
       },
     })
@@ -67,10 +103,34 @@ async function seedInitiatedOrders() {
       collection: 'services',
       data: {
         name: 'Premium Wash',
-        slug: 'premium-wash',
-        description: 'Premium car wash with wax',
+        description: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Premium car wash with wax',
+                    version: 1,
+                  },
+                ],
+                direction: 'ltr' as const,
+                format: '',
+                indent: 0,
+                version: 1,
+              },
+            ],
+            direction: 'ltr' as const,
+            format: '',
+            indent: 0,
+            version: 1,
+          },
+        },
+        category: washCategory.id,
         basePrice: 40,
-        estimatedDuration: 45,
+        estimatedMinutes: 45,
         isActive: true,
       },
     })
@@ -79,11 +139,12 @@ async function seedInitiatedOrders() {
 
     // 3. Create vehicles
     console.log('Creating vehicles...')
-    
+
     const vehicle1 = await payload.create({
       collection: 'vehicles',
       data: {
         licensePlate: 'ABC123',
+        vehicleType: 'sedan',
         make: 'Toyota',
         model: 'Camry',
         year: 2020,
@@ -96,6 +157,7 @@ async function seedInitiatedOrders() {
       collection: 'vehicles',
       data: {
         licensePlate: 'XYZ789',
+        vehicleType: 'sedan',
         make: 'Honda',
         model: 'Civic',
         year: 2021,
@@ -108,6 +170,7 @@ async function seedInitiatedOrders() {
       collection: 'vehicles',
       data: {
         licensePlate: 'DEF456',
+        vehicleType: 'mpv_van',
         make: 'BMW',
         model: 'X5',
         year: 2022,
@@ -129,6 +192,7 @@ async function seedInitiatedOrders() {
       collection: 'orders',
       data: {
         orderID: 'AX-20250907-3435',
+        orderStage: 'initiated',
         customer: user1.id,
         vehicle: vehicle1.id,
         whatsappNumber: user1.whatsappNumber,
@@ -145,7 +209,7 @@ async function seedInitiatedOrders() {
         ],
         totalAmount: 25,
         paymentStatus: 'pending',
-        overallStatus: 'initiated',
+        overallStatus: 'pending',
         queue: 'regular',
         estimatedCompletionTime: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
         jobStatus: [
@@ -166,6 +230,7 @@ async function seedInitiatedOrders() {
       collection: 'orders',
       data: {
         orderID: 'AX-20250907-3436',
+        orderStage: 'initiated',
         customer: user2.id,
         vehicle: vehicle2.id,
         whatsappNumber: user2.whatsappNumber,
@@ -182,7 +247,7 @@ async function seedInitiatedOrders() {
         ],
         totalAmount: 40,
         paymentStatus: 'pending',
-        overallStatus: 'initiated',
+        overallStatus: 'pending',
         queue: 'regular',
         estimatedCompletionTime: new Date(now.getTime() + 45 * 60 * 1000).toISOString(),
         jobStatus: [
@@ -203,6 +268,7 @@ async function seedInitiatedOrders() {
       collection: 'orders',
       data: {
         orderID: 'AX-20250907-3437',
+        orderStage: 'initiated',
         customer: user3.id,
         vehicle: vehicle3.id,
         whatsappNumber: user3.whatsappNumber,
@@ -219,7 +285,7 @@ async function seedInitiatedOrders() {
         ],
         totalAmount: 25,
         paymentStatus: 'pending',
-        overallStatus: 'initiated',
+        overallStatus: 'pending',
         queue: 'regular',
         estimatedCompletionTime: new Date(now.getTime() + 30 * 60 * 1000).toISOString(),
         jobStatus: [
@@ -242,7 +308,6 @@ async function seedInitiatedOrders() {
     console.log(`Order 3: ${order3.orderID} - Customer: ${user3.firstName} ${user3.lastName}`)
 
     console.log('🎉 Seeding completed successfully!')
-
   } catch (error) {
     console.error('❌ Error seeding data:', error)
     throw error

@@ -117,7 +117,10 @@ async function testMediaUploadAPI() {
             console.log('   Status Text:', fileResponse.statusText)
           }
         } catch (error) {
-          console.log('❌ Error accessing file:', error.message)
+          console.log(
+            '❌ Error accessing file:',
+            error instanceof Error ? error.message : String(error),
+          )
         }
       }
 

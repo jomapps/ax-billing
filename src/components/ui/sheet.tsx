@@ -56,9 +56,9 @@ const SheetTrigger = React.forwardRef<HTMLButtonElement, SheetTriggerProps>(
 
     if (asChild && React.isValidElement(children)) {
       return React.cloneElement(children, {
-        ...children.props,
+        ...(children.props || {}),
         onClick: handleClick,
-      })
+      } as any)
     }
 
     return (

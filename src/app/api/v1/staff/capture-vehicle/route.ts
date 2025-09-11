@@ -208,7 +208,10 @@ Our team is now selecting the appropriate services for your vehicle. You'll rece
           console.log('⚠️ WhatsApp message sending returned false (but no error thrown)')
         }
       } catch (whatsappError) {
-        console.error('❌ WhatsApp message failed (non-critical):', whatsappError.message)
+        console.error(
+          '❌ WhatsApp message failed (non-critical):',
+          whatsappError instanceof Error ? whatsappError.message : whatsappError,
+        )
         // Don't fail the entire vehicle capture process due to WhatsApp issues
         // Log the failed attempt
         try {
@@ -224,11 +227,15 @@ Our team is now selecting the appropriate services for your vehicle. You'll rece
               content: vehicleMessage,
               status: 'failed',
               timestamp: new Date().toISOString(),
-              error: whatsappError.message,
+              errorMessage:
+                whatsappError instanceof Error ? whatsappError.message : String(whatsappError),
             },
           })
         } catch (logError) {
-          console.error('Failed to log WhatsApp error:', logError.message)
+          console.error(
+            'Failed to log WhatsApp error:',
+            logError instanceof Error ? logError.message : logError,
+          )
         }
       }
     } else if (!whatsappEnabled) {

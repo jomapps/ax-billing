@@ -322,10 +322,7 @@ export function OrderDetailView({ orderId, className }: OrderDetailViewProps) {
               {orderData.customer ? (
                 <div className="space-y-2">
                   <h4 className="font-semibold text-white">Customer</h4>
-                  <p className="text-gray-300">
-                    {`${orderData.customer.firstName || ''} ${orderData.customer.lastName || ''}`.trim() ||
-                      'Unknown Customer'}
-                  </p>
+                  <p className="text-gray-300">{orderData.customer.name || 'Unknown Customer'}</p>
                   <p className="text-gray-400 text-sm">{orderData.customer.email}</p>
                   {orderData.customer.phone && (
                     <p className="text-gray-400 text-sm">{orderData.customer.phone}</p>

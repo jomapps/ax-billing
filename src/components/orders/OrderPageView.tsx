@@ -248,7 +248,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
     return <Badge className={config.color}>{config.label}</Badge>
   }
 
-  const shouldShowQR = orderData.orderStage === 'empty' || !orderData.whatsappLinked
+  const shouldShowQR = orderData?.orderStage === 'empty' || !orderData?.whatsappLinked
 
   return (
     <div className={cn('container mx-auto p-6 space-y-6 max-w-4xl', className)}>
@@ -271,14 +271,16 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
             Back to Dashboard
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-white">{orderData.orderID}</h1>
+            <h1 className="text-3xl font-bold text-white">
+              {orderData?.orderID || 'Unknown Order'}
+            </h1>
             <p className="text-gray-400">Order Management</p>
           </div>
         </div>
         <div className="text-right">
-          {getStatusBadge(orderData.orderStage)}
+          {orderData && getStatusBadge(orderData.orderStage)}
           <p className="text-sm text-gray-400 mt-1">
-            Created {new Date(orderData.createdAt).toLocaleString()}
+            Created {orderData ? new Date(orderData.createdAt).toLocaleString() : 'Unknown'}
           </p>
         </div>
       </motion.div>
@@ -393,30 +395,30 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">Order Stage:</span>
-                  {getStatusBadge(orderData.orderStage)}
+                  {orderData && getStatusBadge(orderData.orderStage)}
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">WhatsApp Connected:</span>
                   <Badge
                     className={
-                      orderData.whatsappLinked
+                      orderData?.whatsappLinked
                         ? 'bg-green-500/20 text-green-400'
                         : 'bg-gray-500/20 text-gray-400'
                     }
                   >
-                    {orderData.whatsappLinked ? 'Yes' : 'No'}
+                    {orderData?.whatsappLinked ? 'Yes' : 'No'}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">Payment Status:</span>
                   <Badge
                     className={
-                      orderData.paymentStatus === 'paid'
+                      orderData?.paymentStatus === 'paid'
                         ? 'bg-green-500/20 text-green-400'
                         : 'bg-yellow-500/20 text-yellow-400'
                     }
                   >
-                    {orderData.paymentStatus}
+                    {orderData?.paymentStatus}
                   </Badge>
                 </div>
               </div>
@@ -425,27 +427,27 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
 
               <div className="space-y-2">
                 <h4 className="text-white font-medium">Next Steps:</h4>
-                {orderData.orderStage === 'empty' && (
+                {orderData?.orderStage === 'empty' && (
                   <p className="text-gray-300 text-sm">
                     Waiting for customer to scan QR code and connect via WhatsApp.
                   </p>
                 )}
-                {orderData.orderStage === 'initiated' && (
+                {orderData?.orderStage === 'initiated' && (
                   <p className="text-gray-300 text-sm">
                     Customer connected! Staff can now proceed with service selection.
                   </p>
                 )}
-                {orderData.orderStage === 'open' && (
+                {orderData?.orderStage === 'open' && (
                   <p className="text-gray-300 text-sm">
                     Services are being selected. Customer will receive pricing confirmation.
                   </p>
                 )}
-                {orderData.orderStage === 'billed' && (
+                {orderData?.orderStage === 'billed' && (
                   <p className="text-gray-300 text-sm">
                     Payment link sent to customer. Waiting for payment confirmation.
                   </p>
                 )}
-                {orderData.orderStage === 'paid' && (
+                {orderData?.orderStage === 'paid' && (
                   <p className="text-gray-300 text-sm">Payment received! Service can now begin.</p>
                 )}
               </div>
@@ -455,7 +457,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
       </div>
 
       {/* Customer Connected Message */}
-      {orderData.orderStage !== 'empty' && orderData.whatsappLinked && (
+      {orderData?.orderStage !== 'empty' && orderData?.whatsappLinked && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -8,7 +8,7 @@ dotenv.config()
 
 async function testS3Connection() {
   console.log('🧪 Testing S3/Cloudflare R2 Connection...')
-  
+
   try {
     // Check environment variables
     console.log('\n📋 Environment Variables:')
@@ -18,7 +18,12 @@ async function testS3Connection() {
     console.log('S3_SECRET_ACCESS_KEY:', process.env.S3_SECRET_ACCESS_KEY ? '✅ Set' : '❌ Missing')
     console.log('S3_REGION:', process.env.S3_REGION || 'auto')
 
-    if (!process.env.S3_ENDPOINT || !process.env.S3_BUCKET || !process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) {
+    if (
+      !process.env.S3_ENDPOINT ||
+      !process.env.S3_BUCKET ||
+      !process.env.S3_ACCESS_KEY_ID ||
+      !process.env.S3_SECRET_ACCESS_KEY
+    ) {
       throw new Error('Missing required S3 environment variables')
     }
 
@@ -45,23 +50,27 @@ async function testS3Connection() {
       const listResponse = await s3Client.send(listCommand)
       console.log('✅ Successfully connected to S3/R2')
       console.log('📁 Bucket contents:')
-      
+
       if (listResponse.Contents && listResponse.Contents.length > 0) {
         listResponse.Contents.forEach((object, index) => {
-          console.log(`   ${index + 1}. ${object.Key} (${object.Size} bytes, ${object.LastModified})`)
+          console.log(
+            `   ${index + 1}. ${object.Key} (${object.Size} bytes, ${object.LastModified})`,
+          )
         })
       } else {
         console.log('   (Empty bucket or no objects found)')
       }
-
     } catch (listError) {
-      console.error('❌ Failed to list objects:', listError.message)
+      console.error(
+        '❌ Failed to list objects:',
+        listError instanceof Error ? listError.message : String(listError),
+      )
       throw listError
     }
 
     // Test uploading a small test file
     console.log('\n📤 Testing file upload...')
-    
+
     const testContent = 'Hello from AX Billing S3 test!'
     const testKey = `test/s3-connection-test-${Date.now()}.txt`
 
@@ -94,11 +103,16 @@ async function testS3Connection() {
           console.log('   This might be expected if the bucket is not configured for public access')
         }
       } catch (fetchError) {
-        console.log('⚠️  Could not test public URL access:', fetchError.message)
+        console.log(
+          '⚠️  Could not test public URL access:',
+          fetchError instanceof Error ? fetchError.message : String(fetchError),
+        )
       }
-
     } catch (uploadError) {
-      console.error('❌ Failed to upload test file:', uploadError.message)
+      console.error(
+        '❌ Failed to upload test file:',
+        uploadError instanceof Error ? uploadError.message : String(uploadError),
+      )
       throw uploadError
     }
 
@@ -108,7 +122,6 @@ async function testS3Connection() {
       endpoint: process.env.S3_ENDPOINT,
       testFileKey: testKey,
     }
-
   } catch (error) {
     console.error('❌ S3 connection test failed:', error)
     throw error
