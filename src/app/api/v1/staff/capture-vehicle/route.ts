@@ -159,14 +159,31 @@ export async function POST(request: NextRequest) {
     // Link vehicle to order and update stage
     const updatedOrder = await vehicleService.linkVehicleToOrder(vehicle.id, orderId)
 
-    // Send WhatsApp notification to customer (if WhatsApp number exists)
-    const vehicleMessage = `📸 *Vehicle Information Captured*
+    // Send comprehensive damage report and terms & conditions to customer
+    const vehicleMessage = `🚗 *VEHICLE INTAKE COMPLETED*
 
 Order ID: *${orderId}*
-Vehicle: ${vehicleInfo.vehicleType}
-License Plate: *${vehicleInfo.licensePlate}*
+Vehicle: *${vehicleInfo.licensePlate}*
+Type: ${vehicleInfo.vehicleType}
+Overall Condition: *GOOD*
 
-Our team is now selecting the appropriate services for your vehicle. You'll receive an update shortly!`
+✅ *NO VISIBLE DAMAGE DETECTED*
+(Single image capture - limited damage assessment)
+
+📸 *INTAKE PHOTO:*
+${imageUrl || 'Image captured and stored'}
+
+⚠️ *IMPORTANT TERMS & CONDITIONS* ⚠️
+
+*DO NOT AVAIL OUR SERVICES* if you do not agree with our terms and conditions detailed here: https://axcarwash.com/terms-conditions/
+
+*ESSENTIALLY we do not take responsibility for damage, stolen goods or accidents that may happen while we operate your vehicle.*
+
+By proceeding with our service, you acknowledge and accept these terms.
+
+Our team is now selecting the appropriate services for your vehicle. You'll receive an update shortly!
+
+Thank you for choosing AX Car Wash! 🚗✨`
 
     console.log('📱 WhatsApp notification check:', {
       hasWhatsappNumber: !!order.whatsappNumber,

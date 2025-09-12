@@ -3,9 +3,11 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { VehicleDamageAnalysisService } from '@/lib/whatsapp/vehicle-damage-analysis-service'
 import { VehicleProcessingService } from '@/lib/whatsapp/vehicle-processing-service'
+import { WhatsAppService } from '@/lib/whatsapp/whatsapp-service'
 
 const damageAnalysisService = new VehicleDamageAnalysisService()
 const vehicleService = new VehicleProcessingService()
+const whatsappService = new WhatsAppService()
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,17 +15,20 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
 
     const orderId = formData.get('orderId') as string
-    const captureStage = formData.get('captureStage') as string || 'intake'
-    const imageCount = parseInt(formData.get('imageCount') as string || '0')
+    const captureStage = (formData.get('captureStage') as string) || 'intake'
+    const imageCount = parseInt((formData.get('imageCount') as string) || '0')
 
     if (!orderId) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 })
     }
 
     if (imageCount < 4) {
-      return NextResponse.json({ 
-        error: 'Minimum 4 images required (front, back, left, right)' 
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: 'Minimum 4 images required (front, back, left, right)',
+        },
+        { status: 400 },
+      )
     }
 
     console.log('🚗 Starting multi-image vehicle capture:', {
@@ -70,7 +75,7 @@ export async function POST(request: NextRequest) {
       try {
         // Upload image to media collection
         const imageBuffer = Buffer.from(await image.arrayBuffer())
-        
+
         const mediaResult = await payload.create({
           collection: 'media',
           data: {
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
         // Construct the full public URL
         const publicBucketUrl = process.env.S3_PUBLIC_BUCKET || 'https://media.ft.tc'
         const filename = mediaResult.filename || `vehicle-${orderId}-${imageType}-${Date.now()}.jpg`
-        
+
         let imageUrl: string
         if (mediaResult.url && mediaResult.url.startsWith('http')) {
           imageUrl = mediaResult.url
@@ -115,10 +120,13 @@ export async function POST(request: NextRequest) {
         })
       } catch (uploadError) {
         console.error(`❌ Failed to upload ${imageType} image:`, uploadError)
-        return NextResponse.json({
-          error: `Failed to upload ${imageType} image`,
-          details: uploadError instanceof Error ? uploadError.message : 'Unknown error',
-        }, { status: 500 })
+        return NextResponse.json(
+          {
+            error: `Failed to upload ${imageType} image`,
+            details: uploadError instanceof Error ? uploadError.message : 'Unknown error',
+          },
+          { status: 500 },
+        )
       }
     }
 
@@ -128,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🔍 Starting AI analysis of vehicle images:', {
       imageCount: vehicleImages.length,
-      imageTypes: vehicleImages.map(img => img.imageType),
+      imageTypes: vehicleImages.map((img) => img.imageType),
     })
 
     // Analyze all images with AI
@@ -136,11 +144,14 @@ export async function POST(request: NextRequest) {
 
     if (!analysisResult.success) {
       console.error('❌ AI analysis failed:', analysisResult.error)
-      return NextResponse.json({
-        error: 'AI analysis failed',
-        details: analysisResult.error,
-        uploadedImages,
-      }, { status: 422 })
+      return NextResponse.json(
+        {
+          error: 'AI analysis failed',
+          details: analysisResult.error,
+          uploadedImages,
+        },
+        { status: 422 },
+      )
     }
 
     console.log('✅ AI analysis completed:', {
@@ -194,7 +205,7 @@ export async function POST(request: NextRequest) {
       if (analysisResult.allDamages && analysisResult.allDamages.length > 0) {
         const damageField = captureStage === 'intake' ? 'intakeDamages' : 'deliveryDamages'
         vehicleData.damageAssessment = {
-          [damageField]: analysisResult.allDamages.map(damage => ({
+          [damageField]: analysisResult.allDamages.map((damage) => ({
             description: damage.damageDescription || 'Damage detected',
             severity: damage.severity,
             location: damage.location,
@@ -230,10 +241,10 @@ export async function POST(request: NextRequest) {
       if (analysisResult.allDamages && analysisResult.allDamages.length > 0) {
         const damageField = captureStage === 'intake' ? 'intakeDamages' : 'deliveryDamages'
         const existingDamageAssessment = vehicle.damageAssessment || {}
-        
+
         updateData.damageAssessment = {
           ...existingDamageAssessment,
-          [damageField]: analysisResult.allDamages.map(damage => ({
+          [damageField]: analysisResult.allDamages.map((damage) => ({
             description: damage.damageDescription || 'Damage detected',
             severity: damage.severity,
             location: damage.location,
@@ -258,7 +269,7 @@ export async function POST(request: NextRequest) {
     const createdVehicleImages = []
     for (const uploadedImage of uploadedImages) {
       const imageAnalysis = analysisResult.imageAnalyses?.[uploadedImage.mediaId]
-      
+
       const vehicleImageData: any = {
         vehicle: vehicle.id,
         order: order.id,
@@ -292,7 +303,7 @@ export async function POST(request: NextRequest) {
       if (imageAnalysis) {
         vehicleImageData.aiAnalysis = {
           vehicleCondition: imageAnalysis.overallCondition,
-          visibleFeatures: imageAnalysis.visibleFeatures?.map(feature => ({ feature })) || [],
+          visibleFeatures: imageAnalysis.visibleFeatures?.map((feature) => ({ feature })) || [],
           colorAnalysis: imageAnalysis.colorAnalysis,
           processingTime: imageAnalysis.processingTime,
           rawAiResponse: imageAnalysis.rawAiResponse,
@@ -318,6 +329,24 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Send damage report and terms & conditions to customer via WhatsApp
+    if (order.whatsappNumber && captureStage === 'intake') {
+      try {
+        await sendIntakeDamageReport(
+          order.whatsappNumber,
+          orderId,
+          analysisResult.vehicleNumber || vehicle.licensePlate,
+          analysisResult.allDamages || [],
+          analysisResult.overallCondition || 'good',
+          uploadedImages,
+        )
+        console.log('✅ Damage report sent to customer via WhatsApp')
+      } catch (whatsappError) {
+        console.error('⚠️ Failed to send damage report (non-critical):', whatsappError)
+        // Continue processing even if WhatsApp fails
+      }
+    }
+
     console.log('✅ Multi-image vehicle capture completed:', {
       orderId,
       vehicleId: vehicle.id,
@@ -336,7 +365,6 @@ export async function POST(request: NextRequest) {
       processedImages: createdVehicleImages.length,
       message: `Successfully processed ${createdVehicleImages.length} vehicle images`,
     })
-
   } catch (error) {
     console.error('❌ Multi-image vehicle capture error:', error)
     return NextResponse.json(
@@ -347,6 +375,82 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 },
     )
+  }
+}
+
+/**
+ * Send comprehensive damage report and terms & conditions to customer
+ */
+async function sendIntakeDamageReport(
+  whatsappNumber: string,
+  orderId: string,
+  vehicleNumber: string,
+  damages: any[],
+  overallCondition: string,
+  imageUrls: Array<{ imageType: string; imageUrl: string }>,
+): Promise<void> {
+  const payload = await getPayload({ config })
+
+  // Format damage list
+  let damageReport = ''
+  if (damages && damages.length > 0) {
+    damageReport = '\n📋 *DAMAGE ASSESSMENT:*\n'
+    damages.forEach((damage, index) => {
+      const severity = damage.severity || 'unknown'
+      const location = damage.location || 'unspecified area'
+      const description = damage.damageDescription || 'Damage detected'
+
+      damageReport += `${index + 1}. ${description}\n`
+      damageReport += `   📍 Location: ${location}\n`
+      damageReport += `   ⚠️ Severity: ${severity.toUpperCase()}\n\n`
+    })
+  } else {
+    damageReport = '\n✅ *NO VISIBLE DAMAGE DETECTED*\n\n'
+  }
+
+  // Format image URLs
+  let imageList = '\n📸 *INTAKE PHOTOS:*\n'
+  imageUrls.forEach((img, index) => {
+    imageList += `${index + 1}. ${img.imageType.toUpperCase()} VIEW: ${img.imageUrl}\n`
+  })
+
+  // Construct comprehensive message
+  const message = `🚗 *VEHICLE INTAKE COMPLETED*
+
+Order ID: *${orderId}*
+Vehicle: *${vehicleNumber}*
+Overall Condition: *${overallCondition.toUpperCase()}*
+${damageReport}${imageList}
+
+⚠️ *IMPORTANT TERMS & CONDITIONS* ⚠️
+
+*DO NOT AVAIL OUR SERVICES* if you do not agree with our terms and conditions detailed here: https://axcarwash.com/terms-conditions/
+
+*ESSENTIALLY we do not take responsibility for damage, stolen goods or accidents that may happen while we operate your vehicle.*
+
+By proceeding with our service, you acknowledge and accept these terms.
+
+Thank you for choosing AX Car Wash! 🚗✨`
+
+  // Send the message
+  const messageSuccess = await whatsappService.sendMessage(whatsappNumber, message)
+
+  if (messageSuccess) {
+    // Log the message
+    await payload.create({
+      collection: 'whatsapp-messages',
+      data: {
+        whatsappNumber,
+        messageId: `intake_damage_report_${orderId}_${Date.now()}`,
+        direction: 'outbound',
+        messageType: 'text',
+        content: message,
+        status: 'sent',
+        timestamp: new Date().toISOString(),
+      },
+    })
+  } else {
+    throw new Error('Failed to send WhatsApp message')
   }
 }
 

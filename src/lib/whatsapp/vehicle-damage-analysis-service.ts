@@ -83,7 +83,6 @@ export class VehicleDamageAnalysisService {
         {
           image_url: imageUrl,
           prompt: prompt,
-          max_tokens: 1000,
         },
         {
           headers: {
@@ -146,7 +145,10 @@ export class VehicleDamageAnalysisService {
 
       // Process each image
       for (const vehicleImage of vehicleImages) {
-        const analysis = await this.analyzeVehicleImage(vehicleImage.imageUrl, vehicleImage.imageType)
+        const analysis = await this.analyzeVehicleImage(
+          vehicleImage.imageUrl,
+          vehicleImage.imageType,
+        )
         imageAnalyses[vehicleImage.id] = analysis
 
         if (analysis.success) {
