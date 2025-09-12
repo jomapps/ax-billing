@@ -1,4 +1,5 @@
 import { withPayload } from '@payloadcms/next/withPayload'
+import { withBaml } from '@boundaryml/baml-nextjs-plugin'
 
 // Build allowed dev origins from environment variables
 function buildAllowedDevOrigins() {
@@ -122,15 +123,27 @@ const nextConfig = {
     ]
   },
 
-  webpack: (webpackConfig) => {
+  webpack: (webpackConfig, { isServer }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
       '.mjs': ['.mts', '.mjs'],
     }
 
+    // BAML native binaries are now handled by the baml-nextjs-plugin
+
+    // Ignore BAML native modules in client-side builds
+    if (!isServer) {
+      webpackConfig.resolve.fallback = {
+        ...webpackConfig.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+      }
+    }
+
     return webpackConfig
   },
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withBaml()(withPayload(nextConfig, { devBundleServerPackages: false }))

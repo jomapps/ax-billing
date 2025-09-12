@@ -2,6 +2,8 @@ import axios from 'axios'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { VehicleImage, Vehicle, Media } from '@/payload-types'
+import { b } from '@/lib/baml_client/baml_client'
+import type { VehicleAnalysis } from '@/lib/baml_client/baml_client/types'
 
 export interface DamageAnalysis {
   damageDetected: boolean
@@ -57,69 +59,51 @@ export class VehicleDamageAnalysisService {
   }
 
   /**
-   * Analyze a single vehicle image for damage, size, and other features
+   * Analyze a single vehicle image for damage, size, and other features using BAML
    */
   async analyzeVehicleImage(imageUrl: string, imageType: string): Promise<VehicleAnalysisResult> {
-    if (!this.falApiKey) {
-      return {
-        success: false,
-        error: 'Fal.ai API key not configured',
-      }
-    }
-
     const startTime = Date.now()
 
     try {
-      console.log('🔍 Starting vehicle image analysis:', {
+      console.log('🔍 Starting BAML vehicle image analysis:', {
         imageUrl,
         imageType,
-        model: this.falVisionModel,
       })
 
-      const prompt = this.buildAnalysisPrompt(imageType)
-
-      const response = await axios.post(
-        `https://fal.run/${this.falVisionModel}`,
-        {
-          image_url: imageUrl,
-          prompt: prompt,
-        },
-        {
-          headers: {
-            Authorization: `Key ${this.falApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          timeout: 60000, // 60 second timeout
-        },
-      )
+      // Use BAML for analysis
+      const bamlResult = await b.AnalyzeVehicleDamage(imageUrl, imageType)
 
       const processingTime = (Date.now() - startTime) / 1000
 
-      if (response.data && response.data.output) {
-        const aiResponse = response.data.output
-        console.log('✅ AI analysis completed:', {
-          imageType,
-          processingTime,
-          responseLength: aiResponse.length,
-        })
+      console.log('✅ BAML analysis completed:', {
+        imageType,
+        processingTime,
+        vehicleType: bamlResult.vehicle_type,
+        damagesFound: bamlResult.damages?.length || 0,
+      })
 
-        return this.parseAiResponse(aiResponse, processingTime)
-      } else {
-        throw new Error('Invalid response from Fal.ai API')
-      }
+      return this.convertBamlToAnalysisResult(bamlResult, processingTime)
     } catch (error) {
       const processingTime = (Date.now() - startTime) / 1000
-      console.error('❌ Vehicle image analysis failed:', {
+      console.error('❌ BAML vehicle image analysis failed:', {
         imageUrl,
         imageType,
         error: error instanceof Error ? error.message : 'Unknown error',
         processingTime,
       })
 
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        processingTime,
+      // Fallback to FAL AI via BAML if primary BAML fails
+      console.log('🔄 Falling back to FAL AI via BAML...')
+      try {
+        const bamlFalResult = await b.AnalyzeVehicleDamageFal(imageUrl, imageType)
+        return this.convertBamlToAnalysisResult(bamlFalResult, processingTime)
+      } catch (falError) {
+        console.error('❌ FAL AI fallback also failed:', falError)
+        return {
+          success: false,
+          error: 'Both BAML and FAL AI analysis failed',
+          processingTime,
+        }
       }
     }
   }
@@ -217,135 +201,121 @@ export class VehicleDamageAnalysisService {
   }
 
   /**
-   * Build AI prompt based on image type
+   * Convert BAML result to VehicleAnalysisResult format
    */
-  private buildAnalysisPrompt(imageType: string): string {
-    const basePrompt = `
-      Analyze this vehicle image and provide a comprehensive assessment. Focus on:
-      1. Vehicle license plate number (extract exact text)
-      2. Vehicle size estimation (length, width, height in meters)
-      3. Damage detection and description
-      4. Overall vehicle condition
-      5. Vehicle color analysis
-      6. Visible features and characteristics
-    `
-
-    const typeSpecificPrompts = {
-      front: `
-        This is a front view of the vehicle. Pay special attention to:
-        - Front license plate
-        - Front bumper damage
-        - Headlight condition
-        - Windshield condition
-        - Hood damage
-      `,
-      back: `
-        This is a rear view of the vehicle. Pay special attention to:
-        - Rear license plate
-        - Rear bumper damage
-        - Taillight condition
-        - Rear windshield condition
-        - Trunk/tailgate damage
-      `,
-      left: `
-        This is a left side view of the vehicle. Pay special attention to:
-        - Left side doors
-        - Left side windows
-        - Left side mirrors
-        - Side panel damage
-        - Wheel condition
-      `,
-      right: `
-        This is a right side view of the vehicle. Pay special attention to:
-        - Right side doors
-        - Right side windows
-        - Right side mirrors
-        - Side panel damage
-        - Wheel condition
-      `,
-      damage: `
-        This is a close-up damage photo. Provide detailed analysis of:
-        - Type of damage (scratch, dent, crack, etc.)
-        - Severity assessment
-        - Exact location on vehicle
-        - Potential cause
-      `,
-      license_plate: `
-        This is a license plate close-up. Focus on:
-        - Exact license plate text
-        - Plate condition
-        - Any damage to the plate
-      `,
-    }
-
-    const specificPrompt = typeSpecificPrompts[imageType as keyof typeof typeSpecificPrompts] || ''
-
-    return `${basePrompt}${specificPrompt}
-
-    Please respond in JSON format:
-    {
-      "vehicleNumber": "extracted license plate text or null",
-      "sizeAnalysis": {
-        "estimatedLength": 4.5,
-        "estimatedWidth": 1.8,
-        "estimatedHeight": 1.5,
-        "sizeCategory": "midsize",
-        "confidence": 0.85
-      },
-      "damageAnalysis": [
-        {
-          "damageDetected": true,
-          "damageDescription": "Minor scratch on front bumper",
-          "severity": "minor",
-          "location": "front bumper left side",
-          "confidence": 0.9
-        }
-      ],
-      "overallCondition": "good",
-      "colorAnalysis": "Dark blue metallic",
-      "visibleFeatures": ["sedan", "4-door", "alloy wheels"],
-      "extractedText": "any other visible text"
-    }
-
-    If no damage is detected, set damageAnalysis to an empty array.
-    If license plate is not visible or readable, set vehicleNumber to null.
-    `
-  }
-
-  /**
-   * Parse AI response and extract structured data
-   */
-  private parseAiResponse(aiResponse: string, processingTime: number): VehicleAnalysisResult {
+  private convertBamlToAnalysisResult(
+    bamlResult: VehicleAnalysis,
+    processingTime: number,
+  ): VehicleAnalysisResult {
     try {
-      // Try to extract JSON from the response
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        throw new Error('No JSON found in AI response')
-      }
+      // Convert BAML damages to our format
+      const damageAnalysis =
+        bamlResult.damages?.map((damage) => ({
+          damageDetected: true,
+          damageDescription: damage.description,
+          severity: damage.severity.toLowerCase() as 'minor' | 'moderate' | 'major' | 'severe',
+          location: damage.location,
+          confidence: bamlResult.confidence_score || 0.9,
+        })) || []
 
-      const parsedResponse = JSON.parse(jsonMatch[0])
+      // Estimate size based on vehicle type
+      const sizeAnalysis = this.estimateVehicleSize(bamlResult.vehicle_type)
 
       return {
         success: true,
-        vehicleNumber: parsedResponse.vehicleNumber || undefined,
-        sizeAnalysis: parsedResponse.sizeAnalysis || undefined,
-        damageAnalysis: parsedResponse.damageAnalysis || [],
-        overallCondition: parsedResponse.overallCondition || undefined,
-        colorAnalysis: parsedResponse.colorAnalysis || undefined,
-        visibleFeatures: parsedResponse.visibleFeatures || [],
-        extractedText: parsedResponse.extractedText || undefined,
+        vehicleNumber: bamlResult.license_plate || undefined,
+        sizeAnalysis,
+        damageAnalysis,
+        overallCondition: this.mapOverallCondition(bamlResult.overall_condition),
+        colorAnalysis: bamlResult.color || undefined,
+        visibleFeatures: this.extractVisibleFeatures(bamlResult),
+        extractedText: bamlResult.license_plate || undefined,
         processingTime,
-        rawAiResponse: parsedResponse,
+        rawAiResponse: bamlResult,
       }
     } catch (error) {
-      console.error('Failed to parse AI response:', error)
+      console.error('Failed to convert BAML result:', error)
       return {
         success: false,
-        error: 'Failed to parse AI response',
+        error: 'Failed to convert BAML analysis result',
         processingTime,
-        rawAiResponse: aiResponse,
+        rawAiResponse: bamlResult,
       }
     }
+  }
+
+  /**
+   * Estimate vehicle size based on vehicle type
+   */
+  private estimateVehicleSize(vehicleType: string): VehicleSizeAnalysis {
+    const sizeMap: Record<string, VehicleSizeAnalysis> = {
+      CAR: {
+        estimatedLength: 4.5,
+        estimatedWidth: 1.8,
+        estimatedHeight: 1.5,
+        sizeCategory: 'midsize',
+        confidence: 0.8,
+      },
+      SUV: {
+        estimatedLength: 4.8,
+        estimatedWidth: 1.9,
+        estimatedHeight: 1.8,
+        sizeCategory: 'large',
+        confidence: 0.8,
+      },
+      TRUCK: {
+        estimatedLength: 5.5,
+        estimatedWidth: 2.0,
+        estimatedHeight: 1.9,
+        sizeCategory: 'extra_large',
+        confidence: 0.8,
+      },
+      VAN: {
+        estimatedLength: 5.0,
+        estimatedWidth: 1.9,
+        estimatedHeight: 2.0,
+        sizeCategory: 'large',
+        confidence: 0.8,
+      },
+      MOTORCYCLE: {
+        estimatedLength: 2.2,
+        estimatedWidth: 0.8,
+        estimatedHeight: 1.2,
+        sizeCategory: 'compact',
+        confidence: 0.8,
+      },
+    }
+
+    return sizeMap[vehicleType] || sizeMap.CAR
+  }
+
+  /**
+   * Map BAML overall condition to our format
+   */
+  private mapOverallCondition(
+    condition: string,
+  ): 'excellent' | 'good' | 'fair' | 'poor' | 'damaged' {
+    const conditionLower = condition.toLowerCase()
+    if (conditionLower.includes('excellent')) return 'excellent'
+    if (conditionLower.includes('good')) return 'good'
+    if (conditionLower.includes('fair')) return 'fair'
+    if (conditionLower.includes('poor')) return 'poor'
+    if (conditionLower.includes('damaged')) return 'damaged'
+    return 'good' // default
+  }
+
+  /**
+   * Extract visible features from BAML result
+   */
+  private extractVisibleFeatures(bamlResult: VehicleAnalysis): string[] {
+    const features: string[] = []
+
+    if (bamlResult.vehicle_type) features.push(bamlResult.vehicle_type.toLowerCase())
+    if (bamlResult.make) features.push(bamlResult.make)
+    if (bamlResult.model) features.push(bamlResult.model)
+    if (bamlResult.color) features.push(bamlResult.color)
+
+    return features
   }
 
   /**

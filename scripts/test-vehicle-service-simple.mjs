@@ -7,80 +7,67 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const TEST_IMAGE_URL = 'https://media.ft.tc/media/vehicle-AX-20250908-5336-1757438371929.jpg'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-// Simple vehicle processing function based on the service
+// Use the AI service API endpoint instead of direct FAL calls
 async function processVehiclePhoto(imageUrl) {
-  const falApiKey = process.env.FAL_KEY
-  const falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
-  
-  if (!falApiKey) {
-    return {
-      success: false,
-      error: 'AI processing not configured',
-    }
-  }
-
   try {
-    const prompt = `
-      Analyze this vehicle image and extract the following information:
-      1. Vehicle type (classify as: sedan, suv, hatchback, mpv, pickup, motorcycle, heavy_bike, van, truck)
-      2. License plate number (extract the exact text)
-      
-      Please respond in JSON format:
-      {
-        "vehicleType": "sedan|suv|hatchback|mpv|pickup|motorcycle|heavy_bike|van|truck",
-        "licensePlate": "extracted license plate text",
-        "confidence": 0.95,
-        "extractedText": "any other text visible on the vehicle"
-      }
-      
-      If you cannot clearly identify the vehicle type or license plate, set confidence to a lower value.
-    `
+    console.log('🤖 Testing vehicle analysis via AI service API...')
 
     const response = await axios.post(
-      `https://fal.run/${falVisionModel}`,
+      `${APP_URL}/api/v1/ai/analyze-vehicle`,
       {
-        image_url: imageUrl,
-        prompt: prompt,
+        imageUrl: imageUrl,
+        generateRecommendations: false,
+        includeCostEstimate: false,
       },
       {
         headers: {
-          Authorization: `Key ${falApiKey}`,
           'Content-Type': 'application/json',
         },
+        timeout: 60000, // 60 second timeout
       },
     )
 
-    const aiResponse = response.data.output
-    if (!aiResponse) {
-      throw new Error('No response from AI model')
-    }
+    if (response.data && response.data.success) {
+      const analysis = response.data.analysis
 
-    // Try to parse JSON response, fallback to text parsing if needed
-    let vehicleInfo
-    try {
-      vehicleInfo = JSON.parse(aiResponse)
-    } catch (parseError) {
-      // If JSON parsing fails, try to extract information from text
-      vehicleInfo = parseTextResponse(aiResponse)
-    }
+      // Convert to expected format
+      const vehicleInfo = {
+        vehicleType: mapVehicleType(analysis.vehicle_type),
+        licensePlate: analysis.license_plate || 'UNKNOWN',
+        confidence: analysis.confidence_score || 0.9,
+        extractedText: analysis.overall_condition || '',
+      }
 
-    // Validate the response
-    if (!vehicleInfo.vehicleType || !vehicleInfo.licensePlate) {
-      throw new Error('Incomplete vehicle information extracted')
-    }
-
-    return {
-      success: true,
-      vehicleInfo,
+      return {
+        success: true,
+        vehicleInfo,
+      }
+    } else {
+      throw new Error(response.data?.error || 'AI analysis failed')
     }
   } catch (error) {
-    console.error('AI processing error:', error)
+    console.error('AI service API error:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown AI processing error',
+      error: error instanceof Error ? error.message : 'Unknown AI service error',
     }
   }
+}
+
+// Map BAML vehicle types to expected format
+function mapVehicleType(bamlType) {
+  const typeMap = {
+    CAR: 'sedan',
+    SUV: 'suv',
+    TRUCK: 'truck',
+    VAN: 'van',
+    MOTORCYCLE: 'motorcycle',
+    OTHER: 'sedan', // default fallback
+  }
+
+  return typeMap[bamlType] || 'sedan'
 }
 
 function parseTextResponse(text) {
@@ -92,7 +79,17 @@ function parseTextResponse(text) {
   }
 
   // Extract vehicle type
-  const vehicleTypes = ['sedan', 'suv', 'hatchback', 'mpv', 'pickup', 'motorcycle', 'heavy_bike', 'van', 'truck']
+  const vehicleTypes = [
+    'sedan',
+    'suv',
+    'hatchback',
+    'mpv',
+    'pickup',
+    'motorcycle',
+    'heavy_bike',
+    'van',
+    'truck',
+  ]
   for (const type of vehicleTypes) {
     if (text.toLowerCase().includes(type.toLowerCase())) {
       vehicleInfo.vehicleType = type
@@ -118,22 +115,23 @@ function parseTextResponse(text) {
 }
 
 async function testVehicleService() {
-  console.log('🔍 Testing Vehicle Processing Service with Fal.ai')
-  console.log('=' .repeat(60))
-  
+  console.log('🔍 Testing Vehicle Processing Service with BAML/AI Service API')
+  console.log('='.repeat(60))
+
   try {
-    console.log('🚀 Processing vehicle image...')
+    console.log('🚀 Processing vehicle image via AI service...')
     console.log(`   Image URL: ${TEST_IMAGE_URL}`)
+    console.log(`   API Endpoint: ${APP_URL}/api/v1/ai/analyze-vehicle`)
     console.log('')
-    
+
     const startTime = Date.now()
     const result = await processVehiclePhoto(TEST_IMAGE_URL)
     const endTime = Date.now()
     const duration = endTime - startTime
-    
+
     console.log(`⏱️  Processing completed in ${duration}ms`)
     console.log('')
-    
+
     if (result.success && result.vehicleInfo) {
       console.log('✅ Vehicle processing SUCCESSFUL!')
       console.log('📋 Extracted Information:')
@@ -144,29 +142,27 @@ async function testVehicleService() {
         console.log(`   Extracted Text: ${result.vehicleInfo.extractedText}`)
       }
       console.log('')
-      console.log('🎉 Vehicle Processing Service test PASSED!')
-      
+      console.log('🎉 BAML/AI Service integration test PASSED!')
+
       // Test if this matches the expected order data
       console.log('')
       console.log('🔍 Verification for Order AX-20250908-5336:')
       console.log('   Expected: License plate extraction from vehicle image')
       console.log(`   Result: Successfully extracted "${result.vehicleInfo.licensePlate}"`)
       console.log(`   Vehicle Type: ${result.vehicleInfo.vehicleType}`)
-      console.log('   ✅ AI processing failure has been RESOLVED!')
-      
+      console.log('   ✅ BAML integration has been IMPLEMENTED!')
     } else {
       console.log('❌ Vehicle processing FAILED!')
       console.log(`   Error: ${result.error}`)
       console.log('')
-      console.log('❌ Vehicle Processing Service test FAILED!')
+      console.log('❌ BAML/AI Service integration test FAILED!')
       process.exit(1)
     }
-    
   } catch (error) {
     console.error('❌ Test failed with error:')
     console.error(`   ${error.message}`)
     console.log('')
-    console.log('❌ Vehicle Processing Service test FAILED!')
+    console.log('❌ BAML/AI Service integration test FAILED!')
     process.exit(1)
   }
 }

@@ -13,8 +13,11 @@ A modern, gaming-style carwash management system built with PayloadCMS, Next.js,
 - **Customer Tiers**: VIP, Regular, and Remnant queue management
 - **Cloudflare R2 Storage**: Secure media storage for vehicle photos
 
-### Phase 2 (Planned)
-- **AI Vehicle Classification**: OpenRouter integration for automatic vehicle type detection
+### Phase 2 (In Progress) - 🔄 Implementing
+- **BAML AI Integration**: Advanced AI-powered vehicle analysis with BAML framework
+- **AI Vehicle Classification**: Automatic vehicle type detection and damage assessment
+- **Service Recommendations**: AI-generated service suggestions based on vehicle condition
+- **Cost Estimation**: Intelligent pricing based on detected damages and services
 - **WhatsApp Integration**: Customer onboarding and notifications
 - **Payment Gateway**: Fiuu payment processing
 - **Enhanced Authentication**: WhatsApp-based customer identification and PayloadCMS admin authentication
@@ -30,6 +33,7 @@ A modern, gaming-style carwash management system built with PayloadCMS, Next.js,
 - **Frontend**: Next.js 15.4.4 with React 19
 - **Database**: MongoDB with Mongoose
 - **Storage**: Cloudflare R2 (S3-compatible)
+- **AI Integration**: BAML (Boundary ML) with OpenAI GPT-4o
 - **Styling**: Tailwind CSS with custom gaming theme
 - **Animations**: Framer Motion
 - **Forms**: React Hook Form with Zod validation
@@ -66,7 +70,11 @@ A modern, gaming-style carwash management system built with PayloadCMS, Next.js,
    # Database
    DATABASE_URI=mongodb://127.0.0.1:27017/ax-billing
    PAYLOAD_SECRET=your-super-secret-key
-   
+
+   # AI Integration
+   OPENROUTER_API_KEY=your-openrouter-api-key-here
+   FAL_KEY=your-fal-ai-key-here  # Optional fallback
+
    # Cloudflare R2 (Optional)
    S3_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
    S3_REGION=auto
@@ -106,7 +114,8 @@ A modern, gaming-style carwash management system built with PayloadCMS, Next.js,
 src/
 ├── app/
 │   ├── (frontend)/          # Staff dashboard and customer interfaces
-│   └── (payload)/           # PayloadCMS admin panel
+│   ├── (payload)/           # PayloadCMS admin panel
+│   └── api/v1/ai/           # AI integration endpoints
 ├── collections/             # PayloadCMS collections (data models)
 │   ├── Users.ts
 │   ├── Vehicles.ts
@@ -118,11 +127,86 @@ src/
 │   ├── dashboard/           # Dashboard components
 │   └── orders/              # Order management components
 ├── lib/
+│   ├── ai-service.ts        # BAML AI integration service
+│   ├── baml_client/         # Generated BAML client (auto-generated)
 │   └── utils.ts             # Utility functions
 ├── styles/
 │   └── gaming-theme.css     # Custom gaming theme styles
-└── payload.config.ts        # PayloadCMS configuration
+├── payload.config.ts        # PayloadCMS configuration
+└── baml_src/
+    └── main.baml            # BAML AI configuration and prompts
 ```
+
+## 🤖 BAML AI Integration
+
+This project uses [BAML (Boundary ML)](https://boundaryml.com/) for advanced AI-powered vehicle analysis and service recommendations.
+
+### BAML Setup
+
+1. **Install BAML dependencies** (already included in package.json)
+   ```bash
+   pnpm install
+   ```
+
+2. **Configure environment variables**
+   ```bash
+   # Add to your .env file
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
+   ```
+
+3. **Generate BAML client**
+   ```bash
+   npx baml-cli generate
+   ```
+
+### BAML Configuration
+
+The BAML configuration is located in `baml_src/main.baml` and includes:
+
+- **Vehicle Analysis**: Automatic vehicle type detection, damage assessment, and condition evaluation
+- **Service Recommendations**: AI-generated service suggestions based on vehicle analysis and customer tier
+- **Cost Estimation**: Intelligent pricing based on detected damages and recommended services
+
+### BAML Features
+
+- **Vehicle Type Detection**: Automatically identifies car, truck, motorcycle, van, SUV, etc.
+- **Damage Assessment**: Detects scratches, dents, cracks, paint damage, and structural issues
+- **Severity Analysis**: Classifies damage as minor, moderate, severe, or total loss
+- **Service Recommendations**: Suggests appropriate services based on vehicle condition and customer tier
+- **Cost Estimation**: Provides detailed cost breakdowns for repairs and services
+
+### Testing BAML Integration
+
+Run the comprehensive BAML test suite:
+
+```bash
+# Test BAML integration
+node scripts/test-baml-integration.mjs
+```
+
+This will test:
+- BAML vehicle analysis
+- Service recommendations
+- Cost estimation
+- FAL AI fallback
+- Vehicle processing service integration
+- AI API endpoints
+
+### BAML Workflow
+
+1. **Image Upload**: Vehicle image is uploaded to storage
+2. **AI Analysis**: BAML analyzes the image for vehicle type, damages, and condition
+3. **Service Recommendations**: AI generates service suggestions based on analysis and customer tier
+4. **Cost Estimation**: System provides detailed cost breakdown
+5. **Fallback**: If BAML fails, system falls back to FAL AI for basic vehicle detection
+
+### Updating BAML Prompts
+
+To modify AI behavior:
+
+1. Edit `baml_src/main.baml`
+2. Regenerate the client: `npx baml-cli generate`
+3. Test changes: `node scripts/test-baml-integration.mjs`
 
 ## 🎨 Gaming UI Theme
 

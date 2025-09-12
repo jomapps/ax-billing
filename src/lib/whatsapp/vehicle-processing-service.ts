@@ -2,6 +2,9 @@ import axios from 'axios'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { Vehicle, Order, User } from '@/payload-types'
+import { analyzeVehicle } from '@/lib/ai-service'
+import { b } from '@/lib/baml_client/baml_client'
+import type { VehicleAnalysis } from '@/lib/baml_client/baml_client/types'
 
 export interface VehicleInfo {
   vehicleType: string
@@ -30,108 +33,161 @@ export class VehicleProcessingService {
   }
 
   /**
-   * Process vehicle photo with AI to extract vehicle type and license plate
+   * Process vehicle photo with BAML AI integration (primary method)
    */
-  async processVehiclePhoto(imageUrl: string): Promise<AIProcessingResult> {
-    if (!this.falApiKey) {
-      return {
-        success: false,
-        error: 'AI processing not configured',
-      }
-    }
-
+  async processVehiclePhotoWithBAML(imageUrl: string): Promise<AIProcessingResult> {
     try {
-      console.log('🚀 Starting Fal.ai vehicle processing:', {
-        imageUrl,
-        model: this.falVisionModel,
-        hasApiKey: !!this.falApiKey,
-      })
+      console.log('🤖 Starting BAML vehicle processing:', { imageUrl })
 
-      const prompt = `
-        Analyze this vehicle image and extract the following information:
-        1. Vehicle type (classify as: sedan, suv, hatchback, mpv, pickup, motorcycle, heavy_bike, van, truck)
-        2. License plate number (extract the exact text)
+      const analysisResult = await analyzeVehicle(imageUrl)
 
-        Please respond in JSON format:
-        {
-          "vehicleType": "sedan|suv|hatchback|mpv|pickup|motorcycle|heavy_bike|van|truck",
-          "licensePlate": "extracted license plate text",
-          "confidence": 0.95,
-          "extractedText": "any other text visible on the vehicle"
-        }
-
-        If you cannot clearly identify the vehicle type or license plate, set confidence to a lower value.
-      `
-
-      const response = await axios.post(
-        `https://fal.run/${this.falVisionModel}`,
-        {
-          image_url: imageUrl,
-          prompt: prompt,
-        },
-        {
-          headers: {
-            Authorization: `Key ${this.falApiKey}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      const aiResponse = response.data.output
-      if (!aiResponse) {
-        throw new Error('No response from AI model')
+      if (!analysisResult.success || !analysisResult.data) {
+        console.log('BAML analysis failed, falling back to FAL AI')
+        return await this.processVehiclePhotoWithFalAI(imageUrl)
       }
 
-      // Try to parse JSON response, fallback to text parsing if needed
-      let vehicleInfo: VehicleInfo
-      try {
-        // Clean the response to extract just the JSON part
-        const cleanResponse = aiResponse.trim()
-        let jsonStr = cleanResponse
+      const analysis = analysisResult.data
 
-        // If the response contains extra text, try to extract the JSON part
-        const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/)
-        if (jsonMatch) {
-          jsonStr = jsonMatch[0]
-        }
-
-        vehicleInfo = JSON.parse(jsonStr) as VehicleInfo
-      } catch (parseError) {
-        console.warn('Failed to parse JSON response, falling back to text parsing:', parseError)
-        // If JSON parsing fails, try to extract information from text
-        vehicleInfo = this.parseTextResponse(aiResponse)
+      // Convert BAML analysis to VehicleInfo format
+      const vehicleInfo: VehicleInfo = {
+        vehicleType: this.mapBamlVehicleType(analysis.vehicle_type),
+        licensePlate: this.extractLicensePlate(analysis),
+        confidence: 0.9, // BAML generally provides high confidence
+        extractedText: analysis.overall_condition,
       }
 
-      // Validate the response
-      if (!vehicleInfo.vehicleType || !vehicleInfo.licensePlate) {
-        throw new Error('Incomplete vehicle information extracted')
-      }
+      console.log('✅ BAML vehicle processing successful:', vehicleInfo)
 
       return {
         success: true,
         vehicleInfo,
       }
     } catch (error) {
-      console.error('AI processing error:', error)
+      console.error('❌ BAML vehicle processing error:', error)
+      console.log('Falling back to FAL AI processing')
+      return await this.processVehiclePhotoWithFalAI(imageUrl)
+    }
+  }
 
-      // Log detailed error information for debugging
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as any
-        console.error('Fal.ai API Error Details:', {
-          status: axiosError.response?.status,
-          statusText: axiosError.response?.statusText,
-          data: axiosError.response?.data,
-          url: axiosError.config?.url,
-          method: axiosError.config?.method,
-          requestData: axiosError.config?.data,
-        })
+  /**
+   * Process vehicle photo with BAML (primary method) and FAL fallback
+   */
+  async processVehiclePhotoWithFalAI(imageUrl: string): Promise<AIProcessingResult> {
+    try {
+      console.log('🤖 Starting BAML vehicle processing:', {
+        imageUrl,
+      })
+
+      // Try BAML first
+      const bamlResult = await b.AnalyzeVehicleImage(imageUrl)
+
+      // Convert BAML result to VehicleInfo format
+      const vehicleInfo: VehicleInfo = {
+        vehicleType: this.mapBamlVehicleType(bamlResult.vehicle_type),
+        licensePlate: this.extractLicensePlate(bamlResult),
+        confidence: bamlResult.confidence_score || 0.9,
+        extractedText: bamlResult.overall_condition,
       }
+
+      console.log('✅ BAML vehicle processing successful:', vehicleInfo)
 
       return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown AI processing error',
+        success: true,
+        vehicleInfo,
+      }
+    } catch (bamlError) {
+      console.error('❌ BAML processing failed:', bamlError)
+      console.log('🔄 Falling back to FAL AI via BAML...')
+
+      // Fallback to FAL AI via BAML
+      try {
+        const bamlFalResult = await b.AnalyzeVehicleImageFal(imageUrl)
+
+        // Convert BAML result to VehicleInfo format
+        const vehicleInfo: VehicleInfo = {
+          vehicleType: this.mapBamlVehicleType(bamlFalResult.vehicle_type),
+          licensePlate: this.extractLicensePlate(bamlFalResult),
+          confidence: bamlFalResult.confidence_score || 0.5,
+          extractedText: bamlFalResult.overall_condition,
+        }
+
+        return {
+          success: true,
+          vehicleInfo,
+        }
+      } catch (falError) {
+        console.error('❌ FAL AI fallback also failed:', falError)
+        return {
+          success: false,
+          error: 'Both BAML and FAL AI processing failed',
+        }
       }
     }
+  }
+
+  /**
+   * Map BAML VehicleType to our internal vehicle type format
+   */
+  private mapBamlVehicleType(bamlVehicleType: string): string {
+    const typeMapping: Record<string, string> = {
+      CAR: 'sedan',
+      TRUCK: 'truck',
+      MOTORCYCLE: 'motorcycle',
+      VAN: 'van',
+      SUV: 'suv',
+      OTHER: 'sedan', // Default fallback
+    }
+
+    return typeMapping[bamlVehicleType] || 'sedan'
+  }
+
+  /**
+   * Extract license plate from BAML analysis with improved logic
+   */
+  private extractLicensePlate(analysis: VehicleAnalysis): string {
+    // First, check if BAML provided a dedicated license_plate field
+    if (analysis.license_plate && analysis.license_plate.trim()) {
+      return analysis.license_plate.trim()
+    }
+
+    // Fallback: Try to extract license plate from various fields
+    const possibleSources = [analysis.make, analysis.model, analysis.overall_condition].filter(
+      Boolean,
+    )
+
+    // Look for license plate patterns in the text using region-specific patterns
+    for (const source of possibleSources) {
+      if (source) {
+        // Malaysian license plate patterns (adjust based on your region)
+        const malayPatterns = [
+          /[A-Z]{1,3}\s*\d{1,4}\s*[A-Z]?/g, // ABC 123, AB 1234 A
+          /[A-Z]{2}\s*\d{4}/g, // AB 1234
+          /\b[A-Z0-9]{3,8}\b/g, // General alphanumeric patterns
+        ]
+
+        for (const pattern of malayPatterns) {
+          const matches = source.match(pattern)
+          if (matches && matches.length > 0) {
+            // Clean up the match (remove extra spaces)
+            const cleanPlate = matches[0].replace(/\s+/g, ' ').trim()
+            // Only return if it looks like a valid plate (not too generic)
+            if (cleanPlate.length >= 3 && cleanPlate.length <= 10) {
+              return cleanPlate
+            }
+          }
+        }
+      }
+    }
+
+    // If no license plate found, return empty string instead of placeholder
+    return ''
+  }
+
+  /**
+   * Update the main processing method to use BAML
+   */
+  async processVehiclePhoto(imageUrl: string): Promise<AIProcessingResult> {
+    return await this.processVehiclePhotoWithBAML(imageUrl)
   }
 
   /**

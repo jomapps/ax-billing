@@ -8,43 +8,42 @@ dotenv.config()
 
 async function testUrlConstruction() {
   console.log('🔍 Testing URL Construction for Fal.ai Access')
-  console.log('=' .repeat(60))
-  
+  console.log('='.repeat(60))
+
   const publicBucketUrl = process.env.S3_PUBLIC_BUCKET || 'https://media.ft.tc'
   const testFilename = 'vehicle-AX-20250908-5336-1757438371929.jpg'
-  
+
   // Test different URL construction scenarios
   const testUrls = [
     // Direct public URL (what we expect to work)
     `${publicBucketUrl}/media/${testFilename}`,
-    
+
     // Alternative constructions
     `${publicBucketUrl}/${testFilename}`,
-    
+
     // The known working URL from our previous tests
-    'https://media.ft.tc/media/vehicle-AX-20250908-5336-1757438371929.jpg'
+    'https://media.ft.tc/media/vehicle-AX-20250908-5336-1757438371929.jpg',
   ]
-  
+
   console.log('📋 Configuration:')
   console.log(`   S3_PUBLIC_BUCKET: ${publicBucketUrl}`)
   console.log(`   Test Filename: ${testFilename}`)
   console.log('')
-  
+
   for (let i = 0; i < testUrls.length; i++) {
     const testUrl = testUrls[i]
     console.log(`🧪 Test ${i + 1}: ${testUrl}`)
-    
+
     try {
       // Test if the URL is accessible
       const response = await axios.head(testUrl, { timeout: 10000 })
       console.log(`   ✅ URL accessible (${response.status})`)
-      
-      // Test with Fal.ai if accessible
+
+      // Test with BAML API if accessible
       if (response.status === 200) {
-        console.log('   🚀 Testing with Fal.ai...')
-        await testWithFalAi(testUrl)
+        console.log('   🚀 Testing with BAML API...')
+        await testWithBamlApi(testUrl)
       }
-      
     } catch (error) {
       if (error.response) {
         console.log(`   ❌ URL not accessible (${error.response.status})`)
@@ -56,56 +55,78 @@ async function testUrlConstruction() {
   }
 }
 
-async function testWithFalAi(imageUrl) {
+async function testWithBamlApi(imageUrl) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+  try {
+    const response = await axios.post(
+      `${appUrl}/api/v1/ai/analyze-vehicle`,
+      {
+        imageUrl: imageUrl,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      },
+    )
+
+    console.log('   ✅ BAML API processing successful!')
+    console.log(`   📋 Vehicle Type: ${response.data.analysis?.vehicle_type || 'N/A'}`)
+    console.log(`   📋 License Plate: ${response.data.analysis?.license_plate || 'N/A'}`)
+    console.log(`   📋 AI Provider: ${response.data.metadata?.aiProvider || 'N/A'}`)
+  } catch (error) {
+    if (error.response) {
+      console.log(
+        `   ❌ BAML API error (${error.response.status}): ${error.response.data?.error || error.message}`,
+      )
+      if (error.response.data) {
+        console.log(`   📄 Error details:`, JSON.stringify(error.response.data, null, 2))
+      }
+    } else {
+      console.log(`   ❌ BAML API network error: ${error.message}`)
+    }
+  }
+}
+
+// Optional direct FAL AI test (gated behind environment flag)
+async function testWithDirectFalAi(imageUrl) {
+  const allowDirectFalTests = process.env.ALLOW_DIRECT_FAL_TESTS === 'true'
+
+  if (!allowDirectFalTests) {
+    console.log('   ⏭️  Direct FAL AI tests disabled (set ALLOW_DIRECT_FAL_TESTS=true to enable)')
+    return
+  }
+
   const falApiKey = process.env.FAL_KEY
-  const falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
-  
+  const falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/llavav15-13b'
+
   if (!falApiKey) {
-    console.log('   ⚠️  No Fal.ai API key configured')
+    console.log('   ⚠️  No FAL_KEY configured for direct tests')
     return
   }
 
   try {
-    const prompt = `
-      Analyze this vehicle image and extract the following information:
-      1. Vehicle type (classify as: sedan, suv, hatchback, mpv, pickup, motorcycle, heavy_bike, van, truck)
-      2. License plate number (extract the exact text)
-      
-      Please respond in JSON format:
-      {
-        "vehicleType": "sedan|suv|hatchback|mpv|pickup|motorcycle|heavy_bike|van|truck",
-        "licensePlate": "extracted license plate text",
-        "confidence": 0.95
-      }
-    `
-
     const response = await axios.post(
       `https://fal.run/${falVisionModel}`,
       {
         image_url: imageUrl,
-        prompt: prompt,
+        prompt: 'Analyze this vehicle image and identify the vehicle type and license plate.',
       },
       {
         headers: {
           Authorization: `Key ${falApiKey}`,
           'Content-Type': 'application/json',
         },
-        timeout: 30000
+        timeout: 30000,
       },
     )
 
-    console.log('   ✅ Fal.ai processing successful!')
-    console.log(`   📋 Result: ${response.data.output}`)
-    
+    console.log('   ✅ Direct FAL AI processing successful!')
+    console.log(`   📋 Result: ${response.data.output?.substring(0, 100)}...`)
   } catch (error) {
-    if (error.response) {
-      console.log(`   ❌ Fal.ai error (${error.response.status}): ${error.response.data?.detail || error.message}`)
-      if (error.response.data) {
-        console.log(`   📄 Error details:`, JSON.stringify(error.response.data, null, 2))
-      }
-    } else {
-      console.log(`   ❌ Fal.ai network error: ${error.message}`)
-    }
+    console.log(`   ❌ Direct FAL AI error: ${error.message}`)
   }
 }
 
