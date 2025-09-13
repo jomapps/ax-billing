@@ -24,6 +24,7 @@ import { Card, CardContent } from '@/components/ui/card'
 // Import modular components
 import { OverviewDashboard } from './overview/OverviewDashboard'
 import { DashboardDataProvider, useDashboardData } from './DashboardDataProvider'
+import { MobileNavigation } from './MobileNavigation'
 
 // Import existing workflow components
 import { WhatsAppQRCode } from '@/components/whatsapp/WhatsAppQRCode'
@@ -131,6 +132,45 @@ function ModularStaffDashboardContent({
     { id: 'completion', label: 'Complete', icon: CheckCircle },
   ]
 
+  // Quick actions for mobile navigation
+  const quickActions = [
+    {
+      id: 'new-order',
+      label: 'Create Order',
+      icon: Plus,
+      onClick: handleNewOrder,
+    },
+    {
+      id: 'initiated-orders',
+      label: 'View Initiated',
+      icon: Clock,
+      onClick: handleViewInitiated,
+      badge: orders.filter((o) => o.orderStage === 'initiated').length,
+    },
+    {
+      id: 'refresh',
+      label: 'Refresh Data',
+      icon: RefreshCw,
+      onClick: handleRefresh,
+    },
+  ]
+
+  // Navigation handler for mobile
+  const handleMobileNavigate = (stepId: string) => {
+    const stepHandlers: Record<string, () => void> = {
+      overview: handleBackToOverview,
+      'new-order': handleNewOrder,
+      'initiated-orders': handleViewInitiated,
+    }
+
+    const handler = stepHandlers[stepId]
+    if (handler) {
+      handler()
+    } else {
+      setCurrentStep(stepId as WorkflowStep)
+    }
+  }
+
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -152,12 +192,20 @@ function ModularStaffDashboardContent({
           className="flex items-center justify-between"
         >
           <div className="flex items-center gap-3 sm:gap-4">
+            {/* Mobile Navigation */}
+            <MobileNavigation
+              currentStep={currentStep}
+              workflowSteps={workflowSteps}
+              quickActions={quickActions}
+              onNavigate={handleMobileNavigate}
+            />
+
             {currentStep !== 'overview' && (
               <Button
                 onClick={handleBackToOverview}
                 variant="outline"
                 size="sm"
-                className="border-gray-600 text-gray-300"
+                className="border-gray-600 text-gray-300 hidden sm:flex"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Back to Overview</span>

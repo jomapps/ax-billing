@@ -27,7 +27,9 @@
     "test:services": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/test-external-services.ts",
     "test:services:full": "pnpm run test:services && pnpm run test:int && pnpm run test:network",
     "db:backup": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/db-backup.ts",
-    "db:restore": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/db-restore.ts"
+    "db:restore": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/db-restore.ts",
+    "ui:add": "pnpm dlx shadcn@latest add",
+    "ui:init": "pnpm dlx shadcn@latest init"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.886.0",
@@ -40,9 +42,11 @@
     "@payloadcms/storage-s3": "^3.54.0",
     "@payloadcms/ui": "3.54.0",
     "@radix-ui/react-checkbox": "^1.3.3",
+    "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
     "@tailwindcss/forms": "^0.5.10",
@@ -92,6 +96,7 @@
     "playwright-core": "1.54.1",
     "prettier": "^3.4.2",
     "raw-loader": "^4.0.2",
+    "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.20.5",
     "typescript": "5.7.3",
     "vite-tsconfig-paths": "5.1.4",

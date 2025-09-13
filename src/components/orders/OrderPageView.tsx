@@ -21,6 +21,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { ProgressiveDisclosure } from '@/components/ui/progressive-disclosure'
 
 import { cn } from '@/lib/utils'
 
@@ -285,89 +293,215 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
         </div>
       </motion.div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* QR Code Section */}
+      {/* Main Content - Mobile-First Layout */}
+      <div className="space-y-6">
+        {/* QR Code Section - Mobile Dialog, Desktop Card */}
         {shouldShowQR && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-gray-800/50 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <QrCode className="w-5 h-5 text-blue-400" />
-                  Customer QR Code
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                {qrLoading ? (
-                  <div className="flex flex-col items-center space-y-4">
-                    <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
-                    <p className="text-gray-300">Generating QR code...</p>
-                  </div>
-                ) : qrError ? (
-                  <div className="text-center space-y-4">
-                    <AlertTriangle className="w-8 h-8 mx-auto text-red-400" />
-                    <p className="text-red-400">{qrError}</p>
-                    <Button onClick={generateQRCode} variant="outline" size="sm">
-                      Try Again
-                    </Button>
-                  </div>
-                ) : qrValue ? (
-                  <div className="space-y-4">
-                    <div className="flex justify-center">
-                      <QRCodeSVG
-                        value={qrValue}
-                        size={256}
-                        level="M"
-                        includeMargin={true}
-                        className="border-2 border-gray-600 rounded-lg"
-                      />
+            {/* Mobile QR Dialog */}
+            <div className="block lg:hidden">
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <QrCode className="w-5 h-5 text-blue-400" />
+                      Customer QR Code
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-gray-300 text-sm">
-                        Customer can scan this QR code to start their service via WhatsApp
-                      </p>
-                      <div className="flex gap-2 justify-center">
-                        <Button
-                          onClick={copyToClipboard}
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-600 text-gray-300"
-                        >
-                          {copied ? (
-                            <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Copy Link
-                            </>
-                          )}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View QR
                         </Button>
-                        <Button
-                          onClick={openWhatsApp}
-                          variant="outline"
-                          size="sm"
-                          className="border-green-600 text-green-400 hover:bg-green-500/10"
-                        >
-                          <MessageSquare className="w-4 h-4 mr-2" />
-                          Open WhatsApp
-                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md bg-gray-800 border-gray-700">
+                        <DialogHeader>
+                          <DialogTitle className="text-white flex items-center gap-2">
+                            <QrCode className="w-5 h-5 text-blue-400" />
+                            Customer QR Code
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="text-center space-y-4 p-4">
+                          {qrLoading ? (
+                            <div className="flex flex-col items-center space-y-4">
+                              <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+                              <p className="text-gray-300">Generating QR code...</p>
+                            </div>
+                          ) : qrError ? (
+                            <div className="text-center space-y-4">
+                              <AlertTriangle className="w-8 h-8 mx-auto text-red-400" />
+                              <p className="text-red-400">{qrError}</p>
+                              <Button onClick={generateQRCode} variant="outline" size="sm">
+                                Try Again
+                              </Button>
+                            </div>
+                          ) : qrValue ? (
+                            <div className="space-y-4">
+                              <div className="flex justify-center">
+                                <QRCodeSVG
+                                  value={qrValue}
+                                  size={280}
+                                  level="M"
+                                  includeMargin={true}
+                                  className="border-2 border-gray-600 rounded-lg w-full max-w-xs"
+                                />
+                              </div>
+                              <div className="space-y-3">
+                                <p className="text-gray-300 text-sm">
+                                  Customer can scan this QR code to start their service via WhatsApp
+                                </p>
+                                <div className="flex flex-col gap-2">
+                                  <Button
+                                    onClick={copyToClipboard}
+                                    variant="outline"
+                                    className="border-gray-600 text-gray-300 touch-target"
+                                  >
+                                    {copied ? (
+                                      <>
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Copied!
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-4 h-4 mr-2" />
+                                        Copy Link
+                                      </>
+                                    )}
+                                  </Button>
+                                  <Button
+                                    onClick={openWhatsApp}
+                                    className="bg-green-500 hover:bg-green-600 text-white touch-target"
+                                  >
+                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                    Open WhatsApp
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center space-y-3">
+                    <p className="text-gray-300 text-sm">QR code ready for customer scanning</p>
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        onClick={copyToClipboard}
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-600 text-gray-300"
+                      >
+                        {copied ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy Link
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={openWhatsApp}
+                        variant="outline"
+                        size="sm"
+                        className="border-green-600 text-green-400 hover:bg-green-500/10"
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        WhatsApp
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Desktop QR Card */}
+            <div className="hidden lg:block">
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-blue-400" />
+                    Customer QR Code
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  {qrLoading ? (
+                    <div className="flex flex-col items-center space-y-4">
+                      <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+                      <p className="text-gray-300">Generating QR code...</p>
+                    </div>
+                  ) : qrError ? (
+                    <div className="text-center space-y-4">
+                      <AlertTriangle className="w-8 h-8 mx-auto text-red-400" />
+                      <p className="text-red-400">{qrError}</p>
+                      <Button onClick={generateQRCode} variant="outline" size="sm">
+                        Try Again
+                      </Button>
+                    </div>
+                  ) : qrValue ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-center">
+                        <QRCodeSVG
+                          value={qrValue}
+                          size={256}
+                          level="M"
+                          includeMargin={true}
+                          className="border-2 border-gray-600 rounded-lg"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-gray-300 text-sm">
+                          Customer can scan this QR code to start their service via WhatsApp
+                        </p>
+                        <div className="flex gap-2 justify-center">
+                          <Button
+                            onClick={copyToClipboard}
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300"
+                          >
+                            {copied ? (
+                              <>
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-4 h-4 mr-2" />
+                                Copy Link
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={openWhatsApp}
+                            variant="outline"
+                            size="sm"
+                            className="border-green-600 text-green-400 hover:bg-green-500/10"
+                          >
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Open WhatsApp
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
+                  ) : null}
+                </CardContent>
+              </Card>
+            </div>
           </motion.div>
         )}
 
-        {/* Order Status Section */}
+        {/* Order Status Section - Enhanced Mobile Layout */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -384,7 +518,7 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
                   onClick={handleDeleteOrder}
                   size="sm"
                   variant="outline"
-                  className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+                  className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 touch-target"
                   title="Delete this order permanently"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -392,13 +526,14 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Primary Status Information */}
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Order Stage:</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-gray-300 font-medium">Order Stage:</span>
                   {orderData && getStatusBadge(orderData.orderStage)}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300">WhatsApp Connected:</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-gray-300 font-medium">WhatsApp Connected:</span>
                   <Badge
                     className={
                       orderData?.whatsappLinked
@@ -409,8 +544,8 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
                     {orderData?.whatsappLinked ? 'Yes' : 'No'}
                   </Badge>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-300">Payment Status:</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                  <span className="text-gray-300 font-medium">Payment Status:</span>
                   <Badge
                     className={
                       orderData?.paymentStatus === 'paid'
@@ -425,32 +560,74 @@ export function OrderPageView({ orderId, initialOrderData, className }: OrderPag
 
               <Separator className="bg-gray-700" />
 
-              <div className="space-y-2">
-                <h4 className="text-white font-medium">Next Steps:</h4>
-                {orderData?.orderStage === 'empty' && (
-                  <p className="text-gray-300 text-sm">
-                    Waiting for customer to scan QR code and connect via WhatsApp.
-                  </p>
-                )}
-                {orderData?.orderStage === 'initiated' && (
-                  <p className="text-gray-300 text-sm">
-                    Customer connected! Staff can now proceed with service selection.
-                  </p>
-                )}
-                {orderData?.orderStage === 'open' && (
-                  <p className="text-gray-300 text-sm">
-                    Services are being selected. Customer will receive pricing confirmation.
-                  </p>
-                )}
-                {orderData?.orderStage === 'billed' && (
-                  <p className="text-gray-300 text-sm">
-                    Payment link sent to customer. Waiting for payment confirmation.
-                  </p>
-                )}
-                {orderData?.orderStage === 'paid' && (
-                  <p className="text-gray-300 text-sm">Payment received! Service can now begin.</p>
-                )}
-              </div>
+              {/* Progressive Disclosure for Next Steps */}
+              <ProgressiveDisclosure
+                trigger={<span className="text-white font-medium">Next Steps</span>}
+                priority="high"
+                className="bg-gray-700/30 rounded-lg p-3"
+                defaultOpen={true}
+              >
+                <div className="space-y-2">
+                  {orderData?.orderStage === 'empty' && (
+                    <p className="text-gray-300 text-sm">
+                      Waiting for customer to scan QR code and connect via WhatsApp.
+                    </p>
+                  )}
+                  {orderData?.orderStage === 'initiated' && (
+                    <p className="text-gray-300 text-sm">
+                      Customer connected! Staff can now proceed with service selection.
+                    </p>
+                  )}
+                  {orderData?.orderStage === 'open' && (
+                    <p className="text-gray-300 text-sm">
+                      Services are being selected. Customer will receive pricing confirmation.
+                    </p>
+                  )}
+                  {orderData?.orderStage === 'billed' && (
+                    <p className="text-gray-300 text-sm">
+                      Payment link sent to customer. Waiting for payment confirmation.
+                    </p>
+                  )}
+                  {orderData?.orderStage === 'paid' && (
+                    <p className="text-gray-300 text-sm">
+                      Payment received! Service can now begin.
+                    </p>
+                  )}
+                </div>
+              </ProgressiveDisclosure>
+
+              {/* Progressive Disclosure for Order Details */}
+              <ProgressiveDisclosure
+                trigger={<span className="text-white font-medium">Order Details</span>}
+                priority="medium"
+                className="bg-gray-700/30 rounded-lg p-3"
+                defaultOpen={false}
+              >
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Order ID:</span>
+                    <span className="text-gray-300">{orderData?.orderID}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Created:</span>
+                    <span className="text-gray-300">
+                      {orderData ? new Date(orderData.createdAt).toLocaleString() : 'Unknown'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Last Updated:</span>
+                    <span className="text-gray-300">
+                      {orderData ? new Date(orderData.updatedAt).toLocaleString() : 'Unknown'}
+                    </span>
+                  </div>
+                  {orderData?.whatsappNumber && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">WhatsApp Number:</span>
+                      <span className="text-gray-300">{orderData.whatsappNumber}</span>
+                    </div>
+                  )}
+                </div>
+              </ProgressiveDisclosure>
             </CardContent>
           </Card>
         </motion.div>

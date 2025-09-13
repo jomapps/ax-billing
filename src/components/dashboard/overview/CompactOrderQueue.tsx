@@ -1,9 +1,19 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Clock, Car, CreditCard, User, DollarSign, QrCode } from 'lucide-react'
+
+import {
+  Clock,
+  Car,
+  CreditCard,
+  User,
+  DollarSign,
+  QrCode,
+  ChevronDown,
+  ChevronUp,
+  Info,
+} from 'lucide-react'
 import {
   CompactCard,
   CompactCardContent,
@@ -12,6 +22,7 @@ import {
 } from '@/components/ui/compact-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { InlineDisclosure } from '@/components/ui/progressive-disclosure'
 import { formatCurrency, formatTimeAgo } from '@/lib/utils'
 
 interface OrderData {
@@ -38,6 +49,9 @@ interface CompactOrderQueueProps {
   icon: any
   color: string
   loading?: boolean
+  variant?: 'default' | 'mobile-first' | 'compact' | 'detailed'
+  enableProgressive?: boolean
+  maxVisible?: number
 }
 
 export function CompactOrderQueue({
@@ -46,8 +60,26 @@ export function CompactOrderQueue({
   icon,
   color,
   loading = false,
+  variant = 'default',
+  enableProgressive = true,
+  maxVisible = 6,
 }: CompactOrderQueueProps) {
   const router = useRouter()
+  const [showAll, setShowAll] = useState(false)
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+
+  // Static color map to prevent Tailwind purging
+  const getCountBadgeClasses = (color: string) => {
+    const colorMap: Record<string, string> = {
+      'text-purple-400': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      'text-blue-400': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      'text-green-400': 'bg-green-500/20 text-green-400 border-green-500/30',
+      'text-yellow-400': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      'text-red-400': 'bg-red-500/20 text-red-400 border-red-500/30',
+      'text-gray-400': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    }
+    return colorMap[color] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+  }
 
   const getStatusBadge = (order: OrderData) => {
     const statusConfig = {
@@ -112,78 +144,128 @@ export function CompactOrderQueue({
     )
   }
 
-  const renderOrderCard = (order: OrderData) => (
-    <CompactCard
-      key={order.id}
-      className="cursor-pointer hover:scale-[1.02] transition-transform"
-      onClick={() => {
-        const stageRoutes = {
-          empty: `/order/${order.orderID}/new`,
-          initiated: `/order/${order.orderID}/initiated`,
-          open: `/order/${order.orderID}/open`,
-          billed: `/order/${order.orderID}/billed`,
-          paid: `/order/${order.orderID}/paid`,
-        }
-        const targetRoute = stageRoutes[order.orderStage] || `/order/${order.orderID}`
-        router.push(targetRoute)
-      }}
-    >
-      <CompactCardContent className="p-2">
-        <div className="space-y-1.5">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <h4 className="text-white font-medium text-[11px] sm:text-responsive-xs truncate">
-              {order.orderID}
-            </h4>
-            {getStatusBadge(order)}
-          </div>
+  const toggleOrderExpansion = (orderId: string) => {
+    setExpandedOrders((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId)
+      } else {
+        newSet.add(orderId)
+      }
+      return newSet
+    })
+  }
 
-          {/* Info */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-1">
-              <User className="w-2.5 h-2.5 text-gray-400" />
-              <span className="text-gray-300 text-[10px] sm:text-responsive-xs truncate">
-                {order.customer && typeof order.customer === 'object'
-                  ? `${order.customer.firstName || ''} ${order.customer.lastName || ''}`.trim() ||
-                    'Unknown'
-                  : 'Unknown'}
-              </span>
+  const getGridClass = () => {
+    switch (variant) {
+      case 'mobile-first':
+        return 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3'
+      case 'compact':
+        return 'grid-responsive-compact'
+      case 'detailed':
+        return 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4'
+      default:
+        return 'grid-responsive-orders'
+    }
+  }
+
+  const renderOrderCard = (order: OrderData) => {
+    const isExpanded = expandedOrders.has(order.id)
+
+    return (
+      <CompactCard
+        key={order.id}
+        className="cursor-pointer hover:scale-[1.02] transition-transform touch-target"
+        size={variant === 'mobile-first' ? 'mobile' : 'default'}
+        onClick={() => {
+          const stageRoutes = {
+            empty: `/order/${order.orderID}/new`,
+            initiated: `/order/${order.orderID}/initiated`,
+            open: `/order/${order.orderID}/open`,
+            billed: `/order/${order.orderID}/billed`,
+            paid: `/order/${order.orderID}/paid`,
+          }
+          const targetRoute = stageRoutes[order.orderStage] || `/order/${order.orderID}`
+          router.push(targetRoute)
+        }}
+      >
+        <CompactCardContent className="p-2">
+          <div className="space-y-1.5">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h4 className="text-white font-medium text-[11px] sm:text-responsive-xs truncate">
+                {order.orderID}
+              </h4>
+              {getStatusBadge(order)}
             </div>
 
-            {order.vehicle && typeof order.vehicle === 'object' && (
+            {/* Primary Info - Always Visible */}
+            <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <Car className="w-2.5 h-2.5 text-gray-400" />
+                <User className="w-2.5 h-2.5 text-gray-400" />
                 <span className="text-gray-300 text-[10px] sm:text-responsive-xs truncate">
-                  {order.vehicle.licensePlate || 'No License'}
+                  {order.customer && typeof order.customer === 'object'
+                    ? `${order.customer.firstName || ''} ${order.customer.lastName || ''}`.trim() ||
+                      'Unknown'
+                    : 'Unknown'}
                 </span>
               </div>
-            )}
 
-            <div className="flex items-center justify-between">
-              {order.totalAmount && (
+              {/* Mobile-First: Show only essential info by default */}
+              <div className="flex items-center justify-between">
+                {order.totalAmount !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="w-2.5 h-2.5 text-gray-400" />
+                    <span className="text-gray-300 text-[10px] sm:text-responsive-xs font-medium">
+                      {formatCurrency(order.totalAmount)}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-1">
-                  <DollarSign className="w-2.5 h-2.5 text-gray-400" />
-                  <span className="text-gray-300 text-[10px] sm:text-responsive-xs font-medium">
-                    {formatCurrency(order.totalAmount)}
+                  <Clock className="w-2.5 h-2.5 text-gray-400" />
+                  <span className="text-gray-300 text-[10px] sm:text-responsive-xs">
+                    {formatTimeAgo(order.createdAt)}
                   </span>
                 </div>
-              )}
-
-              <div className="flex items-center gap-1">
-                <Clock className="w-2.5 h-2.5 text-gray-400" />
-                <span className="text-gray-300 text-[10px] sm:text-responsive-xs">
-                  {formatTimeAgo(order.createdAt)}
-                </span>
               </div>
             </div>
-          </div>
 
-          {/* Action */}
-          <div className="pt-1 border-t border-gray-700">{getActionButton(order)}</div>
-        </div>
-      </CompactCardContent>
-    </CompactCard>
-  )
+            {/* Progressive Disclosure for Secondary Info */}
+            {enableProgressive && order.vehicle && typeof order.vehicle === 'object' && (
+              <InlineDisclosure
+                trigger={
+                  <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                    <Info className="w-3 h-3" />
+                    <span>Vehicle Details</span>
+                  </div>
+                }
+                priority="medium"
+                className="mt-1"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Car className="w-2.5 h-2.5 text-gray-400" />
+                    <span className="text-gray-300 text-[10px] sm:text-responsive-xs truncate">
+                      {order.vehicle.licensePlate || 'No License'}
+                    </span>
+                  </div>
+                  {order.vehicle.make && (
+                    <div className="text-[10px] text-gray-400">
+                      {order.vehicle.make} {order.vehicle.model} {order.vehicle.year}
+                    </div>
+                  )}
+                </div>
+              </InlineDisclosure>
+            )}
+
+            {/* Action Button */}
+            <div className="pt-1 border-t border-gray-700">{getActionButton(order)}</div>
+          </div>
+        </CompactCardContent>
+      </CompactCard>
+    )
+  }
 
   if (loading) {
     return (
@@ -194,7 +276,7 @@ export function CompactOrderQueue({
           </div>
         </CompactCardHeader>
         <CompactCardContent>
-          <div className="grid-responsive-orders">
+          <div className={getGridClass()}>
             {[...Array(6)].map((_, j) => (
               <div key={j} className="animate-pulse">
                 <div className="w-full h-24 bg-gray-700 rounded"></div>
@@ -214,10 +296,7 @@ export function CompactOrderQueue({
             {React.createElement(icon, { className: `w-4 h-4 ${color}` })}
             <span className="text-responsive-sm">{title}</span>
           </div>
-          <Badge
-            variant="secondary"
-            className={`${color.replace('text-', 'bg-').replace('-400', '-500/20')} ${color} border-${color.replace('text-', '').replace('-400', '-500/30')}`}
-          >
+          <Badge variant="secondary" className={getCountBadgeClasses(color)}>
             {orders.length}
           </Badge>
         </CompactCardTitle>
@@ -228,7 +307,35 @@ export function CompactOrderQueue({
             No {title.toLowerCase()}
           </p>
         ) : (
-          <div className="grid-responsive-orders">{orders.map(renderOrderCard)}</div>
+          <div className="space-y-3">
+            <div className={getGridClass()}>
+              {(showAll ? orders : orders.slice(0, maxVisible)).map(renderOrderCard)}
+            </div>
+
+            {/* Show More/Less Button for Mobile */}
+            {orders.length > maxVisible && (
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAll(!showAll)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700/30"
+                >
+                  {showAll ? (
+                    <>
+                      <ChevronUp className="w-4 h-4 mr-1" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4 mr-1" />
+                      Show {orders.length - maxVisible} More
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </CompactCardContent>
     </CompactCard>

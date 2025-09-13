@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Car, Activity, DollarSign, Clock, QrCode, CreditCard } from 'lucide-react'
-import { StatsCards } from './StatsCards'
+import { Car, Activity, DollarSign, Clock, QrCode, CreditCard, BarChart3, Zap } from 'lucide-react'
 import { CompactStatsCards } from './CompactStatsCards'
 import { QuickActions } from './QuickActions'
-import { OrderQueueCards } from './OrderQueueCards'
 import { CompactOrderQueue } from './CompactOrderQueue'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatCurrency } from '@/lib/utils'
 import type { DashboardStats } from '@/lib/payload-client'
 
@@ -46,6 +46,13 @@ export function OverviewDashboard({
   onViewInitiated,
   onOpenWhatsApp,
 }: OverviewDashboardProps) {
+  // State for collapsible sections
+  const [sectionsState, setSectionsState] = useState({
+    stats: true,
+    actions: true,
+    orders: true,
+  })
+
   // DEBUG: Log props received
   console.log('🔍 OverviewDashboard: Props received:', {
     ordersLength: orders?.length || 0,
@@ -182,56 +189,162 @@ export function OverviewDashboard({
       animate={{ opacity: 1 }}
       className="space-y-3 sm:space-y-4"
     >
-      {/* Stats Overview */}
-      <div>
-        <h2 className="text-responsive-base sm:text-responsive-lg font-bold text-white mb-2 sm:mb-3">
-          Dashboard Overview
-        </h2>
-        <CompactStatsCards stats={statsCards} loading={loading} />
+      {/* Mobile-First Tabbed Interface */}
+      <div className="block md:hidden">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="stats">Stats</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-3 mt-4">
+            {/* Quick Actions */}
+            <CollapsibleSection
+              title="Quick Actions"
+              icon={Zap}
+              variant="gaming"
+              defaultOpen={sectionsState.actions}
+              onToggle={(isOpen) => setSectionsState((prev) => ({ ...prev, actions: isOpen }))}
+            >
+              <QuickActions
+                onNewOrder={onNewOrder}
+                onViewInitiated={onViewInitiated}
+                onOpenWhatsApp={onOpenWhatsApp}
+              />
+            </CollapsibleSection>
+
+            {/* Key Stats Summary */}
+            <CollapsibleSection
+              title="Key Statistics"
+              icon={BarChart3}
+              variant="compact"
+              defaultOpen={true}
+            >
+              <div className="grid grid-cols-2 gap-2">
+                {statsCards.slice(0, 4).map((stat, index) => (
+                  <div key={stat.title} className="p-2 bg-gray-800/30 rounded-md">
+                    <div className="flex items-center gap-2 mb-1">
+                      <stat.icon className={`w-3 h-3 ${stat.color}`} />
+                      <span className="text-xs text-gray-400">{stat.title}</span>
+                    </div>
+                    <p className="text-sm font-bold text-white">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleSection>
+          </TabsContent>
+
+          <TabsContent value="stats" className="space-y-3 mt-4">
+            <CompactStatsCards stats={statsCards} loading={loading} variant="mobile-first" />
+          </TabsContent>
+
+          <TabsContent value="orders" className="space-y-3 mt-4">
+            <div className="space-y-3">
+              <CompactOrderQueue
+                title="New Orders"
+                orders={newOrders}
+                icon={QrCode}
+                color="text-purple-400"
+                loading={loading}
+                variant="mobile-first"
+              />
+              <CompactOrderQueue
+                title="Initiated Orders"
+                orders={initiatedOrders}
+                icon={Clock}
+                color="text-blue-400"
+                loading={loading}
+                variant="mobile-first"
+              />
+              <CompactOrderQueue
+                title="Open Orders"
+                orders={openOrders}
+                icon={Car}
+                color="text-green-400"
+                loading={loading}
+                variant="mobile-first"
+              />
+              <CompactOrderQueue
+                title="Billed Orders"
+                orders={billedOrders}
+                icon={CreditCard}
+                color="text-yellow-400"
+                loading={loading}
+                variant="mobile-first"
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {/* Quick Actions */}
-      <QuickActions
-        onNewOrder={onNewOrder}
-        onViewInitiated={onViewInitiated}
-        onOpenWhatsApp={onOpenWhatsApp}
-      />
+      {/* Desktop Layout with Collapsible Sections */}
+      <div className="hidden md:block space-y-4">
+        {/* Stats Overview */}
+        <CollapsibleSection
+          title="Dashboard Statistics"
+          icon={BarChart3}
+          variant="gaming"
+          defaultOpen={sectionsState.stats}
+          onToggle={(isOpen) => setSectionsState((prev) => ({ ...prev, stats: isOpen }))}
+        >
+          <CompactStatsCards stats={statsCards} loading={loading} />
+        </CollapsibleSection>
 
-      {/* Order Queues - Compact Layout */}
-      <div className="space-y-3">
-        <h2 className="text-responsive-base sm:text-responsive-lg font-bold text-white mb-2 sm:mb-3">
-          Order Queues
-        </h2>
-        <div className="space-y-3">
-          <CompactOrderQueue
-            title="New Orders"
-            orders={newOrders}
-            icon={QrCode}
-            color="text-purple-400"
-            loading={loading}
+        {/* Quick Actions */}
+        <CollapsibleSection
+          title="Quick Actions"
+          icon={Zap}
+          variant="default"
+          defaultOpen={sectionsState.actions}
+          onToggle={(isOpen) => setSectionsState((prev) => ({ ...prev, actions: isOpen }))}
+        >
+          <QuickActions
+            onNewOrder={onNewOrder}
+            onViewInitiated={onViewInitiated}
+            onOpenWhatsApp={onOpenWhatsApp}
           />
-          <CompactOrderQueue
-            title="Initiated Orders"
-            orders={initiatedOrders}
-            icon={Clock}
-            color="text-blue-400"
-            loading={loading}
-          />
-          <CompactOrderQueue
-            title="Open Orders"
-            orders={openOrders}
-            icon={Car}
-            color="text-green-400"
-            loading={loading}
-          />
-          <CompactOrderQueue
-            title="Billed Orders"
-            orders={billedOrders}
-            icon={CreditCard}
-            color="text-yellow-400"
-            loading={loading}
-          />
-        </div>
+        </CollapsibleSection>
+
+        {/* Order Queues */}
+        <CollapsibleSection
+          title="Order Queues"
+          icon={Car}
+          variant="gaming"
+          defaultOpen={sectionsState.orders}
+          onToggle={(isOpen) => setSectionsState((prev) => ({ ...prev, orders: isOpen }))}
+        >
+          <div className="space-y-3">
+            <CompactOrderQueue
+              title="New Orders"
+              orders={newOrders}
+              icon={QrCode}
+              color="text-purple-400"
+              loading={loading}
+            />
+            <CompactOrderQueue
+              title="Initiated Orders"
+              orders={initiatedOrders}
+              icon={Clock}
+              color="text-blue-400"
+              loading={loading}
+            />
+            <CompactOrderQueue
+              title="Open Orders"
+              orders={openOrders}
+              icon={Car}
+              color="text-green-400"
+              loading={loading}
+            />
+            <CompactOrderQueue
+              title="Billed Orders"
+              orders={billedOrders}
+              icon={CreditCard}
+              color="text-yellow-400"
+              loading={loading}
+            />
+          </div>
+        </CollapsibleSection>
       </div>
     </motion.div>
   )

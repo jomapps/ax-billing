@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 @theme {
   --color-primary-50: #f0f9ff;
@@ -52,6 +53,9 @@
   --color-neon-pink: #ff1493;
   --color-neon-orange: #ff6600;
 
+  --color-background: #0f172a;
+  --color-ring: #0ea5e9;
+
   --font-family-gaming: 'Orbitron', monospace;
   --font-family-sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 
@@ -78,6 +82,7 @@
   --shadow-gaming-lg: 0 10px 25px 0 rgba(0, 212, 255, 0.5);
   --shadow-neon: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
   --shadow-neon-lg: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+  --shadow-glass: 0 6px 18px rgba(255,255,255,0.06);
 }
 
 * {
@@ -330,20 +335,20 @@ body {
   backdrop-filter: blur(2px);
 }
 
-/* Explicit slate background utilities */
-.bg-slate-800 {
+/* Gaming-specific background utilities */
+.bg-gaming-slate-800 {
   background-color: #1e293b !important;
 }
 
-.bg-slate-900 {
+.bg-gaming-slate-900 {
   background-color: #0f172a !important;
 }
 
-.from-slate-800 {
+.from-gaming-slate-800 {
   --tw-gradient-from: #1e293b !important;
 }
 
-.to-slate-900 {
+.to-gaming-slate-900 {
   --tw-gradient-to: #0f172a !important;
 }
 
@@ -436,3 +441,146 @@ body {
 .text-btn-base { font-size: var(--font-size-btn-base); }
 .text-btn-lg { font-size: var(--font-size-btn-lg); }
 .text-btn-xl { font-size: var(--font-size-btn-xl); }
+
+/* Enhanced mobile-first animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+  }
+}
+
+@keyframes pulse-neon {
+  0%, 100% {
+    box-shadow:
+      0 0 5px currentColor,
+      0 0 10px currentColor,
+      0 0 15px currentColor;
+  }
+  50% {
+    box-shadow:
+      0 0 10px currentColor,
+      0 0 20px currentColor,
+      0 0 30px currentColor,
+      0 0 40px currentColor;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+/* Business-gaming hybrid styles */
+.business-gaming-card {
+  background: linear-gradient(to bottom right, #1e293b, #0f172a);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.business-gaming-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 14px 0 rgba(0, 212, 255, 0.2);
+}
+
+.business-gaming-button {
+  background: linear-gradient(to right, #0284c7, #0ea5e9);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.business-gaming-button:hover {
+  background: linear-gradient(to right, #0369a1, #0284c7);
+  box-shadow: 0 4px 14px 0 rgba(0, 212, 255, 0.3);
+}
+
+/* Mobile-optimized touch targets */
+@media (max-width: 768px) {
+  .gaming-card:hover {
+    transform: scale(1.02);
+  }
+
+  .fab {
+    width: 3.5rem;
+    height: 3.5rem;
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  /* Reduced motion for mobile */
+  @media (prefers-reduced-motion: reduce) {
+    .gaming-card,
+    .fab,
+    .business-gaming-card,
+    .business-gaming-button {
+      transition: none;
+      animation: none;
+    }
+
+    .animate-pulse-glow,
+    .animate-pulse-neon {
+      animation: none;
+    }
+  }
+}
+
+/* Enhanced responsive utilities */
+.mobile-touch-friendly {
+  min-height: 44px;
+  min-width: 44px;
+  padding: clamp(0.5rem, 0.75rem + 0.25vw, 1rem);
+}
+
+.mobile-text-scale {
+  font-size: clamp(0.875rem, 0.8rem + 0.5vw, 1.125rem);
+}
+
+.mobile-spacing {
+  margin: clamp(0.25rem, 0.5rem + 0.25vw, 0.75rem);
+  padding: clamp(0.5rem, 0.75rem + 0.25vw, 1rem);
+}
+
+/* Progressive disclosure patterns */
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.collapsible-content.expanded {
+  max-height: 500px;
+  transition: max-height 0.3s ease-in;
+}
+
+.collapsible-content[data-state='open'] {
+  max-height: 500px;
+  transition: max-height 0.3s ease-in;
+}
+
+.collapsible-content[data-state='closed'] {
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+}
+
+/* Information density management */
+.density-mobile-comfortable {
+  padding: clamp(1rem, 1.25rem + 0.5vw, 1.75rem);
+  gap: clamp(0.75rem, 1rem + 0.25vw, 1.25rem);
+}
+
+.density-mobile-compact {
+  padding: clamp(0.5rem, 0.75rem + 0.25vw, 1rem);
+  gap: clamp(0.25rem, 0.5rem + 0.125vw, 0.75rem);
+}
+
+.density-mobile-dense {
+  padding: clamp(0.25rem, 0.5rem + 0.125vw, 0.75rem);
+  gap: clamp(0.125rem, 0.25rem + 0.125vw, 0.5rem);
+}

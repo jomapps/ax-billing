@@ -34,7 +34,8 @@ A modern, gaming-style carwash management system built with PayloadCMS, Next.js,
 - **Database**: MongoDB with Mongoose
 - **Storage**: Cloudflare R2 (S3-compatible)
 - **AI Integration**: BAML (Boundary ML) with OpenAI GPT-4o
-- **Styling**: Tailwind CSS with custom gaming theme
+- **Styling**: Tailwind CSS v4 with custom gaming theme
+- **UI Components**: shadcn/ui with Radix UI primitives
 - **Animations**: Framer Motion
 - **Forms**: React Hook Form with Zod validation
 - **Icons**: Lucide React
@@ -217,6 +218,42 @@ The application features a modern gaming aesthetic with:
 - **Glitch effects** and holographic elements
 - **Touch-friendly** interface for tablet use
 - **Responsive design** for all screen sizes
+
+### shadcn/ui Integration
+
+This project uses shadcn/ui components with custom gaming theme styling:
+
+#### Adding New Components
+```bash
+# Add a new shadcn/ui component
+pnpm ui:add button
+
+# Add multiple components
+pnpm ui:add card dialog sheet
+```
+
+#### Component Customization
+All shadcn/ui components are customized with gaming theme styling:
+- **Gaming variants**: Special gaming-themed component variants
+- **Neon effects**: Glow and neon styling options
+- **Dark theme**: All components use dark backgrounds with proper contrast
+- **Animations**: Enhanced with gaming-style transitions and effects
+
+#### Available Gaming Components
+- **Button**: Gaming, neon, and glow variants
+- **Card**: Gaming, neon, and glass variants with animated borders
+- **Badge**: Gaming, neon, and glass variants with glow effects
+- **Dialog**: Gaming-themed modals with proper animations
+- **Sheet**: Mobile-first side panels with slide animations
+- **Tabs**: Gaming-styled tabs with gradient active states
+- **Progress**: Gaming progress bars with neon glow effects
+
+#### Configuration
+The shadcn/ui configuration is located in `components.json`:
+- **Style**: New York style with custom gaming modifications
+- **Components path**: `src/components/ui`
+- **Utils path**: `src/lib/utils`
+- **Tailwind CSS**: v4 integration with custom gaming theme
 
 ## 🔧 Configuration
 
