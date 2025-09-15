@@ -2,8 +2,7 @@ import axios from 'axios'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import type { VehicleImage, Vehicle, Media } from '@/payload-types'
-import { b } from '@/lib/baml_client/baml_client'
-import type { VehicleAnalysis } from '@/lib/baml_client/baml_client/types'
+// BAML removed - using direct FAL.ai service only
 import { falAiService } from '@/lib/ai/fal-ai-service'
 
 export interface DamageAnalysis {
@@ -60,61 +59,60 @@ export class VehicleDamageAnalysisService {
   }
 
   /**
-   * Analyze a single vehicle image for damage, size, and other features using BAML
+   * Analyze a single vehicle image for damage, size, and other features using FAL.ai
    */
   async analyzeVehicleImage(imageUrl: string, imageType: string): Promise<VehicleAnalysisResult> {
     const startTime = Date.now()
 
     try {
-      console.log('🔍 Starting BAML vehicle image analysis:', {
+      console.log('🔍 Starting FAL.ai vehicle image analysis:', {
         imageUrl,
         imageType,
       })
 
-      // Use BAML for analysis
-      const bamlResult = await b.AnalyzeVehicleDamage(imageUrl, imageType)
+      // Use FAL.ai service directly
+      const falResult = await falAiService.analyzeVehicleImage(imageUrl, imageType)
 
       const processingTime = (Date.now() - startTime) / 1000
 
-      console.log('✅ BAML analysis completed:', {
+      console.log('✅ FAL.ai analysis completed:', {
         imageType,
         processingTime,
-        vehicleType: bamlResult.vehicle_type,
-        damagesFound: bamlResult.damages?.length || 0,
+        success: falResult.success,
+        vehicleCondition: falResult.vehicleCondition,
       })
 
-      return this.convertBamlToAnalysisResult(bamlResult, processingTime)
+      if (falResult.success) {
+        return {
+          success: true,
+          vehicleCondition: falResult.vehicleCondition || 'good',
+          overallCondition: falResult.vehicleCondition || 'good',
+          processingTime: falResult.processingTime,
+          damageAnalysis: [], // FAL.ai doesn't provide detailed damage analysis in this format
+          sizeAnalysis: 'medium', // Default size
+          colorAnalysis: undefined,
+          visibleFeatures: [],
+          extractedText: undefined,
+          rawAiResponse: falResult,
+        }
+      } else {
+        throw new Error(falResult.error || 'FAL.ai analysis failed')
+      }
     } catch (error) {
       const processingTime = (Date.now() - startTime) / 1000
-      console.error('❌ BAML vehicle image analysis failed:', {
+      console.error('❌ FAL.ai vehicle image analysis failed:', {
         imageUrl,
         imageType,
         error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
         processingTime,
       })
 
-      // Fallback to custom FAL AI service if BAML fails
-      console.log('🔄 Falling back to custom FAL AI service...')
-      try {
-        const falResult = await falAiService.analyzeVehicleImage(imageUrl, imageType)
-
-        if (falResult.success) {
-          return {
-            success: true,
-            vehicleCondition: falResult.vehicleCondition || 'good',
-            overallCondition: falResult.vehicleCondition || 'good',
-            processingTime: falResult.processingTime,
-          }
-        } else {
-          throw new Error(falResult.error || 'FAL AI analysis failed')
-        }
-      } catch (falError) {
-        console.error('❌ Custom FAL AI fallback also failed:', falError)
-        return {
-          success: false,
-          error: 'Both BAML and custom FAL AI analysis failed',
-          processingTime,
-        }
+      // No fallbacks - return the error with more details
+      return {
+        success: false,
+        error: `FAL.ai vision model analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        processingTime,
       }
     }
   }
@@ -211,49 +209,7 @@ export class VehicleDamageAnalysisService {
     }
   }
 
-  /**
-   * Convert BAML result to VehicleAnalysisResult format
-   */
-  private convertBamlToAnalysisResult(
-    bamlResult: VehicleAnalysis,
-    processingTime: number,
-  ): VehicleAnalysisResult {
-    try {
-      // Convert BAML damages to our format
-      const damageAnalysis =
-        bamlResult.damages?.map((damage) => ({
-          damageDetected: true,
-          damageDescription: damage.description,
-          severity: damage.severity.toLowerCase() as 'minor' | 'moderate' | 'major' | 'severe',
-          location: damage.location,
-          confidence: bamlResult.confidence_score || 0.9,
-        })) || []
-
-      // Estimate size based on vehicle type
-      const sizeAnalysis = this.estimateVehicleSize(bamlResult.vehicle_type)
-
-      return {
-        success: true,
-        vehicleNumber: bamlResult.license_plate || undefined,
-        sizeAnalysis,
-        damageAnalysis,
-        overallCondition: this.mapOverallCondition(bamlResult.overall_condition),
-        colorAnalysis: bamlResult.color || undefined,
-        visibleFeatures: this.extractVisibleFeatures(bamlResult),
-        extractedText: bamlResult.license_plate || undefined,
-        processingTime,
-        rawAiResponse: bamlResult,
-      }
-    } catch (error) {
-      console.error('Failed to convert BAML result:', error)
-      return {
-        success: false,
-        error: 'Failed to convert BAML analysis result',
-        processingTime,
-        rawAiResponse: bamlResult,
-      }
-    }
-  }
+  // BAML conversion method removed - using direct FAL.ai service
 
   /**
    * Estimate vehicle size based on vehicle type
@@ -300,34 +256,7 @@ export class VehicleDamageAnalysisService {
     return sizeMap[vehicleType] || sizeMap.CAR
   }
 
-  /**
-   * Map BAML overall condition to our format
-   */
-  private mapOverallCondition(
-    condition: string,
-  ): 'excellent' | 'good' | 'fair' | 'poor' | 'damaged' {
-    const conditionLower = condition.toLowerCase()
-    if (conditionLower.includes('excellent')) return 'excellent'
-    if (conditionLower.includes('good')) return 'good'
-    if (conditionLower.includes('fair')) return 'fair'
-    if (conditionLower.includes('poor')) return 'poor'
-    if (conditionLower.includes('damaged')) return 'damaged'
-    return 'good' // default
-  }
-
-  /**
-   * Extract visible features from BAML result
-   */
-  private extractVisibleFeatures(bamlResult: VehicleAnalysis): string[] {
-    const features: string[] = []
-
-    if (bamlResult.vehicle_type) features.push(bamlResult.vehicle_type.toLowerCase())
-    if (bamlResult.make) features.push(bamlResult.make)
-    if (bamlResult.model) features.push(bamlResult.model)
-    if (bamlResult.color) features.push(bamlResult.color)
-
-    return features
-  }
+  // BAML helper methods removed - using direct FAL.ai service
 
   /**
    * Get most frequent item from array

@@ -16,9 +16,12 @@ client<llm> OpenAI {
 client<llm> FAL {
   provider openai
   options {
-    model env.FAL_VISION_MODEL
+    model "fal-ai/moondream2/visual-query"
     api_key env.FAL_KEY
-    base_url "https://fal.run/v1"
+    base_url "https://fal.run/fal-ai/moondream2/visual-query"
+    headers {
+      "Authorization" "Key {env.FAL_KEY}"
+    }
   }
 }
 

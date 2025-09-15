@@ -80,15 +80,23 @@ export async function POST(request: NextRequest) {
         console.log(`🔄 Reanalyzing image ${vehicleImage.id} (${vehicleImage.imageType})`)
 
         const imageUrl = typeof vehicleImage.image === 'object' ? vehicleImage.image.url : ''
+        console.log(`🔍 Image URL for ${vehicleImage.id}:`, imageUrl)
+
         if (!imageUrl) {
           console.error(`❌ No image URL found for vehicle image ${vehicleImage.id}`)
           failureCount++
           continue
         }
 
+        // Ensure the URL is absolute
+        const fullImageUrl = imageUrl.startsWith('http')
+          ? imageUrl
+          : `https://local.ft.tc${imageUrl}`
+        console.log(`🌐 Full image URL:`, fullImageUrl)
+
         // Perform AI analysis
         const analysisResult = await damageAnalysisService.analyzeVehicleImage(
-          imageUrl,
+          fullImageUrl,
           vehicleImage.imageType,
         )
 

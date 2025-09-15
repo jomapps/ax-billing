@@ -14,16 +14,24 @@ interface FalAiError {
 export class FalAiService {
   private apiKey: string
   private baseUrl: string = 'https://fal.run'
-  private model: string = 'fal-ai/moondream2/visual-query'
+  private model: string
 
   constructor() {
     this.apiKey = process.env.FAL_KEY || ''
+    this.model = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
+
     if (!this.apiKey) {
       throw new Error('FAL_KEY environment variable is required')
     }
+    if (!this.model) {
+      throw new Error('FAL_VISION_MODEL environment variable is required')
+    }
   }
 
-  async analyzeVehicleImage(imageUrl: string, imageType: string): Promise<{
+  async analyzeVehicleImage(
+    imageUrl: string,
+    imageType: string,
+  ): Promise<{
     success: boolean
     vehicleCondition?: string
     error?: string
@@ -32,47 +40,98 @@ export class FalAiService {
     const startTime = Date.now()
 
     try {
-      const prompt = this.buildAnalysisPrompt(imageType)
-      
-      const response = await fetch(`${this.baseUrl}/${this.model}`, {
+      // Use the FAL.ai endpoint from environment variable
+      const endpoint = `${this.baseUrl}/${this.model}`
+      const requestPayload = {
+        image_url: imageUrl,
+        prompt: this.buildVehicleAnalysisPrompt(imageType),
+      }
+      const requestHeaders = {
+        Authorization: `Key ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      }
+
+      console.log('🚀 FAL.ai API Request:', {
+        endpoint,
         method: 'POST',
         headers: {
-          'Authorization': `Key ${this.apiKey}`,
-          'Content-Type': 'application/json',
+          ...requestHeaders,
+          Authorization: `Key ${this.apiKey.substring(0, 10)}...${this.apiKey.substring(this.apiKey.length - 4)}`, // Masked for security
         },
-        body: JSON.stringify({
-          image_url: imageUrl,
-          prompt: prompt,
-        }),
+        payload: requestPayload,
+      })
+
+      const falResponse = await fetch(endpoint, {
+        method: 'POST',
+        headers: requestHeaders,
+        body: JSON.stringify(requestPayload),
+      })
+
+      console.log('📡 FAL.ai API Response Status:', {
+        status: falResponse.status,
+        statusText: falResponse.statusText,
+        ok: falResponse.ok,
+        headers: Object.fromEntries(falResponse.headers.entries()),
+      })
+
+      if (!falResponse.ok) {
+        const errorText = await falResponse.text()
+        let errorData: any
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { message: errorText }
+        }
+
+        console.error('❌ FAL.ai API error:', {
+          status: falResponse.status,
+          statusText: falResponse.statusText,
+          errorText,
+          errorData,
+        })
+
+        return {
+          success: false,
+          error: `FAL.ai API error: ${falResponse.status} - ${JSON.stringify(errorData)}`,
+          processingTime: (Date.now() - startTime) / 1000,
+        }
+      }
+
+      const responseText = await falResponse.text()
+      console.log('📥 FAL.ai Raw Response:', responseText)
+
+      let falData: FalAiResponse
+      try {
+        falData = JSON.parse(responseText) as FalAiResponse
+      } catch (parseError) {
+        console.error('❌ Failed to parse FAL.ai response as JSON:', parseError)
+        return {
+          success: false,
+          error: `Invalid JSON response from FAL.ai: ${responseText}`,
+          processingTime: (Date.now() - startTime) / 1000,
+        }
+      }
+
+      console.log('✅ FAL.ai Parsed Response:', falData)
+
+      const vehicleAnalysis = falData.output
+
+      console.log('✅ FAL.ai vehicle analysis received:', {
+        imageType,
+        analysisLength: vehicleAnalysis.length,
+        analysis: vehicleAnalysis.substring(0, 200) + '...',
       })
 
       const processingTime = (Date.now() - startTime) / 1000
 
-      if (!response.ok) {
-        const errorData = await response.json() as FalAiError
-        console.error('❌ FAL.ai API error:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-        })
-        
-        return {
-          success: false,
-          error: `FAL.ai API error: ${response.status} - ${errorData.detail || response.statusText}`,
-          processingTime,
-        }
-      }
+      // Parse the FAL.ai response to extract vehicle condition
+      const vehicleCondition = this.parseVehicleCondition(vehicleAnalysis)
 
-      const data = await response.json() as FalAiResponse
-      
-      // Parse the response to extract vehicle condition
-      const vehicleCondition = this.parseVehicleCondition(data.output)
-      
       console.log('✅ FAL.ai analysis successful:', {
         imageType,
         vehicleCondition,
         processingTime,
-        responseLength: data.output.length,
+        analysisLength: vehicleAnalysis.length,
       })
 
       return {
@@ -80,11 +139,10 @@ export class FalAiService {
         vehicleCondition,
         processingTime,
       }
-
     } catch (error) {
       const processingTime = (Date.now() - startTime) / 1000
-      console.error('❌ FAL.ai service error:', error)
-      
+      console.error('❌ FAL.ai analysis error:', error)
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -93,40 +151,48 @@ export class FalAiService {
     }
   }
 
-  private buildAnalysisPrompt(imageType: string): string {
-    const basePrompt = `Analyze this vehicle image for damage assessment and vehicle information.
+  private buildVehicleAnalysisPrompt(imageType: string): string {
+    return `Analyze this vehicle image and identify: vehicle type, make, model, year, color, any visible damages, and overall condition. Image type: ${imageType} view of the vehicle.`
+  }
 
-Image Type: ${imageType}
+  private buildAnalysisPrompt(imageType: string, imageDescription: string): string {
+    const analysisPrompt = `Based on this image description from a vision AI model, analyze the vehicle for damage assessment and condition.
 
-This is a ${imageType} view of the vehicle. Pay special attention to:
-- Vehicle condition and any visible damage
-- Overall vehicle state (excellent, good, fair, poor)
-- Any scratches, dents, or other damage
+Image Type: ${imageType} view of the vehicle
+Image Description: ${imageDescription}
 
-Please provide a brief assessment including:
-1. Overall vehicle condition (excellent/good/fair/poor)
-2. Any visible damages with brief description
-3. General vehicle information if visible
+Please analyze this description and provide:
 
-Be concise and focus on the most important observations.`
+1. Overall vehicle condition (excellent/good/fair/poor/damaged)
+2. Any visible damages mentioned in the description
+3. Vehicle type, color, or other details if mentioned
+4. Assessment of the vehicle's state based on the description
 
-    return basePrompt
+Focus on extracting vehicle condition and damage information from the description. If the description mentions any scratches, dents, damage, or poor condition, classify accordingly.
+
+Respond with a brief analysis focusing on vehicle condition.`
+
+    return analysisPrompt
   }
 
   private parseVehicleCondition(output: string): string {
     const lowerOutput = output.toLowerCase()
-    
+
     // Look for condition keywords in order of preference
     if (lowerOutput.includes('excellent')) return 'excellent'
     if (lowerOutput.includes('good')) return 'good'
     if (lowerOutput.includes('fair')) return 'fair'
     if (lowerOutput.includes('poor')) return 'poor'
-    
+
     // Look for damage indicators
-    if (lowerOutput.includes('damage') || lowerOutput.includes('scratch') || lowerOutput.includes('dent')) {
+    if (
+      lowerOutput.includes('damage') ||
+      lowerOutput.includes('scratch') ||
+      lowerOutput.includes('dent')
+    ) {
       return 'fair'
     }
-    
+
     // Default to good if no specific condition mentioned
     return 'good'
   }

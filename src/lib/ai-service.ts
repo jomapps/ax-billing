@@ -1,21 +1,10 @@
-// Import BAML client unconditionally on the server
-import { b } from './baml_client/baml_client'
-import type {
-  VehicleAnalysis,
-  VehicleDamage,
-  DamageType,
-  DamageSeverity,
-  VehicleType,
-} from './baml_client/baml_client/types'
-
-// BAML client is available server-side only
-const baml = typeof window === 'undefined' ? b : null
+// BAML removed - using direct FAL.ai service only
 
 export interface AIAnalysisResult {
   success: boolean
-  data?: any // VehicleAnalysis type when BAML is available
+  data?: any // Vehicle analysis data
   error?: string
-  provider?: 'BAML' | 'FAL'
+  provider?: 'FAL.ai'
 }
 
 export interface ServiceRecommendationResult {
@@ -41,28 +30,42 @@ export async function analyzeVehicle(imageUrl: string): Promise<AIAnalysisResult
  * Analyze vehicle image using BAML AI integration
  */
 export async function analyzeVehicleImage(imageUrl: string): Promise<AIAnalysisResult> {
-  // Check if BAML is available
-  if (!baml) {
-    console.log('🔄 BAML not available, using FAL AI fallback...')
-    return await analyzeVehicleImageWithFalAi(imageUrl)
-  }
-
   try {
-    console.log('Analyzing vehicle image with BAML:', imageUrl)
+    console.log('Analyzing vehicle image with FAL.ai vision model:', imageUrl)
 
-    const result = await baml.AnalyzeVehicleImage(imageUrl)
+    // Use FAL.ai directly since BAML doesn't support FAL.ai API format
+    const { falAiService } = await import('@/lib/ai/fal-ai-service')
+    const falResult = await falAiService.analyzeVehicleImage(imageUrl, 'general')
 
-    console.log('BAML analysis result:', result)
+    if (!falResult.success) {
+      throw new Error(falResult.error || 'FAL.ai analysis failed')
+    }
+
+    // Convert FAL result to expected format for compatibility
+    const analysisResult = {
+      vehicle_type: 'CAR',
+      make: null,
+      model: null,
+      year: null,
+      color: null,
+      license_plate: null,
+      damages: [],
+      overall_condition: falResult.vehicleCondition || 'good',
+      estimated_total_cost: null,
+      recommendations: [],
+      confidence_score: 0.9,
+    }
+
+    console.log('FAL.ai analysis result:', analysisResult)
 
     return {
       success: true,
-      data: result,
-      provider: 'BAML',
+      data: analysisResult,
+      provider: 'FAL.ai',
     }
   } catch (error) {
-    console.error('Error analyzing vehicle image with BAML:', error)
-    console.log('🔄 Falling back to FAL AI...')
-    return await analyzeVehicleImageWithFalAi(imageUrl)
+    console.error('Error analyzing vehicle image with FAL.ai:', error)
+    throw error
   }
 }
 
