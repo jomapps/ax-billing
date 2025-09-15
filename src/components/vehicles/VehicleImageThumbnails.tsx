@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, CheckCircle, RefreshCw, Loader2, Eye, X, Camera } from 'lucide-react'
+import { AlertTriangle, CheckCircle, RefreshCw, Loader2, Camera } from 'lucide-react'
 import Image from 'next/image'
 
 interface VehicleImage {
@@ -81,7 +81,6 @@ export function VehicleImageThumbnails({
   onReanalysisComplete,
   className = '',
 }: VehicleImageThumbnailsProps) {
-  const [selectedImage, setSelectedImage] = useState<VehicleImage | null>(null)
   const [reanalyzingImages, setReanalyzingImages] = useState<Set<string>>(new Set())
   const [reanalyzingAll, setReanalyzingAll] = useState(false)
 
@@ -159,6 +158,39 @@ export function VehicleImageThumbnails({
     }
   }
 
+  const reanalyzeAllImages = async () => {
+    if (!vehicleId || images.length === 0) return
+
+    setReanalyzingAll(true)
+    try {
+      const response = await fetch('/api/v1/ai/reanalyze-vehicle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          vehicleId,
+          imageIds: images.map((img) => img.id), // Reanalyze ALL images
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        console.log('✅ All images reanalyzed successfully')
+        onReanalysisComplete?.()
+      } else {
+        console.error('❌ Bulk reanalysis failed:', result.error)
+        alert(`Reanalysis failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('❌ Bulk reanalysis request failed:', error)
+      alert('Failed to reanalyze images. Please try again.')
+    } finally {
+      setReanalyzingAll(false)
+    }
+  }
+
   if (!images || images.length === 0) {
     return (
       <Card className={`bg-gray-800/50 border-gray-700 ${className}`}>
@@ -174,16 +206,40 @@ export function VehicleImageThumbnails({
     <>
       <Card className={`bg-gray-800/50 border-gray-700 ${className}`}>
         <CardContent className="p-4">
-          {/* Header with reanalyze all button */}
+          {/* Header with reanalyze buttons */}
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-white">Vehicle Images ({images.length})</h3>
-            {hasFailedAnalysis && (
+            <div className="flex gap-2">
+              {/* Reanalyze Failed button (only if there are failures) */}
+              {hasFailedAnalysis && (
+                <Button
+                  onClick={reanalyzeAllFailed}
+                  disabled={reanalyzingAll}
+                  size="sm"
+                  variant="outline"
+                  className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                >
+                  {reanalyzingAll ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Reanalyzing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Reanalyze Failed ({failedImages.length})
+                    </>
+                  )}
+                </Button>
+              )}
+
+              {/* Reanalyze All button (always visible) */}
               <Button
-                onClick={reanalyzeAllFailed}
+                onClick={reanalyzeAllImages}
                 disabled={reanalyzingAll}
                 size="sm"
                 variant="outline"
-                className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
               >
                 {reanalyzingAll ? (
                   <>
@@ -193,88 +249,96 @@ export function VehicleImageThumbnails({
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Reanalyze Failed ({failedImages.length})
+                    Reanalyze All
                   </>
                 )}
               </Button>
-            )}
+            </div>
           </div>
 
           {/* Image grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {images.map((image) => {
               const analysisStatus = getAnalysisStatus(image)
               const isReanalyzing = reanalyzingImages.has(image.id)
 
               return (
                 <div key={image.id} className="relative group">
-                  <Card className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="relative aspect-square">
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden p-0 border-0">
+                    <div className="relative aspect-square">
+                      <div
+                        className="w-full h-full cursor-pointer rounded-lg overflow-hidden"
+                        onClick={() => window.open(image.image.url, '_blank')}
+                      >
                         <Image
                           src={image.image.url}
                           alt={image.image.alt || `${formatImageType(image.imageType)} view`}
                           width={200}
                           height={200}
-                          className="w-full h-full object-cover cursor-pointer"
-                          onClick={() => setSelectedImage(image)}
+                          className="w-full h-full object-cover"
                         />
-
-                        {/* Image type badge */}
-                        <div className="absolute top-2 left-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {getImageTypeIcon(image.imageType)} {formatImageType(image.imageType)}
-                          </Badge>
-                        </div>
-
-                        {/* Analysis status badge */}
-                        <div className="absolute top-2 right-2">
-                          <Badge className={`text-xs ${analysisStatus.color}`}>
-                            {analysisStatus.status === 'success' && (
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                            )}
-                            {analysisStatus.status === 'failed' && (
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                            )}
-                            {analysisStatus.status === 'pending' && (
-                              <Loader2 className="w-3 h-3 mr-1" />
-                            )}
-                            {analysisStatus.text}
-                          </Badge>
-                        </div>
-
-                        {/* Damage indicator */}
-                        {image.damageDetected && (
-                          <div className="absolute bottom-2 right-2">
-                            <Badge variant="destructive" className="text-xs">
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              Damage
-                            </Badge>
-                          </div>
-                        )}
-
-                        {/* Reanalyze button for failed analysis */}
-                        {analysisStatus.status === 'failed' && (
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                reanalyzeImage(image.id)
-                              }}
-                              disabled={isReanalyzing}
-                              size="sm"
-                              className="bg-orange-600 hover:bg-orange-700"
-                            >
-                              {isReanalyzing ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <RefreshCw className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        )}
                       </div>
-                    </CardContent>
+
+                      {/* Image type badge */}
+                      <div className="absolute top-2 left-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {getImageTypeIcon(image.imageType)} {formatImageType(image.imageType)}
+                        </Badge>
+                      </div>
+
+                      {/* Analysis status badge */}
+                      <div className="absolute top-2 right-2">
+                        <Badge className={`text-xs ${analysisStatus.color}`}>
+                          {analysisStatus.status === 'success' && (
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                          )}
+                          {analysisStatus.status === 'failed' && (
+                            <AlertTriangle className="w-3 h-3 mr-1" />
+                          )}
+                          {analysisStatus.status === 'pending' && (
+                            <Loader2 className="w-3 h-3 mr-1" />
+                          )}
+                          {analysisStatus.text}
+                        </Badge>
+                      </div>
+
+                      {/* Damage indicator */}
+                      {image.damageDetected && (
+                        <div className="absolute bottom-2 right-2">
+                          <Badge variant="destructive" className="text-xs">
+                            <AlertTriangle className="w-3 h-3 mr-1" />
+                            Damage
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Reanalyze button for ALL images (bottom-left corner) */}
+                      <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            reanalyzeImage(image.id)
+                          }}
+                          disabled={isReanalyzing}
+                          size="sm"
+                          className={`text-xs px-2 py-1 ${
+                            analysisStatus.status === 'failed'
+                              ? 'bg-orange-600 hover:bg-orange-700'
+                              : 'bg-blue-600 hover:bg-blue-700'
+                          }`}
+                          title={`Reanalyze ${formatImageType(image.imageType)} image`}
+                        >
+                          {isReanalyzing ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <>
+                              <RefreshCw className="w-3 h-3 mr-1" />
+                              Reanalyze
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </Card>
                 </div>
               )
@@ -282,81 +346,6 @@ export function VehicleImageThumbnails({
           </div>
         </CardContent>
       </Card>
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
-                  {getImageTypeIcon(selectedImage.imageType)}{' '}
-                  {formatImageType(selectedImage.imageType)}
-                </h3>
-                <Button onClick={() => setSelectedImage(null)} variant="outline" size="sm">
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="mb-4">
-                <Image
-                  src={selectedImage.image.url}
-                  alt={
-                    selectedImage.image.alt || `${formatImageType(selectedImage.imageType)} view`
-                  }
-                  width={800}
-                  height={600}
-                  className="w-full max-h-96 object-contain rounded-lg"
-                />
-              </div>
-
-              {/* Analysis details */}
-              {selectedImage.aiAnalysis && (
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-2">AI Analysis</h4>
-                  {selectedImage.aiAnalysis.success ? (
-                    <div className="space-y-2 text-sm">
-                      <p>
-                        <strong>Condition:</strong> {selectedImage.aiAnalysis.vehicleCondition}
-                      </p>
-                      <p>
-                        <strong>Processing Time:</strong> {selectedImage.aiAnalysis.processingTime}s
-                      </p>
-                      {selectedImage.damageDetected && selectedImage.damageDescription && (
-                        <p>
-                          <strong>Damage:</strong> {selectedImage.damageDescription}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-red-600">
-                      <p>Analysis failed: {selectedImage.aiAnalysis.error}</p>
-                      <Button
-                        onClick={() => reanalyzeImage(selectedImage.id)}
-                        disabled={reanalyzingImages.has(selectedImage.id)}
-                        size="sm"
-                        className="mt-2"
-                      >
-                        {reanalyzingImages.has(selectedImage.id) ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Reanalyzing...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Retry Analysis
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
