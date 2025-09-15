@@ -83,17 +83,38 @@ export class VehicleDamageAnalysisService {
       })
 
       if (falResult.success) {
+        // Convert FAL.ai detailed analysis to expected format
+        const damageAnalysis =
+          falResult.damages?.map((damage) => ({
+            damageDetected: true,
+            damageDescription: damage,
+            severity: 'minor' as const,
+            location: 'unknown',
+            confidence: 0.8,
+          })) || []
+
         return {
           success: true,
           vehicleCondition: falResult.vehicleCondition || 'good',
           overallCondition: falResult.vehicleCondition || 'good',
           processingTime: falResult.processingTime,
-          damageAnalysis: [], // FAL.ai doesn't provide detailed damage analysis in this format
+          damageAnalysis,
           sizeAnalysis: 'medium', // Default size
-          colorAnalysis: undefined,
-          visibleFeatures: [],
-          extractedText: undefined,
-          rawAiResponse: falResult,
+          colorAnalysis: falResult.color || undefined,
+          visibleFeatures: falResult.details?.features || [],
+          extractedText: falResult.licensePlate || undefined,
+          vehicleNumber: falResult.licensePlate || undefined,
+          rawAiResponse: {
+            ...falResult,
+            fullAnalysis: falResult.rawAnalysis,
+          },
+          // Additional detailed information
+          vehicleType: falResult.vehicleType,
+          make: falResult.make,
+          model: falResult.model,
+          year: falResult.year,
+          licensePlate: falResult.licensePlate,
+          detailedAnalysis: falResult.rawAnalysis,
         }
       } else {
         throw new Error(falResult.error || 'FAL.ai analysis failed')

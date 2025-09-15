@@ -110,6 +110,21 @@ export async function POST(request: NextRequest) {
               damageDetected: (analysisResult.damageAnalysis?.length || 0) > 0,
               damageDescription:
                 analysisResult.damageAnalysis?.map((d) => d.damageDescription).join('; ') || '',
+              // Store additional analysis data
+              aiAnalysis: {
+                condition: analysisResult.overallCondition,
+                vehicleType: analysisResult.vehicleType,
+                make: analysisResult.make,
+                model: analysisResult.model,
+                year: analysisResult.year,
+                color: analysisResult.colorAnalysis,
+                licensePlate: analysisResult.licensePlate,
+                damages: analysisResult.damageAnalysis,
+                features: analysisResult.visibleFeatures,
+                rawAnalysis: analysisResult.detailedAnalysis,
+                processingTime: analysisResult.processingTime,
+                timestamp: new Date().toISOString(),
+              },
             },
           })
 
@@ -119,10 +134,23 @@ export async function POST(request: NextRequest) {
             success: true,
             condition: analysisResult.overallCondition,
             damagesFound: analysisResult.damageAnalysis?.length || 0,
+            vehicleType: analysisResult.vehicleType,
+            make: analysisResult.make,
+            model: analysisResult.model,
+            year: analysisResult.year,
+            color: analysisResult.colorAnalysis,
+            licensePlate: analysisResult.licensePlate,
+            rawAnalysis: analysisResult.detailedAnalysis,
           })
 
           successCount++
-          console.log(`✅ Successfully reanalyzed image ${vehicleImage.id}`)
+          console.log(`✅ Successfully reanalyzed image ${vehicleImage.id}:`, {
+            condition: analysisResult.overallCondition,
+            vehicleType: analysisResult.vehicleType,
+            make: analysisResult.make,
+            model: analysisResult.model,
+            licensePlate: analysisResult.licensePlate,
+          })
         } else {
           // Update with failure status
           await payload.update({

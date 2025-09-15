@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { WhatsAppQRCode } from './WhatsAppQRCode'
 import { InitiatedOrdersDashboard } from './InitiatedOrdersDashboard'
-import { VehicleCaptureInterface } from './VehicleCaptureInterface'
+
 import { QrCode, Clock, Camera, MessageSquare } from 'lucide-react'
 
 interface WhatsAppStaffDashboardProps {
@@ -15,13 +15,13 @@ interface WhatsAppStaffDashboardProps {
   className?: string
 }
 
-export function WhatsAppStaffDashboard({ 
-  staffId, 
+export function WhatsAppStaffDashboard({
+  staffId,
   location,
-  className = '' 
+  className = '',
 }: WhatsAppStaffDashboardProps) {
   const [activeTab, setActiveTab] = useState('qr-code')
-  const [selectedOrderForCapture, setSelectedOrderForCapture] = useState<string | null>(null)
+
   const [recentOrderId, setRecentOrderId] = useState<string | null>(null)
 
   const handleOrderCreated = (orderId: string) => {
@@ -29,19 +29,11 @@ export function WhatsAppStaffDashboard({
   }
 
   const handleCaptureVehicle = (orderId: string) => {
-    setSelectedOrderForCapture(orderId)
-    setActiveTab('vehicle-capture')
-  }
-
-  const handleVehicleCaptured = (vehicleInfo: any) => {
-    // Vehicle captured successfully, go back to orders dashboard
-    setSelectedOrderForCapture(null)
-    setActiveTab('orders')
-  }
-
-  const handleCloseCaptureInterface = () => {
-    setSelectedOrderForCapture(null)
-    setActiveTab('orders')
+    // Vehicle capture is now handled directly in the orders tab
+    // Switch to orders tab if not already there
+    if (activeTab !== 'orders') {
+      setActiveTab('orders')
+    }
   }
 
   return (
@@ -59,18 +51,14 @@ export function WhatsAppStaffDashboard({
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="qr-code" className="flex items-center gap-2">
             <QrCode className="w-4 h-4" />
-            QR Code
+            QR Code & Setup
           </TabsTrigger>
           <TabsTrigger value="orders" className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            Initiated Orders
-          </TabsTrigger>
-          <TabsTrigger value="vehicle-capture" className="flex items-center gap-2">
-            <Camera className="w-4 h-4" />
-            Vehicle Capture
+            Orders & Vehicle Capture
           </TabsTrigger>
         </TabsList>
 
@@ -84,7 +72,7 @@ export function WhatsAppStaffDashboard({
                 className="w-full"
               />
             </div>
-            
+
             <div className="space-y-4">
               <Card>
                 <CardHeader>
@@ -102,7 +90,7 @@ export function WhatsAppStaffDashboard({
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
                       2
@@ -114,7 +102,7 @@ export function WhatsAppStaffDashboard({
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
                       3
@@ -135,11 +123,7 @@ export function WhatsAppStaffDashboard({
                     <div className="text-center">
                       <p className="text-sm text-green-600 mb-2">Latest Order Created</p>
                       <p className="font-mono font-bold text-green-800">{recentOrderId}</p>
-                      <Button 
-                        onClick={() => setActiveTab('orders')}
-                        size="sm"
-                        className="mt-3"
-                      >
+                      <Button onClick={() => setActiveTab('orders')} size="sm" className="mt-3">
                         View Initiated Orders
                       </Button>
                     </div>
@@ -151,34 +135,7 @@ export function WhatsAppStaffDashboard({
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
-          <InitiatedOrdersDashboard 
-            onCaptureVehicle={handleCaptureVehicle}
-            className="w-full"
-          />
-        </TabsContent>
-
-        <TabsContent value="vehicle-capture" className="space-y-4">
-          {selectedOrderForCapture ? (
-            <VehicleCaptureInterface
-              orderId={selectedOrderForCapture}
-              onVehicleCaptured={handleVehicleCaptured}
-              onClose={handleCloseCaptureInterface}
-              className="max-w-2xl mx-auto"
-            />
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Camera className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-semibold mb-2">No Order Selected</h3>
-                <p className="text-gray-600 mb-4">
-                  Select an order from the "Initiated Orders" tab to capture vehicle information
-                </p>
-                <Button onClick={() => setActiveTab('orders')} variant="outline">
-                  Go to Initiated Orders
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <InitiatedOrdersDashboard className="w-full" />
         </TabsContent>
       </Tabs>
     </div>

@@ -25,14 +25,10 @@ interface InitiatedOrder {
 }
 
 interface InitiatedOrdersDashboardProps {
-  onCaptureVehicle?: (orderId: string) => void
   className?: string
 }
 
-export function InitiatedOrdersDashboard({
-  onCaptureVehicle,
-  className = '',
-}: InitiatedOrdersDashboardProps) {
+export function InitiatedOrdersDashboard({ className = '' }: InitiatedOrdersDashboardProps) {
   const [orders, setOrders] = useState<InitiatedOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

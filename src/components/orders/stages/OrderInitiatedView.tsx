@@ -25,7 +25,6 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { ProgressiveDisclosure } from '@/components/ui/progressive-disclosure'
 
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
-import { VehicleCaptureInterface } from '@/components/whatsapp/VehicleCaptureInterface'
 import { MultiImageVehicleCaptureInterface } from '@/components/whatsapp/MultiImageVehicleCaptureInterface'
 import { VehicleImageThumbnails } from '@/components/vehicles/VehicleImageThumbnails'
 import { cn, getStageUrl } from '@/lib/utils'
