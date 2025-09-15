@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { cn } from '@/lib/utils'
+import { useSyncManager, useAutoRefresh, usePollingFallback } from '@/lib/sync/useSyncManager'
 
 interface OrderData {
   id: string
@@ -48,6 +49,50 @@ export function OrderPaidView({ orderId, initialOrderData, className }: OrderPai
   const [orderData, setOrderData] = useState<OrderData | null>(initialOrderData || null)
   const [loading, setLoading] = useState(!initialOrderData)
   const [error, setError] = useState<string | null>(null)
+
+  // SyncManager integration (configuration handled at route level)
+
+  const fetchFullOrderData = async () => {
+    try {
+      setError(null)
+
+      const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=3`)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch order data`)
+      }
+
+      const data = await response.json()
+
+      if (data.docs && data.docs.length > 0) {
+        setOrderData(data.docs[0])
+      } else {
+        setError(`Order ${orderId} not found.`)
+      }
+      setLoading(false)
+    } catch (err) {
+      console.error('Failed to fetch order data:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load order data.')
+      setLoading(false)
+    }
+  }
+
+  // Setup auto-refresh for real-time completion updates
+  useAutoRefresh(
+    orderId,
+    () => {
+      console.log('[OrderPaidView] Auto-refreshing order data')
+      fetchFullOrderData()
+    },
+    {
+      eventTypes: ['status_update', 'stage_change'],
+      debounceMs: 1000,
+      enabled: true,
+    },
+  )
+
+  // Also refresh via polling when in polling fallback mode
+  usePollingFallback(fetchFullOrderData)
 
   useEffect(() => {
     // Set initial data from server-side props

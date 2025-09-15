@@ -3,6 +3,8 @@ import { Inter, Orbitron } from 'next/font/google'
 
 import './styles.css'
 import '../../styles/gaming-theme.css'
+import { SyncManagerProvider } from '@/lib/sync'
+import SyncErrorBoundary from '@/components/common/SyncErrorBoundary'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,7 +42,14 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         }}
       >
         <div className="grid-bg min-h-screen">
-          <main>{children}</main>
+          <main>
+            <SyncManagerProvider
+              initialConfig={{ autoConnect: true, autoReconnect: true }}
+              enablePersistence={true}
+            >
+              <SyncErrorBoundary>{children}</SyncErrorBoundary>
+            </SyncManagerProvider>
+          </main>
         </div>
       </body>
     </html>

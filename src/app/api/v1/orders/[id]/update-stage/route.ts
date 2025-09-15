@@ -3,6 +3,8 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { WhatsAppService } from '@/lib/whatsapp/whatsapp-service'
 import type { Order, User } from '@/payload-types'
+import { updateOrderStage } from '@/lib/server/order-queries'
+import { SSEManager } from '@/lib/server/sse-manager'
 
 const whatsappService = new WhatsAppService()
 
@@ -41,14 +43,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const order = orderResult.docs[0] as Order
     const customer = order.customer as User
 
-    // Update the order stage
-    const updatedOrder = await payload.update({
-      collection: 'orders',
-      id: order.id,
-      data: {
-        orderStage: stage,
-      },
-    })
+    // Update the order stage using centralized function (creates sync events and broadcasts SSE)
+    const updateResult = await updateOrderStage(orderId, stage, notes)
+
+    if (!updateResult.success) {
+      return NextResponse.json(
+        {
+          error: updateResult.error || 'Failed to update order stage',
+        },
+        { status: 500 },
+      )
+    }
+
+    const updatedOrder = updateResult.order
 
     // Send WhatsApp notification based on stage
     let message = ''
@@ -116,9 +123,11 @@ Thank you for choosing AX Billing! 🚗✨`
         id: updatedOrder.id,
         orderID: updatedOrder.orderID,
         orderStage: updatedOrder.orderStage,
-        previousStage: order.orderStage,
+        previousStage: updateResult.previousStage, // Comment 1: Use the returned previousStage instead of order.orderStage for accuracy
       },
       messageSent: !!message,
+      syncEvent: updateResult.syncEvent,
+      sseEventBroadcast: updateResult.sseEventBroadcast,
       message: 'Order stage updated successfully',
     })
   } catch (error) {

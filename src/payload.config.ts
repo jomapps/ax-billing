@@ -21,6 +21,7 @@ import { WhatsAppMessages } from './collections/WhatsAppMessages'
 import { WhatsAppTemplates } from './collections/WhatsAppTemplates'
 import { Intake } from './collections/Intake'
 import { Delivery } from './collections/Delivery'
+import { OrderSyncEvents } from './collections/OrderSyncEvents'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -43,6 +44,7 @@ export default buildConfig({
     ServiceCategories,
     ServiceOptions,
     Orders,
+    OrderSyncEvents,
     CustomerTiers,
     Media,
     WhatsAppMessages,

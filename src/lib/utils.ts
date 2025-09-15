@@ -125,3 +125,41 @@ export function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(() => func(...args), wait)
   }
 }
+
+/**
+ * Maps order stages to their corresponding URLs
+ */
+export function getStageUrl(orderId: string, stage: string): string {
+  const stageUrlMap: Record<string, string> = {
+    empty: `/order/${orderId}/new`,
+    initiated: `/order/${orderId}/initiated`,
+    open: `/order/${orderId}/open`,
+    billed: `/order/${orderId}/billed`,
+    paid: `/order/${orderId}/paid`,
+  }
+
+  return stageUrlMap[stage] || `/order/${orderId}/new`
+}
+
+/**
+ * Validates if a stage name is valid
+ */
+export function isValidStage(stage: string): boolean {
+  const validStages = ['empty', 'initiated', 'open', 'billed', 'paid']
+  return validStages.includes(stage)
+}
+
+/**
+ * Gets display name for order stages
+ */
+export function getStageDisplayName(stage: string): string {
+  const stageDisplayNames: Record<string, string> = {
+    empty: 'New Order',
+    initiated: 'Order Initiated',
+    open: 'Order Open',
+    billed: 'Order Billed',
+    paid: 'Order Paid',
+  }
+
+  return stageDisplayNames[stage] || stage
+}

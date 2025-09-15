@@ -100,7 +100,7 @@ async function testWithDirectFalAi(imageUrl) {
   }
 
   const falApiKey = process.env.FAL_KEY
-  const falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/llavav15-13b'
+  const falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
 
   if (!falApiKey) {
     console.log('   ⚠️  No FAL_KEY configured for direct tests')

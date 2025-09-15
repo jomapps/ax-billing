@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         },
       },
       depth: 2,
+      overrideAccess: true,
     })
 
     if (!orders.docs || orders.docs.length === 0) {
@@ -144,27 +145,28 @@ export async function POST(request: NextRequest) {
 
     if (!analysisResult.success) {
       console.error('❌ AI analysis failed:', analysisResult.error)
-      return NextResponse.json(
-        {
-          error: 'AI analysis failed',
-          details: analysisResult.error,
-          uploadedImages,
-        },
-        { status: 422 },
-      )
+      console.log('📝 Continuing with image storage despite AI failure...')
+      // Continue processing to store images even if AI analysis fails
     }
 
-    console.log('✅ AI analysis completed:', {
-      vehicleNumber: analysisResult.vehicleNumber,
-      damagesFound: analysisResult.allDamages?.length || 0,
-      overallCondition: analysisResult.overallCondition,
-    })
+    if (analysisResult.success) {
+      console.log('✅ AI analysis completed:', {
+        vehicleNumber: analysisResult.vehicleNumber,
+        damagesFound: analysisResult.allDamages?.length || 0,
+        overallCondition: analysisResult.overallCondition,
+      })
+    } else {
+      console.log('⚠️ AI analysis failed, proceeding with default values:', {
+        error: analysisResult.error,
+        imageCount: vehicleImages.length,
+      })
+    }
 
     // Create or update vehicle record
     const customerId = typeof customer === 'string' ? customer : customer.id
     let vehicle: any
 
-    if (analysisResult.vehicleNumber) {
+    if (analysisResult.success && analysisResult.vehicleNumber) {
       // Try to find existing vehicle by license plate
       const existingVehicles = await payload.find({
         collection: 'vehicles',
@@ -173,6 +175,7 @@ export async function POST(request: NextRequest) {
             equals: analysisResult.vehicleNumber,
           },
         },
+        overrideAccess: true,
       })
 
       if (existingVehicles.docs && existingVehicles.docs.length > 0) {
@@ -219,6 +222,7 @@ export async function POST(request: NextRequest) {
       vehicle = await payload.create({
         collection: 'vehicles',
         data: vehicleData,
+        overrideAccess: true,
       })
 
       console.log('🆕 Created new vehicle:', vehicle.id)
@@ -260,6 +264,7 @@ export async function POST(request: NextRequest) {
           collection: 'vehicles',
           id: vehicle.id,
           data: updateData,
+          overrideAccess: true,
         })
         console.log('📝 Updated existing vehicle:', vehicle.id)
       }
@@ -313,10 +318,21 @@ export async function POST(request: NextRequest) {
       const vehicleImage = await payload.create({
         collection: 'vehicle-images',
         data: vehicleImageData,
+        overrideAccess: true,
       })
 
       createdVehicleImages.push(vehicleImage)
     }
+
+    // Update vehicle with the created vehicle images
+    await payload.update({
+      collection: 'vehicles',
+      id: vehicle.id,
+      data: {
+        vehicleImages: createdVehicleImages.map((img) => img.id),
+      },
+      overrideAccess: true,
+    })
 
     // Update order with vehicle information
     await payload.update({
@@ -327,6 +343,7 @@ export async function POST(request: NextRequest) {
         vehicleCapturedAt: new Date().toISOString(),
         aiProcessedAt: new Date().toISOString(),
       },
+      overrideAccess: true,
     })
 
     // Send damage report and terms & conditions to customer via WhatsApp

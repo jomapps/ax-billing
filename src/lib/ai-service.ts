@@ -164,7 +164,8 @@ export async function analyzeVehicleImageWithFalAi(imageUrl: string): Promise<AI
       }
     }
 
-    const response = await fetch('https://fal.run/fal-ai/llavav15-13b', {
+    const falVisionModel = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
+    const response = await fetch(`https://fal.run/${falVisionModel}`, {
       method: 'POST',
       headers: {
         Authorization: `Key ${process.env.FAL_KEY}`,

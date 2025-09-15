@@ -92,14 +92,14 @@ export function MobileOrderTabs({
 
   const onTouchEnd = () => {
     if (!enableSwipeGestures || !touchStart || !touchEnd) return
-    
+
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > minSwipeDistance
     const isRightSwipe = distance < -minSwipeDistance
 
     if (isLeftSwipe || isRightSwipe) {
-      const currentIndex = tabConfigs.findIndex(tab => tab.value === activeTab)
-      
+      const currentIndex = tabConfigs.findIndex((tab) => tab.value === activeTab)
+
       if (isLeftSwipe && currentIndex < tabConfigs.length - 1) {
         // Swipe left - next tab
         handleTabChange(tabConfigs[currentIndex + 1].value)
@@ -114,8 +114,10 @@ export function MobileOrderTabs({
     <div className={cn('w-full', className)}>
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Mobile-Optimized Tab List */}
-        <TabsList className="grid w-full bg-gray-800/50 border-gray-700 h-auto p-1" 
-                 style={{ gridTemplateColumns: `repeat(${tabConfigs.length}, 1fr)` }}>
+        <TabsList
+          className="grid w-full bg-gray-800/50 border-gray-700 h-auto p-1"
+          style={{ gridTemplateColumns: `repeat(${tabConfigs.length}, 1fr)` }}
+        >
           {tabConfigs.map((tab) => (
             <TabsTrigger
               key={tab.value}
@@ -123,14 +125,14 @@ export function MobileOrderTabs({
               className={cn(
                 'flex flex-col items-center gap-1 py-2 px-1 text-xs sm:text-sm',
                 'data-[state=active]:bg-gray-700 data-[state=active]:text-white',
-                'transition-all duration-200 touch-target min-h-[3rem]'
+                'transition-all duration-200 touch-target min-h-[3rem]',
               )}
             >
-              <div className="flex items-center justify-center">
-                {tab.icon}
-              </div>
+              <div className="flex items-center justify-center">{tab.icon}</div>
               <span className="hidden xs:inline">{tab.mobileLabel || tab.label}</span>
-              <span className="xs:hidden text-[10px]">{tab.mobileLabel?.slice(0, 3) || tab.label.slice(0, 3)}</span>
+              <span className="xs:hidden text-[10px]">
+                {tab.mobileLabel?.slice(0, 3) || tab.label.slice(0, 3)}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -154,7 +156,7 @@ export function MobileOrderTabs({
                   key={tab.value}
                   className={cn(
                     'w-2 h-2 rounded-full transition-all duration-200',
-                    activeTab === tab.value ? 'bg-blue-400' : 'bg-gray-600'
+                    activeTab === tab.value ? 'bg-blue-400' : 'bg-gray-600',
                   )}
                 />
               ))}
@@ -256,7 +258,7 @@ export function EnhancedTabContent({
     <TabsContent value={value} className={cn('space-y-4', className)}>
       {title ? (
         <ProgressiveDisclosure
-          title={title}
+          trigger={<span className="font-medium">{title}</span>}
           priority={priority}
           className="bg-gray-700/30 rounded-lg p-4"
         >

@@ -27,7 +27,10 @@ import { ProgressiveDisclosure } from '@/components/ui/progressive-disclosure'
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { VehicleCaptureInterface } from '@/components/whatsapp/VehicleCaptureInterface'
 import { MultiImageVehicleCaptureInterface } from '@/components/whatsapp/MultiImageVehicleCaptureInterface'
-import { cn } from '@/lib/utils'
+import { VehicleImageThumbnails } from '@/components/vehicles/VehicleImageThumbnails'
+import { cn, getStageUrl } from '@/lib/utils'
+import { useSyncManager, useAutoRefresh, usePollingFallback } from '@/lib/sync/useSyncManager'
+import { useAutoNavigation } from '@/lib/sync/useAutoNavigation'
 
 interface OrderData {
   id: string
@@ -68,17 +71,20 @@ export function OrderInitiatedView({
   const [error, setError] = useState<string | null>(null)
   const [showVehicleCapture, setShowVehicleCapture] = useState(false)
 
-  useEffect(() => {
-    if (!initialOrderData) {
-      fetchFullOrderData()
-    }
-  }, [initialOrderData])
+  // SyncManager integration (configuration handled at route level)
+
+  // Setup automatic navigation for stage changes
+  useAutoNavigation(orderId, 'initiated', {
+    enabled: true,
+    onNavigate: (newStage, oldStage) => {
+      console.log(`[OrderInitiatedView] Auto-navigating from ${oldStage} to ${newStage}`)
+    },
+  })
 
   const fetchFullOrderData = async () => {
     try {
       setError(null)
-
-      const response = await fetch(`/api/orders?where[orderID][equals]=${orderId}&depth=3`)
+      const response = await fetch(`/api/v1/orders/${orderId}`)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Failed to fetch order data`)
@@ -86,9 +92,12 @@ export function OrderInitiatedView({
 
       const data = await response.json()
 
-      if (data.docs && data.docs.length > 0) {
-        setOrderData(data.docs[0])
+      if (data.success && data.order) {
+        const vehicleImagesCount = data.order.vehicle?.vehicleImages?.length || 0
+
+        setOrderData(data.order)
       } else {
+        console.error('❌ Order data failed:', data)
         setError(`Order ${orderId} not found.`)
       }
       setLoading(false)
@@ -98,6 +107,28 @@ export function OrderInitiatedView({
       setLoading(false)
     }
   }
+
+  // Setup auto-refresh for real-time data updates
+  useAutoRefresh(
+    orderId,
+    () => {
+      console.log('[OrderInitiatedView] Auto-refreshing order data')
+      fetchFullOrderData()
+    },
+    {
+      eventTypes: ['stage_change', 'status_update', 'whatsapp_connected'],
+      debounceMs: 1000,
+      enabled: true,
+    },
+  )
+
+  // Also refresh via polling when in polling fallback mode
+  usePollingFallback(fetchFullOrderData)
+
+  useEffect(() => {
+    // Always fetch fresh data to ensure we have vehicle images
+    fetchFullOrderData()
+  }, [])
 
   const handleVehicleCaptured = (vehicleData: any) => {
     // Refresh order data to get updated vehicle information
@@ -251,46 +282,67 @@ export function OrderInitiatedView({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <CollapsibleSection title="Vehicle Capture" icon={Camera} defaultOpen={!hasVehicle}>
-            {hasVehicle ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400 font-medium">Vehicle Captured Successfully</span>
-                </div>
-                <VehicleInfoCard vehicle={orderData.vehicle} showOwner={false} />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {showVehicleCapture ? (
-                  <MultiImageVehicleCaptureInterface
-                    orderId={orderId}
-                    onVehicleCaptured={handleVehicleCaptured}
-                    onCancel={() => setShowVehicleCapture(false)}
-                  />
-                ) : (
-                  <div className="text-center py-6">
-                    <Upload className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-white mb-2">
-                      Comprehensive Vehicle Capture
-                    </h3>
-                    <p className="text-gray-400 mb-6 text-sm sm:text-base">
-                      Take multiple photos of the vehicle (front, back, left, right) to
-                      automatically extract license plate, analyze vehicle size, and detect any
-                      damage.
-                    </p>
-                    <Button
-                      onClick={() => setShowVehicleCapture(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto touch-target"
-                    >
-                      <Camera className="w-4 h-4 mr-2" />
-                      <span className="hidden sm:inline">Start Multi-Image Capture</span>
-                      <span className="sm:hidden">Start Capture</span>
-                    </Button>
+          <CollapsibleSection title="Vehicle Capture" icon={Camera} defaultOpen={true}>
+            <div className="space-y-4">
+              {hasVehicle ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <span className="text-green-400 font-medium">
+                      Vehicle Captured Successfully
+                    </span>
                   </div>
-                )}
-              </div>
-            )}
+                  <VehicleInfoCard
+                    vehicle={orderData.vehicle}
+                    showOwner={false}
+                    onDataRefresh={fetchFullOrderData}
+                  />
+                </div>
+              ) : showVehicleCapture ? (
+                <MultiImageVehicleCaptureInterface
+                  orderId={orderId}
+                  onVehicleCaptured={handleVehicleCaptured}
+                  onCancel={() => setShowVehicleCapture(false)}
+                />
+              ) : (
+                <div className="text-center py-6">
+                  <Upload className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    Comprehensive Vehicle Capture
+                  </h3>
+                  <p className="text-gray-400 mb-6 text-sm sm:text-base">
+                    Take multiple photos of the vehicle (front, back, left, right) to automatically
+                    extract license plate, analyze vehicle size, and detect any damage.
+                  </p>
+                  <Button
+                    onClick={() => setShowVehicleCapture(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto touch-target"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Start Multi-Image Capture</span>
+                    <span className="sm:hidden">Start Capture</span>
+                  </Button>
+                </div>
+              )}
+
+              {/* Show captured images even if vehicle processing is not complete */}
+              {(() => {
+                const hasVehicle = !!orderData.vehicle
+                const hasVehicleImages = !!orderData.vehicle?.vehicleImages
+                const imageCount = orderData.vehicle?.vehicleImages?.length || 0
+                const shouldShow = hasVehicle && hasVehicleImages && imageCount > 0
+
+                return shouldShow ? (
+                  <div className="border-t border-gray-700 pt-4">
+                    <VehicleImageThumbnails
+                      vehicleId={orderData.vehicle.id}
+                      images={orderData.vehicle.vehicleImages}
+                      onReanalysisComplete={fetchFullOrderData}
+                    />
+                  </div>
+                ) : null
+              })()}
+            </div>
           </CollapsibleSection>
         </motion.div>
 

@@ -16,9 +16,9 @@ client<llm> OpenAI {
 client<llm> FAL {
   provider openai
   options {
-    model "fal-ai/llavav15-13b"
+    model env.FAL_VISION_MODEL
     api_key env.FAL_KEY
-    base_url "https://fal.run"
+    base_url "https://fal.run/v1"
   }
 }
 

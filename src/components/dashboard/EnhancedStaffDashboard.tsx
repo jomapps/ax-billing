@@ -67,7 +67,7 @@ function EnhancedStaffDashboardContent({
   location = 'Main Branch',
 }: EnhancedStaffDashboardProps) {
   const router = useRouter() // Used for navigation in card clicks
-  const { orders, stats, loading, error, refreshData } = useDashboardData()
+  const { orders, stats, loading, isRefreshing, error, refreshData } = useDashboardData()
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('overview')
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [recentOrderId, setRecentOrderId] = useState<string | null>(null)
@@ -87,7 +87,7 @@ function EnhancedStaffDashboardContent({
     setRecentOrderId(orderId)
     setSelectedOrderId(orderId)
     setNotifications((prev) => [...prev, `New order created: ${orderId}`])
-    refreshData() // Refresh data
+    // Remove manual refresh - SSE will update shortly after order creation
 
     // Redirect to the order page instead of showing QR code on dashboard
     router.push(`/order/${orderId}`)
@@ -100,7 +100,7 @@ function EnhancedStaffDashboardContent({
 
   const handleVehicleCaptured = () => {
     setCurrentStep('service-selection')
-    refreshData() // Refresh data
+    // Remove manual refresh - SSE will update shortly after vehicle capture
   }
 
   const handleServiceSelection = (orderId: string) => {
@@ -206,10 +206,12 @@ function EnhancedStaffDashboardContent({
               onClick={handleRefresh}
               variant="outline"
               size="sm"
-              disabled={loading}
+              disabled={loading || isRefreshing}
               className="border-gray-600 text-gray-300 hover:bg-gray-800"
             >
-              <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
+              <RefreshCw
+                className={cn('w-4 h-4 mr-2', (loading || isRefreshing) && 'animate-spin')}
+              />
               Refresh
             </Button>
           </div>
@@ -1309,7 +1311,7 @@ function CompletionContent({ orderId, onOrderCompleted, onBack }: CompletionCont
 // Main export component with data provider wrapper
 export function EnhancedStaffDashboard(props: EnhancedStaffDashboardProps) {
   return (
-    <DashboardDataProvider refreshInterval={30000}>
+    <DashboardDataProvider>
       <EnhancedStaffDashboardContent {...props} />
     </DashboardDataProvider>
   )

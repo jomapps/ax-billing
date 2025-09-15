@@ -2,9 +2,10 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Car, User, Calendar, Palette, Eye, AlertTriangle, Ruler } from 'lucide-react'
+import { Car, User, Calendar, Palette, Eye, AlertTriangle, Ruler, Camera } from 'lucide-react'
 import Image from 'next/image'
 import { VehicleAnalysisDisplay } from '@/components/vehicles/VehicleAnalysisDisplay'
+import { VehicleImageThumbnails } from '@/components/vehicles/VehicleImageThumbnails'
 
 interface VehicleData {
   id: string
@@ -56,6 +57,8 @@ interface VehicleInfoCardProps {
   className?: string
   showOwner?: boolean
   showAnalysisButton?: boolean
+  showImageThumbnails?: boolean
+  onDataRefresh?: () => void
 }
 
 const vehicleTypeLabels: Record<string, string> = {
@@ -81,6 +84,8 @@ export function VehicleInfoCard({
   className,
   showOwner = true,
   showAnalysisButton = true,
+  showImageThumbnails = true,
+  onDataRefresh,
 }: VehicleInfoCardProps) {
   const [showFullAnalysis, setShowFullAnalysis] = useState(false)
   const imageUrl = vehicle.image?.thumbnailURL || vehicle.image?.url
@@ -197,6 +202,17 @@ export function VehicleInfoCard({
             </div>
           )}
         </div>
+
+        {/* Image Thumbnails Section */}
+        {showImageThumbnails && vehicle.vehicleImages && vehicle.vehicleImages.length > 0 && (
+          <div className="border-t border-gray-700 pt-4">
+            <VehicleImageThumbnails
+              vehicleId={vehicle.id}
+              images={vehicle.vehicleImages}
+              onReanalysisComplete={onDataRefresh}
+            />
+          </div>
+        )}
 
         {/* Analysis Summary */}
         {hasAnalysisData && (

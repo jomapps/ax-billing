@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Order } from '@/payload-types'
+import { SSEManager } from './sse-manager'
 
 /**
  * Server-side order data fetching functions using PayloadCMS v3 Local API
@@ -90,13 +91,26 @@ export async function getOrderStage(orderID: string): Promise<string | null> {
 /**
  * Update order stage - for server actions
  */
-export async function updateOrderStage(orderID: string, newStage: string): Promise<boolean> {
+export async function updateOrderStage(
+  orderID: string,
+  newStage: Order['orderStage'],
+  notes?: string,
+): Promise<
+  | {
+      success: true
+      order: Order
+      previousStage: Order['orderStage']
+      syncEvent?: any
+      sseEventBroadcast: boolean
+    }
+  | { success: false; error: string }
+> {
   try {
     const payload = await getPayload({
       config,
     })
 
-    // First find the order to get its ID
+    // First find the order to get its ID and current stage
     const result = await payload.find({
       collection: 'orders',
       where: {
@@ -109,22 +123,70 @@ export async function updateOrderStage(orderID: string, newStage: string): Promi
 
     if (result.docs.length === 0) {
       console.error('Order not found for stage update:', orderID)
-      return false
+      return { success: false, error: 'Order not found' }
+    }
+
+    const order = result.docs[0]
+    const previousStage = order.orderStage
+
+    // Comment 8: Avoid creating events when the stage doesn't change; short-circuit updates
+    if (previousStage === newStage) {
+      return { success: true, order, previousStage, sseEventBroadcast: false }
     }
 
     // Update the order stage
-    await payload.update({
+    const updatedOrder = await payload.update({
       collection: 'orders',
-      id: result.docs[0].id,
+      id: order.id,
       data: {
         orderStage: newStage as 'empty' | 'initiated' | 'open' | 'billed' | 'paid',
       },
     })
 
-    return true
+    // Create OrderSyncEvents record
+    let syncEvent = null
+    try {
+      // Comment 3: OrderSyncEvents creation likely fails due to access control; add overrideAccess
+      syncEvent = await payload.create({
+        collection: 'orderSyncEvents',
+        data: {
+          order: order.id,
+          eventType: 'stage_change',
+          fieldName: 'orderStage',
+          previousValue: previousStage,
+          newValue: newStage,
+          metadata: {
+            timestamp: new Date().toISOString(),
+            orderID: orderID,
+            notes: notes, // Comment 2: Include notes in the event metadata
+            triggeredBy: 'system',
+          },
+        },
+        overrideAccess: true,
+      })
+    } catch (eventError) {
+      console.error('Error creating sync event:', eventError)
+      // Don't fail the update if event creation fails
+    }
+
+    // Broadcast SSE event to connected clients
+    let sseEventBroadcast = false
+    try {
+      // Comment 7: Standardize SSE event payload to avoid duplicate orderID/timestamp fields
+      SSEManager.broadcastToOrder(orderID, {
+        eventType: 'stage_change',
+        data: { previousStage, newStage: newStage, order: updatedOrder },
+      })
+      sseEventBroadcast = true
+    } catch (sseError) {
+      console.error('Error broadcasting SSE event:', sseError)
+      // Don't fail the update if SSE broadcast fails
+    }
+
+    return { success: true, order: updatedOrder, previousStage, syncEvent, sseEventBroadcast }
   } catch (error) {
     console.error('Error updating order stage:', error)
-    return false
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 

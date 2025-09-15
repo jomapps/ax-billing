@@ -54,7 +54,7 @@ function ModularStaffDashboardContent({
   location = 'Main Branch',
 }: ModularStaffDashboardProps) {
   const router = useRouter()
-  const { orders, stats, loading, error, refreshData } = useDashboardData()
+  const { orders, stats, loading, isRefreshing, error, refreshData } = useDashboardData()
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('overview')
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [recentOrderId, setRecentOrderId] = useState<string | null>(null)
@@ -79,7 +79,7 @@ function ModularStaffDashboardContent({
     setRecentOrderId(orderId)
     setSelectedOrderId(orderId)
     setNotifications((prev) => [...prev, `New order created: ${orderId}`])
-    refreshData()
+    // Remove manual refresh - SSE will update shortly after order creation
 
     // Redirect to the order page instead of showing QR code on dashboard
     router.push(`/order/${orderId}`)
@@ -96,7 +96,7 @@ function ModularStaffDashboardContent({
 
   const handleVehicleCaptured = () => {
     setCurrentStep('service-selection')
-    refreshData()
+    // Remove manual refresh - SSE will update shortly after vehicle capture
   }
 
   const handleServiceSelection = (orderId: string) => {
@@ -117,7 +117,7 @@ function ModularStaffDashboardContent({
   const handleOrderCompleted = () => {
     setCurrentStep('overview')
     setSelectedOrderId(null)
-    refreshData()
+    // Remove manual refresh - SSE will update shortly after order completion
   }
 
   // Workflow steps for navigation
@@ -239,9 +239,11 @@ function ModularStaffDashboardContent({
               variant="outline"
               size="sm"
               className="border-gray-600 text-gray-300"
-              disabled={loading}
+              disabled={loading || isRefreshing}
             >
-              <RefreshCw className={`w-4 h-4 mr-1 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 mr-1 sm:mr-2 ${loading || isRefreshing ? 'animate-spin' : ''}`}
+              />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
@@ -420,7 +422,7 @@ function NewOrderContent({ staffId, location, onOrderCreated }: NewOrderContentP
 // Main export component with data provider wrapper
 export function ModularStaffDashboard(props: ModularStaffDashboardProps) {
   return (
-    <DashboardDataProvider refreshInterval={30000}>
+    <DashboardDataProvider>
       <ModularStaffDashboardContent {...props} />
     </DashboardDataProvider>
   )

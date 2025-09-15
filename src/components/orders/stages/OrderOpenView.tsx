@@ -41,6 +41,8 @@ import { ServiceSidebar } from '../shared/ServiceSidebar'
 import { ServiceConfigModal } from '../shared/ServiceConfigModal'
 import { EditItemModal } from '../shared/EditItemModal'
 import { cn, formatCurrency } from '@/lib/utils'
+import { useSyncManager, useAutoRefresh, usePollingFallback } from '@/lib/sync/useSyncManager'
+import { useAutoNavigation } from '@/lib/sync/useAutoNavigation'
 
 interface Service {
   id: string
@@ -123,6 +125,16 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
   const [loading, setLoading] = useState(!initialOrderData)
   const [error, setError] = useState<string | null>(null)
 
+  // SyncManager integration (configuration handled at route level)
+
+  // Setup automatic navigation for stage changes
+  useAutoNavigation(orderId, 'open', {
+    enabled: true,
+    onNavigate: (newStage, oldStage) => {
+      console.log(`[OrderOpenView] Auto-navigating from ${oldStage} to ${newStage}`)
+    },
+  })
+
   // UI State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
@@ -134,16 +146,6 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
   const [services, setServices] = useState<Service[]>([])
   const [customerTiers, setCustomerTiers] = useState<CustomerTier[]>([])
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
-
-  useEffect(() => {
-    if (!initialOrderData) {
-      fetchFullOrderData()
-    } else {
-      setOrderItems(initialOrderData.servicesRendered || [])
-    }
-    fetchServices()
-    fetchCustomerTiers()
-  }, [initialOrderData])
 
   const fetchFullOrderData = async () => {
     try {
@@ -170,6 +172,33 @@ export function OrderOpenView({ orderId, initialOrderData, className }: OrderOpe
       setLoading(false)
     }
   }
+
+  // Setup auto-refresh for real-time data updates
+  useAutoRefresh(
+    orderId,
+    () => {
+      console.log('[OrderOpenView] Auto-refreshing order data')
+      fetchFullOrderData()
+    },
+    {
+      eventTypes: ['stage_change', 'status_update', 'payment_update'],
+      debounceMs: 1000,
+      enabled: true,
+    },
+  )
+
+  // Also refresh via polling when in polling fallback mode
+  usePollingFallback(fetchFullOrderData)
+
+  useEffect(() => {
+    if (!initialOrderData) {
+      fetchFullOrderData()
+    } else {
+      setOrderItems(initialOrderData.servicesRendered || [])
+    }
+    fetchServices()
+    fetchCustomerTiers()
+  }, [initialOrderData])
 
   const fetchServices = async () => {
     try {

@@ -4,6 +4,7 @@ import config from '@/payload.config'
 import type { VehicleImage, Vehicle, Media } from '@/payload-types'
 import { b } from '@/lib/baml_client/baml_client'
 import type { VehicleAnalysis } from '@/lib/baml_client/baml_client/types'
+import { falAiService } from '@/lib/ai/fal-ai-service'
 
 export interface DamageAnalysis {
   damageDetected: boolean
@@ -92,16 +93,26 @@ export class VehicleDamageAnalysisService {
         processingTime,
       })
 
-      // Fallback to FAL AI via BAML if primary BAML fails
-      console.log('🔄 Falling back to FAL AI via BAML...')
+      // Fallback to custom FAL AI service if BAML fails
+      console.log('🔄 Falling back to custom FAL AI service...')
       try {
-        const bamlFalResult = await b.AnalyzeVehicleDamageFal(imageUrl, imageType)
-        return this.convertBamlToAnalysisResult(bamlFalResult, processingTime)
+        const falResult = await falAiService.analyzeVehicleImage(imageUrl, imageType)
+
+        if (falResult.success) {
+          return {
+            success: true,
+            vehicleCondition: falResult.vehicleCondition || 'good',
+            overallCondition: falResult.vehicleCondition || 'good',
+            processingTime: falResult.processingTime,
+          }
+        } else {
+          throw new Error(falResult.error || 'FAL AI analysis failed')
+        }
       } catch (falError) {
-        console.error('❌ FAL AI fallback also failed:', falError)
+        console.error('❌ Custom FAL AI fallback also failed:', falError)
         return {
           success: false,
-          error: 'Both BAML and FAL AI analysis failed',
+          error: 'Both BAML and custom FAL AI analysis failed',
           processingTime,
         }
       }

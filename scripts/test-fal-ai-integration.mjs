@@ -98,7 +98,7 @@ async function testDirectFalAi() {
   }
 
   const FAL_KEY = process.env.FAL_KEY
-  const FAL_VISION_MODEL = process.env.FAL_VISION_MODEL || 'fal-ai/llavav15-13b'
+  const FAL_VISION_MODEL = process.env.FAL_VISION_MODEL || 'fal-ai/moondream2/visual-query'
 
   if (!FAL_KEY) {
     console.log('⚠️  FAL_KEY not configured, skipping direct FAL tests')

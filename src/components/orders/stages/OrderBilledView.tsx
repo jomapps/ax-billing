@@ -19,6 +19,8 @@ import { Badge } from '@/components/ui/badge'
 
 import { VehicleInfoCard } from '../shared/VehicleInfoCard'
 import { cn } from '@/lib/utils'
+import { useSyncManager, useAutoRefresh, usePollingFallback } from '@/lib/sync/useSyncManager'
+import { useAutoNavigation } from '@/lib/sync/useAutoNavigation'
 
 interface OrderData {
   id: string
@@ -48,11 +50,15 @@ export function OrderBilledView({ orderId, initialOrderData, className }: OrderB
   const [loading, setLoading] = useState(!initialOrderData)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!initialOrderData) {
-      fetchFullOrderData()
-    }
-  }, [initialOrderData])
+  // SyncManager integration (configuration handled at route level)
+
+  // Setup automatic navigation for stage changes
+  useAutoNavigation(orderId, 'billed', {
+    enabled: true,
+    onNavigate: (newStage, oldStage) => {
+      console.log(`[OrderBilledView] Auto-navigating from ${oldStage} to ${newStage}`)
+    },
+  })
 
   const fetchFullOrderData = async () => {
     try {
@@ -78,6 +84,29 @@ export function OrderBilledView({ orderId, initialOrderData, className }: OrderB
       setLoading(false)
     }
   }
+
+  // Setup auto-refresh for real-time data updates
+  useAutoRefresh(
+    orderId,
+    () => {
+      console.log('[OrderBilledView] Auto-refreshing order data')
+      fetchFullOrderData()
+    },
+    {
+      eventTypes: ['stage_change', 'payment_update', 'status_update'],
+      debounceMs: 1000,
+      enabled: true,
+    },
+  )
+
+  // Also refresh via polling when in polling fallback mode
+  usePollingFallback(fetchFullOrderData)
+
+  useEffect(() => {
+    if (!initialOrderData) {
+      fetchFullOrderData()
+    }
+  }, [initialOrderData])
 
   if (loading) {
     return (

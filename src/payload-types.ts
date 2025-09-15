@@ -74,6 +74,7 @@ export interface Config {
     'service-categories': ServiceCategory;
     'service-options': ServiceOption;
     orders: Order;
+    orderSyncEvents: OrderSyncEvent;
     'customer-tiers': CustomerTier;
     media: Media;
     'whatsapp-messages': WhatsappMessage;
@@ -93,6 +94,7 @@ export interface Config {
     'service-categories': ServiceCategoriesSelect<false> | ServiceCategoriesSelect<true>;
     'service-options': ServiceOptionsSelect<false> | ServiceOptionsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    orderSyncEvents: OrderSyncEventsSelect<false> | OrderSyncEventsSelect<true>;
     'customer-tiers': CustomerTiersSelect<false> | CustomerTiersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'whatsapp-messages': WhatsappMessagesSelect<false> | WhatsappMessagesSelect<true>;
@@ -867,6 +869,61 @@ export interface Order {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orderSyncEvents".
+ */
+export interface OrderSyncEvent {
+  id: string;
+  order: string | Order;
+  eventType: 'stage_change' | 'status_update' | 'payment_update' | 'queue_update' | 'job_progress_update';
+  /**
+   * The order field that was changed (e.g., orderStage, paymentStatus). Optional for some event types.
+   */
+  fieldName?: string | null;
+  /**
+   * The previous state value before the change (supports complex data structures)
+   */
+  previousValue?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * The new state value after the change (supports complex data structures)
+   */
+  newValue?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Additional event context and debugging information
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * User or system that triggered this change
+   */
+  triggeredBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * WhatsApp message history and conversation tracking
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1347,6 +1404,10 @@ export interface PayloadLockedDocument {
         value: string | Order;
       } | null)
     | ({
+        relationTo: 'orderSyncEvents';
+        value: string | OrderSyncEvent;
+      } | null)
+    | ({
         relationTo: 'customer-tiers';
         value: string | CustomerTier;
       } | null)
@@ -1662,6 +1723,21 @@ export interface OrdersSelect<T extends boolean = true> {
   customerNotes?: T;
   staffNotes?: T;
   createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orderSyncEvents_select".
+ */
+export interface OrderSyncEventsSelect<T extends boolean = true> {
+  order?: T;
+  eventType?: T;
+  fieldName?: T;
+  previousValue?: T;
+  newValue?: T;
+  metadata?: T;
+  triggeredBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
