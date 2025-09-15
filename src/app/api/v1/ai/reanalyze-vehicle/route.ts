@@ -41,12 +41,9 @@ export async function POST(request: NextRequest) {
     if (imageIds && Array.isArray(imageIds)) {
       // Reanalyze specific images
       const vehicleImages = await payload.find({
-        collection: 'vehicleImages',
+        collection: 'vehicle-images',
         where: {
-          and: [
-            { vehicle: { equals: vehicleId } },
-            { id: { in: imageIds } },
-          ],
+          and: [{ vehicle: { equals: vehicleId } }, { id: { in: imageIds } }],
         },
         depth: 1,
       })
@@ -54,17 +51,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Reanalyze all images without successful AI analysis
       const vehicleImages = await payload.find({
-        collection: 'vehicleImages',
+        collection: 'vehicle-images',
         where: {
-          and: [
-            { vehicle: { equals: vehicleId } },
-            {
-              or: [
-                { aiAnalysis: { exists: false } },
-                { 'aiAnalysis.success': { equals: false } },
-              ],
-            },
-          ],
+          vehicle: { equals: vehicleId },
         },
         depth: 1,
       })
@@ -106,20 +95,13 @@ export async function POST(request: NextRequest) {
         if (analysisResult.success) {
           // Update vehicle image with new analysis
           await payload.update({
-            collection: 'vehicleImages',
+            collection: 'vehicle-images',
             id: vehicleImage.id,
             data: {
-              aiAnalysis: {
-                success: true,
-                vehicleCondition: analysisResult.overallCondition || 'unknown',
-                processingTime: analysisResult.processingTime || 0,
-                confidence: analysisResult.damageAnalysis?.[0]?.confidence || 0.5,
-                rawResponse: analysisResult.rawAiResponse,
-              },
+              aiProcessed: true,
               damageDetected: (analysisResult.damageAnalysis?.length || 0) > 0,
-              damageDescription: analysisResult.damageAnalysis
-                ?.map((d) => d.damageDescription)
-                .join('; '),
+              damageDescription:
+                analysisResult.damageAnalysis?.map((d) => d.damageDescription).join('; ') || '',
             },
           })
 
@@ -136,14 +118,12 @@ export async function POST(request: NextRequest) {
         } else {
           // Update with failure status
           await payload.update({
-            collection: 'vehicleImages',
+            collection: 'vehicle-images',
             id: vehicleImage.id,
             data: {
-              aiAnalysis: {
-                success: false,
-                error: analysisResult.error || 'Analysis failed',
-                processingTime: analysisResult.processingTime || 0,
-              },
+              // Don't update aiAnalysis on failure - leave it empty for retry
+              damageDetected: false,
+              damageDescription: `Analysis failed: ${analysisResult.error || 'Unknown error'}`,
             },
           })
 
@@ -204,7 +184,8 @@ export async function GET() {
           description: 'Reanalyze vehicle images that failed AI analysis',
           parameters: {
             vehicleId: 'string (required) - ID of the vehicle',
-            imageIds: 'string[] (optional) - Specific image IDs to reanalyze. If not provided, all failed images will be reanalyzed',
+            imageIds:
+              'string[] (optional) - Specific image IDs to reanalyze. If not provided, all failed images will be reanalyzed',
           },
         },
       },
